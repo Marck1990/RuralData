@@ -18,15 +18,28 @@ h1 {
   font-weight: 600;
 }
 
-main {
-  max-width: 480px;
-}
-
 .text-muted {
   font-size: 0.95rem;
 }
 
-main {
-  max-width: 480px;
-  margin: 0 auto;
+/* Contenedor principal estilo app móvil */
+.container.home-container {
+  width: 100% !important;
+  max-width: 430px !important;
+  margin: 0 auto !important;
+}
+
+/* Ajuste visual para PC */
+@media (min-width: 768px) {
+  body {
+    padding-top: 20px;
+  }
+
+  .container.home-container {
+    max-width: 430px !important;
+  }
+
+  .card {
+    min-height: 130px;
+  }
 }
