@@ -1,0 +1,45 @@
+body {
+  background-color: #f4f7f2;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  color: #1f5c35;
+}
+
+.card {
+  border: none;
+  border-radius: 16px;
+}
+
+.btn {
+  border-radius: 14px;
+  padding: 14px;
+  font-weight: 600;
+}
+
+.text-muted {
+  font-size: 0.95rem;
+}
+
+/* Contenedor principal estilo app móvil */
+.container.home-container {
+  width: 100% !important;
+  max-width: 430px !important;
+  margin: 0 auto !important;
+}
+
+/* Ajuste visual para PC */
+@media (min-width: 768px) {
+  body {
+    padding-top: 20px;
+  }
+
+  .container.home-container {
+    max-width: 430px !important;
+  }
+
+  .card {
+    min-height: 130px;
+  }
+}
