@@ -1,12 +1,17 @@
-// Manejo de usuarios, roles e inicio de sesión.
+// Manejo de usuarios, roles, registro e inicio de sesión.
 
 document.addEventListener("DOMContentLoaded", () => {
   inicializarUsuarios();
 
   const formLogin = document.getElementById("formLogin");
+  const formRegistroUsuario = document.getElementById("formRegistroUsuario");
 
   if (formLogin) {
     formLogin.addEventListener("submit", iniciarSesion);
+  }
+
+  if (formRegistroUsuario) {
+    formRegistroUsuario.addEventListener("submit", registrarUsuario);
   }
 
   protegerPagina();
@@ -85,15 +90,65 @@ function iniciarSesion(event) {
   window.location.href = "index.html";
 }
 
+function registrarUsuario(event) {
+  event.preventDefault();
+
+  const nombre = document.getElementById("nombreRegistro").value.trim();
+  const usuario = document.getElementById("usuarioRegistro").value.trim();
+  const password = document.getElementById("passwordRegistro").value.trim();
+  const rol = document.getElementById("rolRegistro").value;
+  const mensaje = document.getElementById("mensajeRegistroUsuario");
+
+  const usuarios = obtenerUsuarios();
+
+  const existeUsuario = usuarios.some(u => u.usuario === usuario);
+
+  if (existeUsuario) {
+    mensaje.innerHTML = `
+      <div class="alert alert-danger">
+        Ese usuario ya existe.
+      </div>
+    `;
+    return;
+  }
+
+  const nuevoUsuario = {
+    id: crypto.randomUUID(),
+    nombre,
+    usuario,
+    password,
+    rol
+  };
+
+  usuarios.push(nuevoUsuario);
+  guardarUsuarios(usuarios);
+
+  mensaje.innerHTML = `
+    <div class="alert alert-success">
+      Usuario creado correctamente.
+    </div>
+  `;
+
+  event.target.reset();
+
+  setTimeout(() => {
+    window.location.href = "login.html";
+  }, 1200);
+}
+
 function protegerPagina() {
-  const esLogin = window.location.pathname.includes("login.html");
+  const ruta = window.location.pathname;
+  const esLogin = ruta.includes("login.html");
+  const esRegistro = ruta.includes("registro-usuario.html");
+  const esPaginaPublica = esLogin || esRegistro;
+
   const sesion = obtenerSesion();
 
-  if (!sesion && !esLogin) {
+  if (!sesion && !esPaginaPublica) {
     window.location.href = obtenerRutaLogin();
   }
 
-  if (sesion && esLogin) {
+  if (sesion && esPaginaPublica) {
     window.location.href = "index.html";
   }
 }

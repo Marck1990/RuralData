@@ -14,26 +14,31 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 
-<body class="login-body">
-  <main class="login-wrapper">
+<body class="login-rural-body">
+  <main class="login-rural-wrapper">
 
-    <section class="mb-4">
-      <div class="login-logo">🌱</div>
+    <section class="login-rural-header-logo">
+      <img
+        src="assets/img/logo-ruraldata.png"
+        alt="Logo RuralData"
+        class="login-rural-logo-completo"
+      />
 
-      <h1 class="login-title">
-        La información del rodeo,<br />
-        siempre a mano.
-      </h1>
-
-      <p class="login-subtitle">
-        Información clara para decisiones en el campo.
-      </p>
+      <p>Trazabilidad ganadera para pequeños productores</p>
     </section>
 
-    <section class="login-card">
-      <p class="mb-4">
-        Acceso de demostración para recorrer RuralData.
-      </p>
+    <section class="login-rural-card">
+
+      <div class="login-rural-info">
+        <span class="login-rural-badge">Acceso al sistema</span>
+
+        <h2>Ingresá a tu panel rural</h2>
+
+        <p>
+          Gestioná animales, sanidad, reproducción y registros del establecimiento
+          desde una aplicación simple y mobile-first.
+        </p>
+      </div>
 
       <form id="formLogin" class="d-grid gap-3">
 
@@ -43,7 +48,7 @@
             type="text"
             id="usuario"
             class="form-control"
-            placeholder="propietario, trabajador o veterinario"
+            placeholder="Ingrese su usuario"
             required
           />
         </div>
@@ -54,7 +59,7 @@
             type="password"
             id="password"
             class="form-control"
-            placeholder="1234"
+            placeholder="Ingrese su contraseña"
             required
           />
         </div>
@@ -63,16 +68,21 @@
           Ingresar
         </button>
 
+        <a href="registro-usuario.html" class="btn btn-outline-secondary">
+          Crear nuevo usuario
+        </a>
+
         <div id="mensajeLogin"></div>
 
       </form>
 
-      <section class="mt-4 small text-muted">
-        <p class="mb-1"><strong>Usuarios de prueba:</strong></p>
-        <p class="mb-1">propietario / 1234</p>
-        <p class="mb-1">trabajador / 1234</p>
-        <p class="mb-1">veterinario / 1234</p>
+      <section class="login-rural-demo">
+        <p><strong>Usuarios demo</strong></p>
+        <span>propietario / 1234</span>
+        <span>trabajador / 1234</span>
+        <span>veterinario / 1234</span>
       </section>
+
     </section>
 
   </main>

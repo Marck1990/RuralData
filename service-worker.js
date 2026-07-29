@@ -1,8 +1,9 @@
-const CACHE_NAME = "ruraldata-cache-v10";
+const CACHE_NAME = "ruraldata-cache-v12";
 
 const ARCHIVOS_CACHE = [
   "index.html",
   "login.html",
+  "registro-usuario.html",
   "manifest.json",
   "css/styles.css",
   "js/app.js",

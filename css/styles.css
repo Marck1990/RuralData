@@ -12,6 +12,9 @@
   --amarillo: #f6df83;
   --rojo-suave: #f8d6d2;
   --azul-suave: #d9ecff;
+
+  /* Color superior del fondo del login */
+  --login-fondo-logo: #06261D;
 }
 
 * {
@@ -152,47 +155,110 @@ label {
   border-radius: 16px;
 }
 
-/* Login visual */
+/* Login profesional RuralData */
 
-.login-body {
+.login-rural-body {
   min-height: 100vh;
-  background:
-    linear-gradient(rgba(18, 63, 43, 0.88), rgba(18, 63, 43, 0.88)),
-    linear-gradient(135deg, #1b5036, #0b2b21);
+  background: linear-gradient(
+    180deg,
+    var(--login-fondo-logo) 0%,
+    #0b2d22 45%,
+    #164936 100%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
 }
 
-.login-card {
-  background-color: var(--blanco);
+.login-rural-wrapper {
+  width: 100%;
+  max-width: 520px;
+}
+
+.login-rural-header-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.login-rural-logo-completo {
+  width: 100%;
+  max-width: 380px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 14px auto;
   border-radius: 24px;
+
+  /* Degradado en todos los bordes */
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    black 0%,
+    black 58%,
+    rgba(0, 0, 0, 0.75) 72%,
+    transparent 100%
+  );
+
+  mask-image: radial-gradient(
+    ellipse at center,
+    black 0%,
+    black 58%,
+    rgba(0, 0, 0, 0.75) 72%,
+    transparent 100%
+  );
+}
+
+.login-rural-header-logo p {
+  color: #e3eee8;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.login-rural-card {
+  background-color: #ffffff;
+  border-radius: 28px;
   padding: 28px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
 }
 
-.login-logo {
-  width: 58px;
-  height: 58px;
-  border-radius: 16px;
-  background-color: #e4c04f;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-  margin-bottom: 20px;
+.login-rural-info {
+  margin-bottom: 26px;
 }
 
-.login-title {
-  color: var(--blanco);
-  font-size: 2.1rem;
+.login-rural-badge {
+  display: inline-block;
+  background-color: #dcefdc;
+  color: #123f2b;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.8rem;
   font-weight: 800;
-  line-height: 1.15;
+  margin-bottom: 14px;
 }
 
-.login-subtitle {
-  color: #e2eee5;
+.login-rural-info h2 {
+  font-size: 1.8rem;
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+
+.login-rural-info p {
+  margin-bottom: 0;
+}
+
+.login-rural-demo {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #d8ddcf;
+  display: grid;
+  gap: 6px;
+  color: #60746b;
+  font-size: 0.9rem;
+}
+
+.login-rural-demo p {
+  margin: 0;
+  color: #062b25;
 }
 
 /* Banner dashboard con imagen */
@@ -218,18 +284,22 @@ label {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    rgba(18, 63, 43, 0.20),
-    rgba(18, 63, 43, 0.88)
+    180deg,
+    rgba(18, 63, 43, 0.82) 0%,
+    rgba(18, 63, 43, 0.45) 45%,
+    rgba(18, 63, 43, 0.28) 100%
   );
 }
 
 .dashboard-banner-texto {
   position: absolute;
-  left: 20px;
-  right: 20px;
-  bottom: 20px;
+  left: 24px;
+  right: 24px;
+  top: 24px;
+  bottom: auto;
   z-index: 2;
 }
+
 
 .dashboard-banner-texto p,
 .dashboard-banner-texto h2 {
@@ -336,10 +406,6 @@ label {
     max-width: 760px !important;
   }
 
-  .login-wrapper {
-    max-width: 520px;
-  }
-
   .dashboard-banner {
     min-height: 300px;
   }
@@ -357,5 +423,15 @@ label {
   main,
   .home-container {
     max-width: 900px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-rural-logo-completo {
+    max-width: 290px;
+  }
+
+  .login-rural-card {
+    padding: 24px;
   }
 }
