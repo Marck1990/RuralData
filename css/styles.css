@@ -1,45 +1,361 @@
+/* Estilos generales de RuralData */
+
+:root {
+  --verde-oscuro: #123f2b;
+  --verde-principal: #1f6b43;
+  --verde-suave: #dcefdc;
+  --crema: #f4efe3;
+  --blanco: #ffffff;
+  --texto: #062b25;
+  --gris: #60746b;
+  --borde: #d8ddcf;
+  --amarillo: #f6df83;
+  --rojo-suave: #f8d6d2;
+  --azul-suave: #d9ecff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  background-color: #f4f7f2;
+  background-color: var(--crema);
+  color: var(--texto);
   font-family: Arial, sans-serif;
+  margin: 0;
 }
 
-h1 {
-  color: #1f5c35;
+h1,
+h2,
+h3 {
+  color: var(--texto);
+  font-weight: 800;
 }
 
-.card {
-  border: none;
-  border-radius: 16px;
+p {
+  color: var(--gris);
 }
 
-.btn {
-  border-radius: 14px;
-  padding: 14px;
-  font-weight: 600;
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
-.text-muted {
-  font-size: 0.95rem;
+/* Contenedores */
+
+main {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
 }
 
-/* Contenedor principal estilo app móvil */
-.container.home-container {
+.home-container {
   width: 100% !important;
   max-width: 430px !important;
   margin: 0 auto !important;
 }
 
-/* Ajuste visual para PC */
+/* Tarjetas */
+
+.card {
+  border: 1px solid var(--borde);
+  border-radius: 22px;
+  background-color: var(--blanco);
+  box-shadow: 0 10px 25px rgba(18, 63, 43, 0.08);
+}
+
+.card-body {
+  padding: 22px;
+}
+
+/* Botones */
+
+.btn {
+  border-radius: 18px;
+  padding: 15px;
+  font-weight: 700;
+}
+
+.btn-success {
+  background-color: var(--verde-principal);
+  border-color: var(--verde-principal);
+}
+
+.btn-success:hover {
+  background-color: var(--verde-oscuro);
+  border-color: var(--verde-oscuro);
+}
+
+.btn-outline-success {
+  color: var(--verde-principal);
+  border-color: var(--verde-principal);
+}
+
+.btn-outline-success:hover {
+  background-color: var(--verde-principal);
+  border-color: var(--verde-principal);
+}
+
+.btn-outline-primary {
+  color: var(--verde-principal);
+  border-color: var(--verde-principal);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--verde-principal);
+  border-color: var(--verde-principal);
+}
+
+.btn-outline-secondary {
+  color: var(--gris);
+  border-color: var(--gris);
+}
+
+.btn-outline-warning {
+  color: #8a6a00;
+  border-color: var(--amarillo);
+  background-color: #fff9df;
+}
+
+.btn-outline-danger {
+  color: #c93a35;
+  border-color: #c93a35;
+}
+
+/* Formularios */
+
+.form-control,
+.form-select {
+  border-radius: 16px;
+  padding: 15px 16px;
+  border: 1px solid #a9c2af;
+  color: var(--texto);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--verde-principal);
+  box-shadow: 0 0 0 0.2rem rgba(31, 107, 67, 0.15);
+}
+
+label {
+  font-weight: 700;
+  color: var(--texto);
+}
+
+/* Usuario activo */
+
+#usuarioActivo .alert {
+  background-color: #d7eadc;
+  border: 1px solid #a8cdb3;
+  color: var(--texto);
+  border-radius: 16px;
+}
+
+/* Login visual */
+
+.login-body {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(18, 63, 43, 0.88), rgba(18, 63, 43, 0.88)),
+    linear-gradient(135deg, #1b5036, #0b2b21);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card {
+  background-color: var(--blanco);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.login-logo {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background-color: #e4c04f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin-bottom: 20px;
+}
+
+.login-title {
+  color: var(--blanco);
+  font-size: 2.1rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.login-subtitle {
+  color: #e2eee5;
+}
+
+/* Banner dashboard con imagen */
+
+.dashboard-banner {
+  position: relative;
+  min-height: 240px;
+  border-radius: 24px;
+  overflow: hidden;
+  background-color: var(--verde-oscuro);
+  box-shadow: 0 14px 35px rgba(18, 63, 43, 0.18);
+}
+
+.dashboard-banner-img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+}
+
+.dashboard-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    rgba(18, 63, 43, 0.20),
+    rgba(18, 63, 43, 0.88)
+  );
+}
+
+.dashboard-banner-texto {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2;
+}
+
+.dashboard-banner-texto p,
+.dashboard-banner-texto h2 {
+  color: white;
+}
+
+.dashboard-banner-texto h2 {
+  font-size: 1.7rem;
+  line-height: 1.15;
+}
+
+/* Dashboard */
+
+.dashboard-hero {
+  background:
+    linear-gradient(rgba(18, 63, 43, 0.76), rgba(18, 63, 43, 0.76)),
+    linear-gradient(135deg, #315b3e, #183d2c);
+  border-radius: 24px;
+  padding: 28px 22px;
+  color: white;
+  margin-bottom: 24px;
+}
+
+.dashboard-hero p,
+.dashboard-hero h2 {
+  color: white;
+}
+
+.stat-card {
+  min-height: 150px;
+}
+
+.stat-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background-color: var(--verde-suave);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.action-card {
+  text-align: left;
+  min-height: 110px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(18, 63, 43, 0.14);
+}
+
+.badge-soft-green {
+  background-color: var(--verde-suave);
+  color: var(--verde-oscuro);
+}
+
+.badge-soft-yellow {
+  background-color: #fff0b8;
+  color: #7b5a00;
+}
+
+.badge-soft-red {
+  background-color: var(--rojo-suave);
+  color: #ad2f2a;
+}
+
+/* Listados */
+
+.list-card-title {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gris);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.estado-pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* PC */
+
 @media (min-width: 768px) {
   body {
-    padding-top: 20px;
+    padding-top: 18px;
   }
 
-  .container.home-container {
-    max-width: 430px !important;
+  main,
+  .home-container {
+    max-width: 760px !important;
   }
 
-  .card {
-    min-height: 130px;
+  .login-wrapper {
+    max-width: 520px;
+  }
+
+  .dashboard-banner {
+    min-height: 300px;
+  }
+
+  .dashboard-banner-img {
+    height: 300px;
+  }
+
+  .dashboard-banner-texto h2 {
+    font-size: 2.3rem;
+  }
+}
+
+@media (min-width: 1100px) {
+  main,
+  .home-container {
+    max-width: 900px !important;
   }
 }

@@ -18,74 +18,123 @@
 <body>
   <main class="container py-4 home-container">
 
-    <section class="text-center mb-4">
-      <h1 class="fw-bold">RuralData</h1>
-      <p class="text-muted">
-        Gestión simple de animales, caravanas y sanidad rural.
-      </p>
+    <section class="d-flex justify-content-between align-items-start mb-4">
+      <div>
+        <h1 class="h3 fw-bold mb-1">RuralData</h1>
+        <p class="text-muted mb-0">Panel principal</p>
+      </div>
+
+      <button id="btnCerrarSesion" class="btn btn-outline-danger btn-sm">
+        Salir
+      </button>
     </section>
 
     <section id="usuarioActivo"></section>
 
+    <section class="dashboard-banner mb-4">
+      <img
+        src="assets/img/campo-dashboard.jpg"
+        alt="Campo con animales"
+        class="dashboard-banner-img"
+      />
+
+      <div class="dashboard-banner-texto">
+        <p class="fw-bold mb-2">BIENVENIDO</p>
+        <h2 class="fw-bold mb-2">Tu información rural, siempre a mano</h2>
+        <p class="mb-0">
+          Gestioná animales, sanidad, reproducción y trazabilidad desde el celular.
+        </p>
+      </div>
+    </section>
+
     <section class="row g-3 mb-4">
 
       <div class="col-6">
-        <div class="card text-center shadow-sm h-100">
-          <div class="card-body d-flex flex-column justify-content-between">
-            <div>
-              <h5 id="totalAnimales" class="fw-bold">0</h5>
-              <p class="mb-2 small">Animales</p>
-            </div>
-
-            <a href="pages/listar-animales.html" class="btn btn-outline-success btn-sm">
-              Ver animales
-            </a>
+        <div class="card stat-card">
+          <div class="card-body">
+            <div class="stat-icon">🐄</div>
+            <p class="mb-1">Animales</p>
+            <div id="totalAnimales" class="stat-number">0</div>
           </div>
         </div>
       </div>
 
       <div class="col-6">
-        <div class="card text-center shadow-sm h-100">
-          <div class="card-body d-flex flex-column justify-content-between">
-            <div>
-              <h5 id="totalSanidad" class="fw-bold">0</h5>
-              <p class="mb-2 small">Controles</p>
-            </div>
-
-            <a href="pages/listar-controles.html" class="btn btn-outline-primary btn-sm">
-              Ver controles
-            </a>
+        <div class="card stat-card">
+          <div class="card-body">
+            <div class="stat-icon">💉</div>
+            <p class="mb-1">Controles</p>
+            <div id="totalSanidad" class="stat-number">0</div>
           </div>
         </div>
       </div>
 
     </section>
 
-    <section class="d-grid gap-3">
+    <section class="row g-3">
 
-      <a href="pages/registrar-animal.html" class="btn btn-success btn-lg" data-roles="propietario,trabajador">
-        Registrar animal
-      </a>
+      <div class="col-12 col-md-6" data-roles="propietario,trabajador">
+        <a href="pages/registrar-animal.html" class="card action-card">
+          <div class="card-body">
+            <div class="stat-icon">➕</div>
+            <h2 class="h5 fw-bold">Registrar animal</h2>
+          </div>
+        </a>
+      </div>
 
-      <a href="pages/buscar-animal.html" class="btn btn-outline-success btn-lg" data-roles="propietario,trabajador,veterinario">
-        Buscar caravana / RFID
-      </a>
+      <div class="col-12 col-md-6" data-roles="propietario,trabajador,veterinario">
+        <a href="pages/buscar-animal.html" class="card action-card">
+          <div class="card-body">
+            <div class="stat-icon">🔎</div>
+            <h2 class="h5 fw-bold">Buscar caravana / RFID</h2>
+          </div>
+        </a>
+      </div>
 
-      <a href="pages/sanidad.html" class="btn btn-outline-primary btn-lg" data-roles="propietario,trabajador,veterinario">
-        Sanidad
-      </a>
+      <div class="col-12 col-md-6" data-roles="propietario,trabajador,veterinario">
+        <a href="pages/sanidad.html" class="card action-card">
+          <div class="card-body">
+            <div class="stat-icon">💉</div>
+            <h2 class="h5 fw-bold">Sanidad</h2>
+          </div>
+        </a>
+      </div>
 
-      <a href="pages/reproduccion.html" class="btn btn-outline-warning btn-lg" data-roles="propietario,trabajador,veterinario">
-        Reproducción / Pariciones
-      </a>
+      <div class="col-12 col-md-6" data-roles="propietario,trabajador,veterinario">
+        <a href="pages/reproduccion.html" class="card action-card">
+          <div class="card-body">
+            <div class="stat-icon">🐮</div>
+            <h2 class="h5 fw-bold">Reproducción / Pariciones</h2>
+          </div>
+        </a>
+      </div>
 
-      <a href="pages/resumen.html" class="btn btn-outline-secondary btn-lg" data-roles="propietario,trabajador,veterinario">
-        Resumen
-      </a>
+      <div class="col-12 col-md-6" data-roles="propietario,trabajador,veterinario">
+        <a href="pages/listar-animales.html" class="card action-card">
+          <div class="card-body">
+            <div class="stat-icon">📋</div>
+            <h2 class="h5 fw-bold">Ver animales</h2>
+          </div>
+        </a>
+      </div>
 
-      <button id="btnCerrarSesion" class="btn btn-outline-danger btn-lg">
-        Cerrar sesión
-      </button>
+      <div class="col-12 col-md-6" data-roles="propietario,trabajador,veterinario">
+        <a href="pages/listar-controles.html" class="card action-card">
+          <div class="card-body">
+            <div class="stat-icon">✅</div>
+            <h2 class="h5 fw-bold">Ver controles</h2>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-12" data-roles="propietario,trabajador,veterinario">
+        <a href="pages/resumen.html" class="card action-card">
+          <div class="card-body">
+            <div class="stat-icon">📊</div>
+            <h2 class="h5 fw-bold">Resumen general</h2>
+          </div>
+        </a>
+      </div>
 
     </section>
 
