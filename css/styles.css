@@ -14,7 +14,7 @@
   --azul-suave: #d9ecff;
 
   /* Color superior del fondo del login */
-  --login-fondo-logo: #06261D;
+  --login-fondo-logo: #06231b;
 }
 
 * {
@@ -26,6 +26,10 @@ body {
   color: var(--texto);
   font-family: Arial, sans-serif;
   margin: 0;
+}
+
+body.menu-lateral-abierto {
+  overflow: hidden;
 }
 
 h1,
@@ -58,7 +62,7 @@ main {
   margin: 0 auto !important;
 }
 
-/* Tarjetas */
+/* Tarjetas generales */
 
 .card {
   border: 1px solid var(--borde);
@@ -190,7 +194,6 @@ label {
   margin: 0 auto 14px auto;
   border-radius: 24px;
 
-  /* Degradado en todos los bordes */
   -webkit-mask-image: radial-gradient(
     ellipse at center,
     black 0%,
@@ -261,7 +264,476 @@ label {
   color: #062b25;
 }
 
-/* Banner dashboard con imagen */
+/* Dashboard nuevo mobile first */
+
+.app-rural-body {
+  background-color: var(--crema);
+  min-height: 100vh;
+}
+
+.app-rural-container {
+  width: 100% !important;
+  max-width: 430px !important;
+  margin: 0 auto !important;
+  padding: 22px 18px 110px 18px !important;
+}
+
+/* Cabecera con usuario */
+
+.app-rural-user-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.app-rural-user-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.app-rural-profile-photo {
+  width: 62px;
+  height: 62px;
+  min-width: 62px;
+  border-radius: 50%;
+  background:
+    linear-gradient(135deg, #ffffff, #eaf4ec);
+  border: 2px solid #bbd9c2;
+  box-shadow: 0 10px 24px rgba(18, 63, 43, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.app-rural-profile-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-rural-profile-photo span {
+  color: var(--verde-principal);
+  font-size: 1.65rem;
+}
+
+.app-rural-user-title {
+  color: var(--texto);
+  font-size: 1.25rem;
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.app-rural-bienvenida {
+  color: var(--verde-principal);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.app-rural-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-rural-menu-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  border: 1px solid var(--borde);
+  background-color: #ffffff;
+  color: var(--verde-principal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  box-shadow: 0 8px 18px rgba(18, 63, 43, 0.08);
+}
+
+/* Cards de números */
+
+.app-rural-stat-card {
+  background-color: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 24px;
+  padding: 18px;
+  min-height: 148px;
+  box-shadow: 0 10px 24px rgba(18, 63, 43, 0.08);
+}
+
+.app-rural-stat-card.alerta {
+  background-color: #fff8df;
+  border-color: #f0d980;
+}
+
+.app-rural-stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  background-color: var(--verde-suave);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.app-rural-stat-icon i {
+  font-size: 1.25rem;
+  color: var(--verde-principal);
+}
+
+.app-rural-stat-card.alerta .app-rural-stat-icon {
+  background-color: #fff0b8;
+}
+
+.app-rural-stat-card.alerta .app-rural-stat-icon i {
+  color: #8a6a00;
+}
+
+.app-rural-stat-card p {
+  font-size: 0.82rem;
+  line-height: 1.2;
+  margin-bottom: 8px;
+  color: var(--gris);
+  font-weight: 700;
+}
+
+.app-rural-stat-card strong {
+  font-size: 2rem;
+  color: var(--texto);
+  line-height: 1;
+}
+
+/* Títulos de secciones */
+
+.app-rural-section-title {
+  margin: 24px 0 14px 0;
+}
+
+.app-rural-section-title h2 {
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+
+.app-rural-section-title p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Accesos rápidos */
+
+.app-rural-action-card {
+  display: block;
+  background-color: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 24px;
+  padding: 18px;
+  min-height: 148px;
+  box-shadow: 0 10px 24px rgba(18, 63, 43, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.app-rural-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(18, 63, 43, 0.14);
+}
+
+.app-rural-action-card span {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  background-color: var(--verde-suave);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.app-rural-action-card span i {
+  font-size: 1.2rem;
+  color: var(--verde-principal);
+}
+
+.app-rural-action-card h3 {
+  font-size: 0.96rem;
+  margin-bottom: 6px;
+}
+
+.app-rural-action-card p {
+  font-size: 0.82rem;
+  line-height: 1.25;
+  margin-bottom: 0;
+}
+
+/* Menú lateral tipo drawer */
+
+.app-rural-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(6, 43, 37, 0.38);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 80;
+}
+
+.app-rural-menu-overlay.activo {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.app-rural-side-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 84%;
+  max-width: 340px;
+  height: 100vh;
+  background-color: #ffffff;
+  border-radius: 0 32px 32px 0;
+  box-shadow: 18px 0 50px rgba(18, 63, 43, 0.28);
+  padding: 24px 18px;
+  transform: translateX(-105%);
+  transition: transform 0.28s ease;
+  z-index: 90;
+  overflow-y: auto;
+}
+
+.app-rural-side-menu.abierto {
+  transform: translateX(0);
+}
+
+.app-rural-side-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.app-rural-side-header p {
+  color: var(--verde-principal);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.app-rural-side-header h2 {
+  font-size: 1.45rem;
+  margin: 0;
+}
+
+.app-rural-side-close {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--borde);
+  border-radius: 15px;
+  background-color: #f5f8f4;
+  color: var(--texto);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-rural-side-nav {
+  display: grid;
+  gap: 12px;
+}
+
+.app-rural-side-item {
+  width: 100%;
+  border: 1px solid var(--borde);
+  border-radius: 22px;
+  background-color: #ffffff;
+  padding: 15px;
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  align-items: center;
+  gap: 13px;
+  color: var(--texto);
+  text-align: left;
+  box-shadow: 0 8px 22px rgba(18, 63, 43, 0.08);
+  cursor: pointer;
+}
+
+button.app-rural-side-item {
+  font-family: inherit;
+}
+
+.app-rural-side-item:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.app-rural-side-item.principal {
+  background-color: var(--verde-principal);
+  border-color: var(--verde-principal);
+  color: white;
+}
+
+.app-rural-side-item i {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  background-color: var(--verde-suave);
+  color: var(--verde-principal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+
+.app-rural-side-item.principal i {
+  background-color: rgba(255, 255, 255, 0.18);
+  color: white;
+}
+
+.app-rural-side-item strong {
+  display: block;
+  font-size: 0.94rem;
+  line-height: 1.15;
+}
+
+.app-rural-side-item span {
+  display: block;
+  color: var(--gris);
+  font-size: 0.8rem;
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
+.app-rural-side-item.principal span {
+  color: #e8f3ec;
+}
+
+/* Gráficas simples */
+
+.app-rural-chart-card {
+  background-color: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 26px;
+  padding: 20px;
+  box-shadow: 0 10px 24px rgba(18, 63, 43, 0.08);
+}
+
+.app-rural-chart-card h3 {
+  font-size: 1rem;
+  margin-bottom: 16px;
+}
+
+.app-rural-chart {
+  display: grid;
+  gap: 12px;
+}
+
+.app-rural-chart-row {
+  display: grid;
+  gap: 6px;
+}
+
+.app-rural-chart-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.86rem;
+  color: var(--texto);
+  font-weight: 700;
+}
+
+.app-rural-chart-bar {
+  width: 100%;
+  height: 14px;
+  background-color: #edf3ee;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.app-rural-chart-fill {
+  height: 100%;
+  min-width: 8px;
+  border-radius: 999px;
+  background-color: var(--verde-principal);
+}
+
+.app-rural-chart-empty {
+  padding: 16px;
+  border-radius: 18px;
+  background-color: #f5f7f2;
+  color: var(--gris);
+  font-size: 0.9rem;
+}
+
+/* Menú inferior mobile */
+
+.app-rural-bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 430px;
+  height: 74px;
+  background-color: #ffffff;
+  border: 1px solid var(--borde);
+  border-radius: 28px;
+  box-shadow: 0 18px 45px rgba(18, 63, 43, 0.22);
+  display: grid;
+  grid-template-columns: 1fr 1fr 76px 1fr;
+  align-items: center;
+  padding: 8px 12px;
+  z-index: 20;
+}
+
+.app-rural-bottom-nav a {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--gris);
+}
+
+.app-rural-bottom-nav a span {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.app-rural-bottom-nav a span i {
+  font-size: 1.15rem;
+}
+
+.app-rural-bottom-nav a.active {
+  color: var(--verde-principal);
+}
+
+.app-rural-add-button {
+  width: 66px;
+  height: 66px !important;
+  border-radius: 50%;
+  background-color: var(--verde-principal);
+  color: white !important;
+  margin: -30px auto 0 auto;
+  box-shadow: 0 12px 30px rgba(31, 107, 67, 0.35);
+}
+
+.app-rural-add-button span i {
+  font-size: 1.7rem !important;
+  color: white;
+}
+
+/* Banner dashboard anterior */
 
 .dashboard-banner {
   position: relative;
@@ -300,7 +772,6 @@ label {
   z-index: 2;
 }
 
-
 .dashboard-banner-texto p,
 .dashboard-banner-texto h2 {
   color: white;
@@ -311,7 +782,7 @@ label {
   line-height: 1.15;
 }
 
-/* Dashboard */
+/* Dashboard anterior */
 
 .dashboard-hero {
   background:
@@ -394,7 +865,7 @@ label {
   font-weight: 700;
 }
 
-/* PC */
+/* Tablets */
 
 @media (min-width: 768px) {
   body {
@@ -404,6 +875,37 @@ label {
   main,
   .home-container {
     max-width: 760px !important;
+  }
+
+  .app-rural-container {
+    max-width: 760px !important;
+    padding: 28px 24px 120px 24px !important;
+  }
+
+  .app-rural-user-header {
+    margin-bottom: 28px;
+  }
+
+  .app-rural-profile-photo {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+  }
+
+  .app-rural-user-title {
+    font-size: 1.65rem;
+  }
+
+  .app-rural-container .col-6:has(.app-rural-stat-card) {
+    width: 25%;
+  }
+
+  .app-rural-container .col-12:has(.app-rural-chart-card) {
+    width: 50%;
+  }
+
+  .app-rural-bottom-nav {
+    max-width: 520px;
   }
 
   .dashboard-banner {
@@ -419,12 +921,87 @@ label {
   }
 }
 
+/* Computadoras */
+
 @media (min-width: 1100px) {
+  body {
+    padding-left: 108px;
+    padding-top: 0;
+  }
+
   main,
   .home-container {
-    max-width: 900px !important;
+    max-width: 1120px !important;
+  }
+
+  .app-rural-container {
+    max-width: 1120px !important;
+    padding: 38px 32px 60px 32px !important;
+  }
+
+  .app-rural-user-header {
+    margin-bottom: 34px;
+  }
+
+  .app-rural-user-title {
+    font-size: 2rem;
+  }
+
+  .app-rural-profile-photo {
+    width: 82px;
+    height: 82px;
+    min-width: 82px;
+  }
+
+  .app-rural-container .col-6:has(.app-rural-stat-card) {
+    width: 25%;
+  }
+
+  .app-rural-stat-card {
+    min-height: 170px;
+    padding: 22px;
+  }
+
+  .app-rural-action-card {
+    min-height: 170px;
+    padding: 22px;
+  }
+
+  .app-rural-container .col-12:has(.app-rural-chart-card) {
+    width: 33.333333%;
+  }
+
+  .app-rural-side-menu {
+    max-width: 360px;
+  }
+
+  .app-rural-bottom-nav {
+    left: 28px;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    width: 76px;
+    max-width: none;
+    height: auto;
+    min-height: 360px;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr 84px 1fr;
+    border-radius: 30px;
+    padding: 12px 8px;
+  }
+
+  .app-rural-bottom-nav a {
+    font-size: 0.7rem;
+  }
+
+  .app-rural-add-button {
+    width: 58px;
+    height: 58px !important;
+    margin: 0 auto;
   }
 }
+
+/* Celulares chicos */
 
 @media (max-width: 480px) {
   .login-rural-logo-completo {
@@ -434,4 +1011,42 @@ label {
   .login-rural-card {
     padding: 24px;
   }
+
+  .app-rural-container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .app-rural-user-header {
+    align-items: flex-start;
+  }
+
+  .app-rural-user-title {
+    font-size: 1.12rem;
+  }
+
+  .app-rural-profile-photo {
+    width: 58px;
+    height: 58px;
+    min-width: 58px;
+  }
+
+  .app-rural-side-menu {
+    width: 88%;
+  }
+}
+
+
+.app-rural-logo-header {
+  display: flex;
+  align-items: center;
+}
+
+.app-rural-brand-logo {
+  width: 170px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 50%;
 }

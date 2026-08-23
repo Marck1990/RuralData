@@ -1,147 +1,306 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>RuralData</title>
 
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
 
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="manifest" href="manifest.json" />
 </head>
 
-<body>
-  <main class="container py-4 home-container">
+<body class="app-rural-body">
 
-    <section class="d-flex justify-content-between align-items-start mb-4">
-      <div>
-        <h1 class="h3 fw-bold mb-1">RuralData</h1>
-        <p class="text-muted mb-0">Panel principal</p>
+  <main class="container app-rural-container pb-5">
+
+    <section class="app-rural-user-header">
+
+      <div class="app-rural-user-info">
+        <label for="inputFotoPerfil" class="app-rural-profile-photo">
+          <img id="fotoPerfilUsuario" src="" alt="Foto de perfil" class="d-none" />
+
+          <span id="iconoPerfilUsuario">
+            <i class="bi bi-person"></i>
+          </span>
+        </label>
+
+        <input type="file" id="inputFotoPerfil" accept="image/*" class="d-none" />
+
+        <div class="app-rural-logo-header">
+          <img src="assets/img/SoloLogo.png" alt="Logo RuralData" class="app-rural-brand-logo" />
+          
+        </div>
+        
       </div>
 
-      <button id="btnCerrarSesion" class="btn btn-outline-danger btn-sm">
-        Salir
-      </button>
+      <div class="app-rural-header-actions">
+        <button id="btnAbrirMenuLateral" class="app-rural-menu-button" type="button" aria-label="Abrir menú">
+          <i class="bi bi-list"></i>
+        </button>
+
+        <button id="btnCerrarSesion" class="btn btn-outline-danger btn-sm">
+          Salir
+        </button>
+      </div>
+
     </section>
 
     <section id="usuarioActivo"></section>
 
-    <section class="dashboard-banner mb-4">
-      <img
-        src="assets/img/campo-dashboard.jpg"
-        alt="Campo con animales"
-        class="dashboard-banner-img"
-      />
+    <section class="row g-3 mb-4">
 
-      <div class="dashboard-banner-texto">
-        <p class="fw-bold mb-2">BIENVENIDO</p>
-        <h2 class="fw-bold mb-2">Tu información rural, siempre a mano</h2>
-        <p class="mb-0">
-          Gestioná animales, sanidad, reproducción y trazabilidad desde el celular.
-        </p>
+      <div class="col-6">
+        <div class="app-rural-stat-card">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-diagram-3"></i>
+          </div>
+
+          <p>Animales registrados</p>
+          <strong id="totalAnimales">0</strong>
+        </div>
       </div>
+
+      <div class="col-6">
+        <div class="app-rural-stat-card">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-calendar2-event"></i>
+          </div>
+
+          <p>Próximas pariciones</p>
+          <strong id="totalPariciones">0</strong>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="app-rural-stat-card">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-shield-check"></i>
+          </div>
+
+          <p>Controles sanitarios</p>
+          <strong id="totalSanidad">0</strong>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="app-rural-stat-card alerta">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-bell"></i>
+          </div>
+
+          <p>Alertas pendientes</p>
+          <strong id="totalAlertas">0</strong>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="app-rural-section-title">
+      <h2>Accesos rápidos</h2>
+      <p>Herramientas principales de consulta y control.</p>
     </section>
 
     <section class="row g-3 mb-4">
 
-      <div class="col-6">
-        <div class="card stat-card">
-          <div class="card-body">
-            <div class="stat-icon"></div>
-            <p class="mb-1">Animales</p>
-            <div id="totalAnimales" class="stat-number">0</div>
+      <div class="col-6 col-md-3" data-roles="propietario,trabajador,veterinario">
+        <a href="pages/buscar-animal.html" class="app-rural-action-card">
+          <div>
+            <span>
+              <i class="bi bi-search"></i>
+            </span>
+
+            <h3>Buscar caravana / RFID</h3>
+            <p>Consultar animales por identificación.</p>
           </div>
-        </div>
+        </a>
       </div>
 
-      <div class="col-6">
-        <div class="card stat-card">
-          <div class="card-body">
-            <div class="stat-icon"></div>
-            <p class="mb-1">Controles</p>
-            <div id="totalSanidad" class="stat-number">0</div>
+      <div class="col-6 col-md-3" data-roles="propietario,trabajador,veterinario">
+        <a href="pages/sanidad.html" class="app-rural-action-card">
+          <div>
+            <span>
+              <i class="bi bi-heart-pulse"></i>
+            </span>
+
+            <h3>Sanidad</h3>
+            <p>Registrar controles, productos y fechas.</p>
           </div>
-        </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-3" data-roles="propietario,trabajador,veterinario">
+        <a href="pages/reproduccion.html" class="app-rural-action-card">
+          <div>
+            <span>
+              <i class="bi bi-clipboard2-pulse"></i>
+            </span>
+
+            <h3>Reproducción / Pariciones</h3>
+            <p>Seguimiento reproductivo del rodeo.</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-6 col-md-3" data-roles="propietario,trabajador,veterinario">
+        <a href="pages/listar-controles.html" class="app-rural-action-card">
+          <div>
+            <span>
+              <i class="bi bi-clipboard-check"></i>
+            </span>
+
+            <h3>Ver controles</h3>
+            <p>Historial de controles sanitarios.</p>
+          </div>
+        </a>
       </div>
 
     </section>
 
-    <section class="row g-3">
+    <section class="app-rural-section-title">
+      <h2>Resumen visual</h2>
+      <p>Gráficas simples adaptadas al celular.</p>
+    </section>
 
-      <div class="col-12 col-md-6" data-roles="propietario,trabajador">
-        <a href="pages/registrar-animal.html" class="card action-card">
-          <div class="card-body">
-           
-            <h2 class="h5 fw-bold">Registrar animal</h2>
-          </div>
-        </a>
+    <section class="row g-3 mb-5">
+
+      <div class="col-12">
+        <div class="app-rural-chart-card">
+          <h3>Animales por categoría</h3>
+          <div id="graficaCategorias" class="app-rural-chart"></div>
+        </div>
       </div>
 
-      <div class="col-12 col-md-6" data-roles="propietario,trabajador,veterinario">
-        <a href="pages/buscar-animal.html" class="card action-card">
-          <div class="card-body">
-            
-            <h2 class="h5 fw-bold">Buscar caravana / RFID</h2>
-          </div>
-        </a>
+      <div class="col-12">
+        <div class="app-rural-chart-card">
+          <h3>Controles por tipo</h3>
+          <div id="graficaControles" class="app-rural-chart"></div>
+        </div>
       </div>
 
-      <div class="col-12 col-md-6" data-roles="propietario,trabajador,veterinario">
-        <a href="pages/sanidad.html" class="card action-card">
-          <div class="card-body">
-           
-            <h2 class="h5 fw-bold">Sanidad</h2>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-12 col-md-6" data-roles="propietario,trabajador,veterinario">
-        <a href="pages/reproduccion.html" class="card action-card">
-          <div class="card-body">
-          
-            <h2 class="h5 fw-bold">Reproducción / Pariciones</h2>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-12 col-md-6" data-roles="propietario,trabajador,veterinario">
-        <a href="pages/listar-animales.html" class="card action-card">
-          <div class="card-body">
-           
-            <h2 class="h5 fw-bold">Ver animales</h2>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-12 col-md-6" data-roles="propietario,trabajador,veterinario">
-        <a href="pages/listar-controles.html" class="card action-card">
-          <div class="card-body">
-           
-            <h2 class="h5 fw-bold">Ver controles</h2>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-12" data-roles="propietario,trabajador,veterinario">
-        <a href="pages/resumen.html" class="card action-card">
-          <div class="card-body">
-            
-            <h2 class="h5 fw-bold">Resumen general</h2>
-          </div>
-        </a>
+      <div class="col-12">
+        <div class="app-rural-chart-card">
+          <h3>Estados reproductivos</h3>
+          <div id="graficaReproduccion" class="app-rural-chart"></div>
+        </div>
       </div>
 
     </section>
 
   </main>
 
+  <div id="overlayMenuLateral" class="app-rural-menu-overlay"></div>
+
+  <aside id="menuLateralRural" class="app-rural-side-menu">
+
+    <section class="app-rural-side-header">
+      <div>
+        <p>Menú RuralData</p>
+        <h2>Acciones rápidas</h2>
+      </div>
+
+      <button id="btnCerrarMenuLateral" class="app-rural-side-close" type="button" aria-label="Cerrar menú">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </section>
+
+    <nav class="app-rural-side-nav">
+
+      <a href="pages/registrar-animal.html" class="app-rural-side-item principal" data-roles="propietario,trabajador">
+        <i class="bi bi-plus-square"></i>
+
+        <div>
+          <strong>Registrar animal</strong>
+          <span>Agregar animal al sistema</span>
+        </div>
+      </a>
+
+      <a href="pages/listar-animales.html" class="app-rural-side-item" data-roles="propietario,trabajador,veterinario">
+        <i class="bi bi-list-task"></i>
+
+        <div>
+          <strong>Ver animales</strong>
+          <span>Listado general del rodeo</span>
+        </div>
+      </a>
+
+      <button type="button" class="app-rural-side-item" disabled>
+        <i class="bi bi-arrow-left-right"></i>
+
+        <div>
+          <strong>TXT / SNIG</strong>
+          <span>Compatibilidad futura</span>
+        </div>
+      </button>
+
+      <button type="button" class="app-rural-side-item" disabled>
+        <i class="bi bi-file-earmark-arrow-up"></i>
+
+        <div>
+          <strong>Subir TXT</strong>
+          <span>Cargar archivo de caravaneo</span>
+        </div>
+      </button>
+
+      <button type="button" class="app-rural-side-item" disabled>
+        <i class="bi bi-file-earmark-arrow-down"></i>
+
+        <div>
+          <strong>Descargar TXT</strong>
+          <span>Exportar datos cargados</span>
+        </div>
+      </button>
+
+      <label for="inputFotoPerfil" class="app-rural-side-item">
+        <i class="bi bi-person-circle"></i>
+
+        <div>
+          <strong>Cargar perfil</strong>
+          <span>Actualizar foto de usuario</span>
+        </div>
+      </label>
+
+    </nav>
+
+  </aside>
+
+  <nav class="app-rural-bottom-nav">
+    <a href="index.html" class="active">
+      <span>
+        <i class="bi bi-house-door"></i>
+      </span>
+      Inicio
+    </a>
+
+    <a href="pages/listar-animales.html">
+      <span>
+        <i class="bi bi-grid"></i>
+      </span>
+      Animales
+    </a>
+
+    <a href="pages/registrar-animal.html" class="app-rural-add-button" data-roles="propietario,trabajador">
+      <span>
+        <i class="bi bi-plus-lg"></i>
+      </span>
+    </a>
+
+    <a href="pages/resumen.html">
+      <span>
+        <i class="bi bi-bar-chart-line"></i>
+      </span>
+      Resumen
+    </a>
+  </nav>
+
   <script src="js/storage.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/app.js"></script>
 </body>
+
 </html>

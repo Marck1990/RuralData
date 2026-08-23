@@ -1,4 +1,4 @@
-const CACHE_NAME = "ruraldata-cache-v12";
+const CACHE_NAME = "ruraldata-cache-v14";
 
 const ARCHIVOS_CACHE = [
   "index.html",
@@ -21,6 +21,8 @@ const ARCHIVOS_CACHE = [
   "pages/reproduccion.html",
   "pages/resumen.html",
   "pages/listar-animales.html",
+  "assets/img/logo-ruraldata.png",
+   "assets/img/SoloLogo.png",
   "pages/listar-controles.html"
 ];
 
