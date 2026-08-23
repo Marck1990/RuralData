@@ -1,11 +1,14 @@
-const CACHE_NAME = "ruraldata-cache-v14";
+const CACHE_NAME = "ruraldata-cache-v15";
 
 const ARCHIVOS_CACHE = [
+  "./",
   "index.html",
   "login.html",
   "registro-usuario.html",
   "manifest.json",
+
   "css/styles.css",
+
   "js/app.js",
   "js/storage.js",
   "js/auth.js",
@@ -15,15 +18,17 @@ const ARCHIVOS_CACHE = [
   "js/resumen.js",
   "js/listados.js",
   "js/reproduccion.js",
+
   "pages/registrar-animal.html",
   "pages/buscar-animal.html",
   "pages/sanidad.html",
   "pages/reproduccion.html",
   "pages/resumen.html",
   "pages/listar-animales.html",
+  "pages/listar-controles.html",
+
   "assets/img/logo-ruraldata.png",
-   "assets/img/SoloLogo.png",
-  "pages/listar-controles.html"
+  "assets/img/SoloLogo.png"
 ];
 
 self.addEventListener("install", event => {
@@ -31,7 +36,19 @@ self.addEventListener("install", event => {
 
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ARCHIVOS_CACHE);
+      return Promise.all(
+        ARCHIVOS_CACHE.map(archivo => {
+          return fetch(archivo, { cache: "reload" })
+            .then(respuesta => {
+              if (respuesta.ok) {
+                return cache.put(archivo, respuesta);
+              }
+            })
+            .catch(error => {
+              console.log("No se pudo guardar en caché:", archivo, error);
+            });
+        })
+      );
     })
   );
 });
@@ -53,9 +70,75 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
+  if (event.request.method !== "GET") {
+    return;
+  }
+
+  const url = new URL(event.request.url);
+
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then(respuesta => {
+          const copiaRespuesta = respuesta.clone();
+
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, copiaRespuesta);
+            cache.put("index.html", respuesta.clone());
+          });
+
+          return respuesta;
+        })
+        .catch(() => {
+          return caches.match(event.request)
+            .then(respuestaCache => {
+              return respuestaCache || caches.match("index.html");
+            });
+        })
+    );
+
+    return;
+  }
+
+  if (
+    url.pathname.endsWith(".css") ||
+    url.pathname.endsWith(".js") ||
+    url.pathname.endsWith(".html")
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then(respuesta => {
+          const copiaRespuesta = respuesta.clone();
+
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, copiaRespuesta);
+          });
+
+          return respuesta;
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
+
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then(respuesta => {
-      return respuesta || fetch(event.request);
+    caches.match(event.request).then(respuestaCache => {
+      return respuestaCache || fetch(event.request).then(respuesta => {
+        const copiaRespuesta = respuesta.clone();
+
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, copiaRespuesta);
+        });
+
+        return respuesta;
+      });
     })
   );
 });

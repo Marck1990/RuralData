@@ -1,9 +1,13 @@
 // Carga los datos principales del dashboard de RuralData.
 
+let datosRotativosCabecera = [];
+let indiceDatoRotativo = 0;
+
 document.addEventListener("DOMContentLoaded", function () {
   actualizarDashboard();
   inicializarFotoPerfil();
   inicializarMenuLateral();
+  inicializarDatosVivosCabecera();
 });
 
 // Actualiza los números, bienvenida y gráficas del inicio.
@@ -41,6 +45,125 @@ function actualizarTexto(idElemento, valor) {
   if (!elemento) return;
 
   elemento.textContent = valor;
+}
+
+// Inicializa día, hora, luna y dato rotativo en celular.
+function inicializarDatosVivosCabecera() {
+  actualizarDatosVivosCabecera();
+  actualizarDatoRotativoMobile();
+
+  setInterval(function () {
+    actualizarDatosVivosCabecera();
+  }, 1000);
+
+  setInterval(function () {
+    actualizarDatoRotativoMobile();
+  }, 3000);
+}
+
+// Actualiza los datos visibles de la cabecera.
+function actualizarDatosVivosCabecera() {
+  const ahora = new Date();
+
+  const diaTexto = obtenerDiaTexto(ahora);
+  const horaTexto = obtenerHoraTexto(ahora);
+  const lunaTexto = obtenerFaseLunar(ahora);
+
+  actualizarTexto("infoDia", diaTexto);
+  actualizarTexto("infoHora", horaTexto);
+  actualizarTexto("infoLuna", lunaTexto);
+
+  datosRotativosCabecera = [
+    "Día · " + diaTexto,
+    "Hora · " + horaTexto,
+    "Luna · " + lunaTexto
+  ];
+}
+
+// Actualiza el dato rotativo solo para celular.
+function actualizarDatoRotativoMobile() {
+  const contenedor = document.getElementById("infoRotativaMobile");
+
+  if (!contenedor || datosRotativosCabecera.length === 0) return;
+
+  contenedor.classList.remove("animar");
+
+  void contenedor.offsetWidth;
+
+  contenedor.textContent = datosRotativosCabecera[indiceDatoRotativo];
+  contenedor.classList.add("animar");
+
+  indiceDatoRotativo++;
+
+  if (indiceDatoRotativo >= datosRotativosCabecera.length) {
+    indiceDatoRotativo = 0;
+  }
+}
+
+// Devuelve el día actual en formato legible.
+function obtenerDiaTexto(fecha) {
+  const opciones = {
+    weekday: "long",
+    day: "2-digit",
+    month: "long"
+  };
+
+  let texto = fecha.toLocaleDateString("es-UY", opciones);
+
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+// Devuelve la hora actual.
+function obtenerHoraTexto(fecha) {
+  return fecha.toLocaleTimeString("es-UY", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+// Calcula una fase lunar aproximada.
+function obtenerFaseLunar(fecha) {
+  const lunaNuevaReferencia = new Date("2000-01-06T18:14:00Z");
+  const cicloLunar = 29.53058867;
+
+  const diferenciaTiempo = fecha.getTime() - lunaNuevaReferencia.getTime();
+  const diasPasados = diferenciaTiempo / (1000 * 60 * 60 * 24);
+
+  let fase = (diasPasados % cicloLunar) / cicloLunar;
+
+  if (fase < 0) {
+    fase = fase + 1;
+  }
+
+  if (fase < 0.03 || fase > 0.97) {
+    return "Luna nueva";
+  }
+
+  if (fase < 0.22) {
+    return "Luna creciente";
+  }
+
+  if (fase < 0.28) {
+    return "Cuarto creciente";
+  }
+
+  if (fase < 0.47) {
+    return "Gibosa creciente";
+  }
+
+  if (fase < 0.53) {
+    return "Luna llena";
+  }
+
+  if (fase < 0.72) {
+    return "Gibosa menguante";
+  }
+
+  if (fase < 0.78) {
+    return "Cuarto menguante";
+  }
+
+  return "Luna menguante";
 }
 
 // Inicializa la carga de foto de perfil.

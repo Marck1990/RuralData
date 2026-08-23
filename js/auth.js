@@ -160,9 +160,54 @@ function mostrarUsuarioActivo() {
   if (!sesion || !contenedor) return;
 
   contenedor.innerHTML = `
-    <div class="alert alert-success py-2 mb-3">
-      <strong>${sesion.nombre}</strong><br>
-      Rol: ${formatearRol(sesion.rol)}
+    <div class="app-rural-user-card">
+
+      <div class="app-rural-user-card-info">
+        <strong>${sesion.nombre}</strong>
+        <span>Rol: ${formatearRol(sesion.rol)}</span>
+      </div>
+
+      <div class="app-rural-user-card-live">
+
+        <div class="app-rural-live-desktop">
+
+          <article class="app-rural-live-card">
+            <i class="bi bi-calendar3"></i>
+
+            <div>
+              <span>Día</span>
+              <strong id="infoDia">Cargando...</strong>
+            </div>
+          </article>
+
+          <article class="app-rural-live-card">
+            <i class="bi bi-clock"></i>
+
+            <div>
+              <span>Hora</span>
+              <strong id="infoHora">--:--</strong>
+            </div>
+          </article>
+
+          <article class="app-rural-live-card">
+            <i class="bi bi-moon-stars"></i>
+
+            <div>
+              <span>Luna</span>
+              <strong id="infoLuna">Calculando...</strong>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="app-rural-live-mobile">
+          <div id="infoRotativaMobile" class="app-rural-live-mobile-card">
+            Cargando datos...
+          </div>
+        </div>
+
+      </div>
+
     </div>
   `;
 }

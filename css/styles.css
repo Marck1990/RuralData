@@ -21,6 +21,11 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 body {
   background-color: var(--crema);
   color: var(--texto);
@@ -150,15 +155,6 @@ label {
   color: var(--texto);
 }
 
-/* Usuario activo */
-
-#usuarioActivo .alert {
-  background-color: #d7eadc;
-  border: 1px solid #a8cdb3;
-  color: var(--texto);
-  border-radius: 16px;
-}
-
 /* Login profesional RuralData */
 
 .login-rural-body {
@@ -264,7 +260,7 @@ label {
   color: #062b25;
 }
 
-/* Dashboard nuevo mobile first */
+/* Dashboard mobile first */
 
 .app-rural-body {
   background-color: var(--crema);
@@ -278,32 +274,92 @@ label {
   padding: 22px 18px 110px 18px !important;
 }
 
-/* Cabecera con usuario */
+/* Cabecera principal fija */
 
-.app-rural-user-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 22px;
+.app-rural-top-panel {
+  position: sticky;
+  top: 0;
+  z-index: 70;
+
+  width: 100vw;
+  margin: -22px 0 22px calc(50% - 50vw);
+  padding: 18px max(18px, calc((100vw - 430px) / 2 + 18px)) 16px
+    max(18px, calc((100vw - 430px) / 2 + 18px));
+
+  background:
+    linear-gradient(135deg, #08251c, #123f2b 55%, #061812);
+
+  border-radius: 0 0 28px 28px;
+  box-shadow: 0 14px 34px rgba(18, 63, 43, 0.28);
 }
 
-.app-rural-user-info {
+.app-rural-top-panel > .app-rural-user-header,
+.app-rural-top-panel > #usuarioActivo {
+  width: 100%;
+  max-width: 430px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.app-rural-user-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.app-rural-header-actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
+}
+
+.app-rural-menu-button {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  box-shadow: none;
+}
+
+#btnCerrarSesion {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.app-rural-logo-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   min-width: 0;
 }
 
+.app-rural-brand-logo {
+  width: 140px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 18px;
+}
+
 .app-rural-profile-photo {
-  width: 62px;
-  height: 62px;
-  min-width: 62px;
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
   border-radius: 50%;
   background:
     linear-gradient(135deg, #ffffff, #eaf4ec);
-  border: 2px solid #bbd9c2;
-  box-shadow: 0 10px 24px rgba(18, 63, 43, 0.14);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -319,42 +375,128 @@ label {
 
 .app-rural-profile-photo span {
   color: var(--verde-principal);
-  font-size: 1.65rem;
+  font-size: 1.55rem;
 }
 
-.app-rural-user-title {
-  color: var(--texto);
-  font-size: 1.25rem;
-  line-height: 1.15;
-  font-weight: 900;
-}
+/* Card del usuario con datos vivos */
 
-.app-rural-bienvenida {
-  color: var(--verde-principal);
-  font-size: 0.78rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
+.app-rural-user-card {
+  background-color: #dcefdc;
+  border: 1px solid #b8d4bf;
+  border-radius: 24px;
+  padding: 16px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
 
-.app-rural-header-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
-  gap: 8px;
+  gap: 14px;
 }
 
-.app-rural-menu-button {
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
-  border: 1px solid var(--borde);
-  background-color: #ffffff;
-  color: var(--verde-principal);
+.app-rural-user-card-info {
+  min-width: 0;
+}
+
+.app-rural-user-card-info strong {
+  display: block;
+  color: var(--texto);
+  font-size: 1.08rem;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+
+.app-rural-user-card-info span {
+  display: block;
+  color: var(--texto);
+  font-size: 0.95rem;
+}
+
+.app-rural-user-card-live {
+  min-width: 0;
+}
+
+.app-rural-live-desktop {
+  display: none;
+}
+
+.app-rural-live-mobile {
+  display: block;
+}
+
+.app-rural-live-mobile-card {
+  min-height: 54px;
+  background-color: rgba(31, 107, 67, 0.1);
+  border: 1px solid rgba(31, 107, 67, 0.16);
+  border-radius: 18px;
+  color: var(--texto);
+  font-weight: 800;
+  padding: 13px 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.35rem;
-  box-shadow: 0 8px 18px rgba(18, 63, 43, 0.08);
+  text-align: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.app-rural-live-mobile-card.animar {
+  animation: ruralDatoFlota 0.45s ease;
+}
+
+@keyframes ruralDatoFlota {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-rural-live-card {
+  background-color: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(31, 107, 67, 0.14);
+  border-radius: 18px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  align-items: center;
+  gap: 10px;
+  color: var(--texto);
+  min-width: 0;
+}
+
+.app-rural-live-card i {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background-color: var(--verde-suave);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--verde-principal);
+  font-size: 1rem;
+}
+
+.app-rural-live-card span {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--verde-principal);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+
+.app-rural-live-card strong {
+  display: block;
+  color: var(--texto);
+  font-size: 0.86rem;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Cards de números */
@@ -690,7 +832,7 @@ button.app-rural-side-item {
   grid-template-columns: 1fr 1fr 76px 1fr;
   align-items: center;
   padding: 8px 12px;
-  z-index: 20;
+  z-index: 75;
 }
 
 .app-rural-bottom-nav a {
@@ -733,7 +875,7 @@ button.app-rural-side-item {
   color: white;
 }
 
-/* Banner dashboard anterior */
+/* Estilos anteriores que todavía pueden usar otras páginas */
 
 .dashboard-banner {
   position: relative;
@@ -781,8 +923,6 @@ button.app-rural-side-item {
   font-size: 1.7rem;
   line-height: 1.15;
 }
-
-/* Dashboard anterior */
 
 .dashboard-hero {
   background:
@@ -847,8 +987,6 @@ button.app-rural-side-item {
   color: #ad2f2a;
 }
 
-/* Listados */
-
 .list-card-title {
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -882,18 +1020,40 @@ button.app-rural-side-item {
     padding: 28px 24px 120px 24px !important;
   }
 
-  .app-rural-user-header {
-    margin-bottom: 28px;
+  .app-rural-top-panel {
+    margin: -28px 0 28px calc(50% - 50vw);
+    padding: 22px max(24px, calc((100vw - 760px) / 2 + 24px)) 18px
+      max(24px, calc((100vw - 760px) / 2 + 24px));
+  }
+
+  .app-rural-top-panel > .app-rural-user-header,
+  .app-rural-top-panel > #usuarioActivo {
+    max-width: 760px;
+  }
+
+  .app-rural-user-card {
+    grid-template-columns: 230px 1fr;
+    padding: 18px;
+  }
+
+  .app-rural-live-desktop {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .app-rural-live-mobile {
+    display: none;
+  }
+
+  .app-rural-brand-logo {
+    width: 180px;
   }
 
   .app-rural-profile-photo {
-    width: 72px;
-    height: 72px;
-    min-width: 72px;
-  }
-
-  .app-rural-user-title {
-    font-size: 1.65rem;
+    width: 68px;
+    height: 68px;
+    min-width: 68px;
   }
 
   .app-rural-container .col-6:has(.app-rural-stat-card) {
@@ -925,7 +1085,7 @@ button.app-rural-side-item {
 
 @media (min-width: 1100px) {
   body {
-    padding-left: 108px;
+    padding-left: 0;
     padding-top: 0;
   }
 
@@ -939,18 +1099,47 @@ button.app-rural-side-item {
     padding: 38px 32px 60px 32px !important;
   }
 
-  .app-rural-user-header {
-    margin-bottom: 34px;
+  .app-rural-top-panel {
+    margin: -38px 0 34px calc(50% - 50vw);
+    padding: 26px max(32px, calc((100vw - 1120px) / 2 + 32px)) 22px
+      max(32px, calc((100vw - 1120px) / 2 + 32px));
+    border-radius: 0 0 34px 34px;
   }
 
-  .app-rural-user-title {
-    font-size: 2rem;
+  .app-rural-top-panel > .app-rural-user-header,
+  .app-rural-top-panel > #usuarioActivo {
+    max-width: 1120px;
+  }
+
+  .app-rural-brand-logo {
+    width: 210px;
   }
 
   .app-rural-profile-photo {
-    width: 82px;
-    height: 82px;
-    min-width: 82px;
+    width: 76px;
+    height: 76px;
+    min-width: 76px;
+  }
+
+  .app-rural-user-card {
+    grid-template-columns: 280px 1fr;
+    padding: 20px;
+  }
+
+  .app-rural-user-card-info strong {
+    font-size: 1.25rem;
+  }
+
+  .app-rural-user-card-info span {
+    font-size: 1rem;
+  }
+
+  .app-rural-live-card {
+    padding: 14px;
+  }
+
+  .app-rural-live-card strong {
+    font-size: 0.95rem;
   }
 
   .app-rural-container .col-6:has(.app-rural-stat-card) {
@@ -1017,36 +1206,62 @@ button.app-rural-side-item {
     padding-right: 16px !important;
   }
 
-  .app-rural-user-header {
-    align-items: flex-start;
+  .app-rural-top-panel {
+    margin: -22px 0 22px calc(50% - 50vw);
+    padding: 16px max(16px, calc((100vw - 430px) / 2 + 16px)) 14px
+      max(16px, calc((100vw - 430px) / 2 + 16px));
   }
 
-  .app-rural-user-title {
-    font-size: 1.12rem;
+  .app-rural-user-header {
+    gap: 8px;
+  }
+
+  .app-rural-header-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .app-rural-menu-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  #btnCerrarSesion {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .app-rural-brand-logo {
+    width: 118px;
   }
 
   .app-rural-profile-photo {
-    width: 58px;
-    height: 58px;
-    min-width: 58px;
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+  }
+
+  .app-rural-user-card {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .app-rural-user-card-info strong {
+    font-size: 1rem;
+  }
+
+  .app-rural-user-card-info span {
+    font-size: 0.9rem;
+  }
+
+  .app-rural-live-mobile-card {
+    min-height: 50px;
+    padding: 12px;
+    font-size: 0.86rem;
   }
 
   .app-rural-side-menu {
     width: 88%;
   }
-}
-
-
-.app-rural-logo-header {
-  display: flex;
-  align-items: center;
-}
-
-.app-rural-brand-logo {
-  width: 170px;
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-  display: block;
-  border-radius: 50%;
 }
