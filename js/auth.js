@@ -28,7 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function inicializarUsuarios() {
   const usuarios = obtenerUsuarios();
 
-  if (usuarios.length > 0) return;
+  if (usuarios.length > 0) {
+    normalizarUsuariosExistentes(usuarios);
+    return;
+  }
 
   const usuariosIniciales = [
     {
@@ -36,25 +39,44 @@ function inicializarUsuarios() {
       nombre: "Propietario Demo",
       usuario: "propietario",
       password: "1234",
-      rol: "propietario"
+      rol: "propietario",
+      establecimientoId: crypto.randomUUID()
     },
     {
       id: crypto.randomUUID(),
       nombre: "Trabajador Demo",
       usuario: "trabajador",
       password: "1234",
-      rol: "trabajador"
+      rol: "trabajador",
+      establecimientoId: crypto.randomUUID()
     },
     {
       id: crypto.randomUUID(),
       nombre: "Veterinario Demo",
       usuario: "veterinario",
       password: "1234",
-      rol: "veterinario"
+      rol: "veterinario",
+      establecimientoId: crypto.randomUUID()
     }
   ];
 
   guardarUsuarios(usuariosIniciales);
+}
+
+// Agrega establecimientoId a usuarios viejos que no lo tenían.
+function normalizarUsuariosExistentes(usuarios) {
+  let huboCambios = false;
+
+  for (let i = 0; i < usuarios.length; i++) {
+    if (!usuarios[i].establecimientoId) {
+      usuarios[i].establecimientoId = "establecimiento_usuario_" + usuarios[i].id;
+      huboCambios = true;
+    }
+  }
+
+  if (huboCambios) {
+    guardarUsuarios(usuarios);
+  }
 }
 
 function iniciarSesion(event) {
@@ -80,11 +102,17 @@ function iniciarSesion(event) {
     return;
   }
 
+  if (!usuarioEncontrado.establecimientoId) {
+    usuarioEncontrado.establecimientoId = "establecimiento_usuario_" + usuarioEncontrado.id;
+    guardarUsuarios(usuarios);
+  }
+
   guardarSesion({
     id: usuarioEncontrado.id,
     nombre: usuarioEncontrado.nombre,
     usuario: usuarioEncontrado.usuario,
-    rol: usuarioEncontrado.rol
+    rol: usuarioEncontrado.rol,
+    establecimientoId: usuarioEncontrado.establecimientoId
   });
 
   window.location.href = "index.html";
@@ -112,12 +140,15 @@ function registrarUsuario(event) {
     return;
   }
 
+  const nuevoUsuarioId = crypto.randomUUID();
+
   const nuevoUsuario = {
-    id: crypto.randomUUID(),
+    id: nuevoUsuarioId,
     nombre,
     usuario,
     password,
-    rol
+    rol,
+    establecimientoId: "establecimiento_usuario_" + nuevoUsuarioId
   };
 
   usuarios.push(nuevoUsuario);
