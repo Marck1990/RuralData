@@ -328,8 +328,7 @@ function inicializarGestosMenuLateral() {
 
 // Cuenta próximas pariciones según fecha estimada.
 function calcularProximasPariciones(registros) {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+  const hoy = obtenerFechaSinHoraDashboard(new Date());
 
   let cantidad = 0;
 
@@ -338,8 +337,7 @@ function calcularProximasPariciones(registros) {
 
     if (!registro.fechaEstimadaParto) continue;
 
-    const fechaParto = new Date(registro.fechaEstimadaParto);
-    fechaParto.setHours(0, 0, 0, 0);
+    const fechaParto = obtenerFechaDesdeISODashboard(registro.fechaEstimadaParto);
 
     if (fechaParto >= hoy) {
       cantidad++;
@@ -349,33 +347,100 @@ function calcularProximasPariciones(registros) {
   return cantidad;
 }
 
-// Cuenta alertas por sanidad vencida o pariciones cercanas.
+// Cuenta alertas por carencias vigentes y pariciones cercanas.
 function calcularAlertasPendientes(sanidad, reproduccion) {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+  const alertasCarencia = calcularAnimalesEnCarencia(sanidad);
+  const alertasPariciones = calcularAlertasPariciones(reproduccion);
 
-  let alertas = 0;
+  return alertasCarencia + alertasPariciones;
+}
+
+// Cuenta animales únicos que siguen en carencia sanitaria.
+function calcularAnimalesEnCarencia(sanidad) {
+  const animalesEnCarencia = {};
 
   for (let i = 0; i < sanidad.length; i++) {
-    const control = sanidad[i];
+    const registro = sanidad[i];
 
-    if (!control.fechaProxima) continue;
+    if (!registro.fechaLiberacion) continue;
 
-    const fechaProxima = new Date(control.fechaProxima);
-    fechaProxima.setHours(0, 0, 0, 0);
+    const estado = obtenerEstadoCarenciaDashboard(registro.fechaLiberacion);
 
-    if (fechaProxima <= hoy) {
-      alertas++;
-    }
+    if (estado !== "En carencia") continue;
+
+    const claveAnimal = obtenerClaveAnimalDashboard(registro);
+
+    animalesEnCarencia[claveAnimal] = true;
   }
+
+  return Object.keys(animalesEnCarencia).length;
+}
+
+// Devuelve una clave única para contar el animal.
+function obtenerClaveAnimalDashboard(registro) {
+  if (registro.animalId && registro.animalId.trim() !== "") {
+    return registro.animalId;
+  }
+
+  if (registro.caravanaVisual && registro.caravanaVisual.trim() !== "") {
+    return registro.caravanaVisual;
+  }
+
+  if (registro.codigoRFID && registro.codigoRFID.trim() !== "") {
+    return registro.codigoRFID;
+  }
+
+  if (registro.identificacion && registro.identificacion.trim() !== "") {
+    return registro.identificacion;
+  }
+
+  return registro.id;
+}
+
+// Devuelve En carencia o Liberado para el dashboard.
+function obtenerEstadoCarenciaDashboard(fechaLiberacion) {
+  const hoy = obtenerFechaSinHoraDashboard(new Date());
+  const fecha = obtenerFechaDesdeISODashboard(fechaLiberacion);
+
+  if (fecha > hoy) {
+    return "En carencia";
+  }
+
+  return "Liberado";
+}
+
+// Convierte yyyy-mm-dd a Date local sin problemas de zona horaria.
+function obtenerFechaDesdeISODashboard(fechaISO) {
+  const partes = fechaISO.split("-");
+
+  const anio = Number(partes[0]);
+  const mes = Number(partes[1]) - 1;
+  const dia = Number(partes[2]);
+
+  return new Date(anio, mes, dia);
+}
+
+// Devuelve una fecha sin hora.
+function obtenerFechaSinHoraDashboard(fecha) {
+  return new Date(
+    fecha.getFullYear(),
+    fecha.getMonth(),
+    fecha.getDate()
+  );
+}
+
+// Cuenta pariciones cercanas o vencidas.
+function calcularAlertasPariciones(reproduccion) {
+  const hoy = obtenerFechaSinHoraDashboard(new Date());
+
+  let alertas = 0;
 
   for (let i = 0; i < reproduccion.length; i++) {
     const registro = reproduccion[i];
 
     if (!registro.fechaEstimadaParto) continue;
 
-    const fechaParto = new Date(registro.fechaEstimadaParto);
-    fechaParto.setHours(0, 0, 0, 0);
+    const fechaParto = obtenerFechaDesdeISODashboard(registro.fechaEstimadaParto);
 
     const diferenciaTiempo = fechaParto.getTime() - hoy.getTime();
     const diasRestantes = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24));

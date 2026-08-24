@@ -1,4 +1,4 @@
-const CACHE_NAME = "ruraldata-cache-v16";
+const CACHE_NAME = "ruraldata-cache-v18";
 
 const ARCHIVOS_CACHE = [
   "./",

@@ -11,72 +11,304 @@
     rel="stylesheet"
   />
 
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet"
+  />
+
   <link rel="stylesheet" href="../css/styles.css" />
 </head>
 
 <body>
+
   <main class="container py-4">
 
-    <a href="../index.html" class="btn btn-outline-secondary mb-3">
-      Volver
-    </a>
+    <section class="mb-4">
+      <a href="../index.html" class="btn btn-outline-success mb-3">
+        <i class="bi bi-arrow-left"></i>
+        Volver al inicio
+      </a>
+
+      <div class="card">
+        <div class="card-body">
+          <span class="badge badge-soft-green mb-3">
+            Sanidad animal
+          </span>
+
+          <h1 class="h3 mb-2">
+            Registrar control sanitario
+          </h1>
+
+          <p class="mb-0">
+            Registrá vacunas, controles, tratamientos comunes o tratamientos con
+            carencia sanitaria.
+          </p>
+        </div>
+      </div>
+    </section>
 
     <section id="usuarioActivo"></section>
 
-    <h1 class="h3 fw-bold mb-3">Registro sanitario</h1>
+    <section class="card mb-4">
+      <div class="card-body">
 
-    <form id="formSanidad" class="d-grid gap-3">
+        <div class="sanidad-tabs mb-4">
+          <button
+            type="button"
+            id="btnTabRegistrarSanidad"
+            class="sanidad-tab activo"
+          >
+            <i class="bi bi-plus-circle"></i>
+            Registrar control
+          </button>
 
-      <input
-        type="text"
-        id="identificadorAnimal"
-        class="form-control"
-        placeholder="Caravana o RFID del animal"
-        required
-      />
+          <button
+            type="button"
+            id="btnTabCarenciasSanidad"
+            class="sanidad-tab"
+          >
+            <i class="bi bi-exclamation-triangle"></i>
+            Animales en carencia
+          </button>
+        </div>
 
-      <select id="tipoControl" class="form-select" required>
-        <option value="">Tipo de control</option>
-        <option value="Vacuna">Vacuna</option>
-        <option value="Tratamiento">Tratamiento</option>
-        <option value="Desparasitación">Desparasitación</option>
-      </select>
+        <section id="tabRegistrarSanidad">
 
-      <input
-        type="text"
-        id="producto"
-        class="form-control"
-        placeholder="Producto aplicado"
-        required
-      />
+          <form id="formSanidad" class="d-grid gap-3">
 
-      <label>Fecha de aplicación</label>
-      <input
-        type="date"
-        id="fechaAplicacion"
-        class="form-control"
-        required
-      />
+            <div>
+              <label for="identificacionAnimal" class="form-label">
+                Caravana visual o RFID
+              </label>
 
-      <label>Próxima fecha</label>
-      <input
-        type="date"
-        id="fechaProxima"
-        class="form-control"
-      />
+              <input
+                type="text"
+                id="identificacionAnimal"
+                class="form-control"
+                placeholder="Ej: 858000123456 o RFID"
+                required
+              />
 
-      <textarea
-        id="observacionesSanidad"
-        class="form-control"
-        rows="3"
-        placeholder="Observaciones"
-      ></textarea>
+              <small class="text-muted">
+                La app buscará el animal registrado por caravana visual o código RFID.
+              </small>
+            </div>
 
-      <button type="submit" class="btn btn-success btn-lg">
-        Guardar control
-      </button>
+            <div id="resultadoAnimalSanidad"></div>
 
-    </form>
+            <div>
+              <label for="tipoControl" class="form-label">
+                Tipo de control
+              </label>
+
+              <select id="tipoControl" class="form-select" required>
+                <option value="">Seleccione una opción</option>
+                <option value="Vacunación">Vacunación</option>
+                <option value="Antibiótico">Antibiótico</option>
+                <option value="Antiparasitario">Antiparasitario</option>
+                <option value="Vitaminas / Suplemento">Vitaminas / Suplemento</option>
+                <option value="Tratamiento clínico">Tratamiento clínico</option>
+                <option value="Revisión veterinaria">Revisión veterinaria</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="producto" class="form-label">
+                Producto / control realizado
+              </label>
+
+              <input
+                type="text"
+                id="producto"
+                class="form-control"
+                placeholder="Nombre del producto o control"
+                required
+              />
+            </div>
+
+            <div>
+              <label for="numeroHabilitacion" class="form-label">
+                N° habilitación DGSG / MGAP
+              </label>
+
+              <input
+                type="text"
+                id="numeroHabilitacion"
+                class="form-control"
+                placeholder="Opcional"
+              />
+            </div>
+
+            <div class="row g-3">
+
+              <div class="col-12 col-md-6">
+                <label for="fechaAplicacion" class="form-label">
+                  Fecha de aplicación
+                </label>
+
+                <input
+                  type="date"
+                  id="fechaAplicacion"
+                  class="form-control"
+                  required
+                />
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label for="fechaProxima" class="form-label">
+                  Próxima aplicación / revisión
+                </label>
+
+                <input
+                  type="date"
+                  id="fechaProxima"
+                  class="form-control"
+                />
+
+                <small class="text-muted">
+                  Opcional. Sirve para controles futuros.
+                </small>
+              </div>
+
+            </div>
+
+            <div>
+              <label for="tieneCarencia" class="form-label">
+                ¿Este tratamiento tiene carencia sanitaria?
+              </label>
+
+              <select id="tieneCarencia" class="form-select" required>
+                <option value="no">No, es un control sin carencia</option>
+                <option value="si">Sí, tiene días de carencia</option>
+              </select>
+            </div>
+
+            <section id="bloqueCarencia" class="d-none">
+
+              <div>
+                <label for="diasCarencia" class="form-label">
+                  Días de carencia
+                </label>
+
+                <input
+                  type="number"
+                  id="diasCarencia"
+                  class="form-control"
+                  min="1"
+                  value="1"
+                />
+              </div>
+
+              <div class="card bg-light border-0 mt-3">
+                <div class="card-body">
+                  <p class="mb-1">
+                    Fecha de liberación sanitaria
+                  </p>
+
+                  <h2 id="fechaLiberacionTexto" class="h4 mb-0">
+                    -
+                  </h2>
+
+                  <small class="text-muted">
+                    Se calcula automáticamente según la fecha de aplicación y los días de carencia.
+                  </small>
+                </div>
+              </div>
+
+            </section>
+
+            <div class="row g-3">
+
+              <div class="col-12 col-md-6">
+                <label for="dosis" class="form-label">
+                  Dosis aplicada
+                </label>
+
+                <input
+                  type="text"
+                  id="dosis"
+                  class="form-control"
+                  placeholder="Ej: 5 ml"
+                />
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label for="viaAdministracion" class="form-label">
+                  Vía de administración
+                </label>
+
+                <select id="viaAdministracion" class="form-select">
+                  <option value="">No especificada</option>
+                  <option value="Subcutánea">Subcutánea</option>
+                  <option value="Intramuscular">Intramuscular</option>
+                  <option value="Oral">Oral</option>
+                  <option value="Pour-on">Pour-on</option>
+                  <option value="Tópica">Tópica</option>
+                  <option value="Otra">Otra</option>
+                </select>
+              </div>
+
+            </div>
+
+            <div>
+              <label for="veterinarioFirmante" class="form-label">
+                Veterinario firmante
+              </label>
+
+              <input
+                type="text"
+                id="veterinarioFirmante"
+                class="form-control"
+                placeholder="Opcional"
+              />
+            </div>
+
+            <div>
+              <label for="observaciones" class="form-label">
+                Observaciones
+              </label>
+
+              <textarea
+                id="observaciones"
+                class="form-control"
+                rows="3"
+                placeholder="Detalle del tratamiento, motivo o comentario"
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg">
+              Guardar control sanitario
+            </button>
+
+            <div id="mensajeSanidad"></div>
+
+          </form>
+
+          <section class="mt-4">
+            <h2 class="h5 mb-3">
+              Últimos controles registrados
+            </h2>
+
+            <div id="listaSanidadReciente" class="d-grid gap-3"></div>
+          </section>
+
+        </section>
+
+        <section id="tabCarenciasSanidad" class="d-none">
+
+          <div class="alert alert-warning">
+            <strong>Animales actualmente en carencia</strong><br>
+            Estos animales no deberían considerarse aptos para embarque hasta
+            cumplir su fecha de liberación sanitaria.
+          </div>
+
+          <div id="listaAnimalesEnCarencia" class="d-grid gap-3"></div>
+
+        </section>
+
+      </div>
+    </section>
 
   </main>
 
