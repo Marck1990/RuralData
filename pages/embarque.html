@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Embarque - RuralData</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+
+<body>
+
+  <main class="container py-4">
+
+    <section class="mb-4">
+      <a href="../index.html" class="btn btn-outline-success mb-3">
+        <i class="bi bi-arrow-left"></i>
+        Volver al inicio
+      </a>
+
+      <div class="card">
+        <div class="card-body">
+          <span class="badge badge-soft-yellow mb-3">
+            Control preventivo
+          </span>
+
+          <h1 class="h3 mb-2">
+            Aptitud para embarque
+          </h1>
+
+          <p class="mb-0">
+            RuralData revisa los animales registrados y bloquea preventivamente
+            aquellos que todavía están en carencia sanitaria.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="usuarioActivo"></section>
+
+    <section class="card mb-4">
+      <div class="card-body">
+
+        <span class="badge badge-soft-green mb-3">
+          Lectura rápida
+        </span>
+
+        <h2 class="h5 mb-2">
+          Buscar animal por caravana o RFID
+        </h2>
+
+        <p class="text-muted mb-3">
+          Podés escribir la caravana a mano o leerla con un bastón RFID conectado
+          como teclado. Al detectar el animal, RuralData indica si está apto o no.
+        </p>
+
+        <form id="formBuscarEmbarque" class="d-grid gap-3">
+
+          <div>
+            <label for="identificacionEmbarque" class="form-label">
+              Caravana visual o RFID
+            </label>
+
+            <input
+              type="text"
+              id="identificacionEmbarque"
+              class="form-control form-control-lg"
+              placeholder="Leer RFID o escribir caravana"
+              autocomplete="off"
+              autofocus
+            />
+
+            <small class="text-muted">
+              Ideal para lectura rápida de animales pasando por tubo o manga.
+            </small>
+          </div>
+
+          <button type="submit" class="btn btn-success btn-lg">
+            Verificar aptitud
+          </button>
+
+        </form>
+
+        <div id="resultadoBusquedaEmbarque" class="mt-3"></div>
+
+      </div>
+    </section>
+
+    <section class="row g-3 mb-4">
+
+      <div class="col-6">
+        <div class="app-rural-stat-card">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+
+          <p>Aptos para embarque</p>
+          <strong id="totalAptosEmbarque">0</strong>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="app-rural-stat-card alerta">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-exclamation-triangle"></i>
+          </div>
+
+          <p>No aptos por carencia</p>
+          <strong id="totalNoAptosEmbarque">0</strong>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="card mb-4">
+      <div class="card-body">
+
+        <div class="sanidad-tabs mb-4">
+          <button
+            type="button"
+            id="btnTabNoAptos"
+            class="sanidad-tab activo"
+          >
+            <i class="bi bi-slash-circle"></i>
+            No aptos
+          </button>
+
+          <button
+            type="button"
+            id="btnTabAptos"
+            class="sanidad-tab"
+          >
+            <i class="bi bi-check2-circle"></i>
+            Aptos
+          </button>
+        </div>
+
+        <section id="tabNoAptos">
+
+          <div class="alert alert-warning">
+            <strong>Animales bloqueados preventivamente</strong><br>
+            Estos animales tienen una carencia sanitaria vigente y no deberían
+            incluirse en un embarque hasta cumplir su fecha de liberación.
+          </div>
+
+          <div id="listaNoAptosEmbarque" class="d-grid gap-3"></div>
+
+        </section>
+
+        <section id="tabAptos" class="d-none">
+
+          <div class="alert alert-success">
+            <strong>Animales aptos según registros locales</strong><br>
+            Estos animales no tienen carencia sanitaria vigente registrada en RuralData.
+          </div>
+
+          <div id="listaAptosEmbarque" class="d-grid gap-3"></div>
+
+        </section>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/embarque.js"></script>
+</body>
+</html>
