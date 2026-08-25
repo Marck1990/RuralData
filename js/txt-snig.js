@@ -1,6 +1,7 @@
 // Pre TXT / SNIG de RuralData.
-// Arma una lista preventiva y bloquea animales con carencia sanitaria vigente.
-// Genera líneas con estructura similar al TXT de ejemplo:
+// Arma una lista preventiva, bloquea animales con carencia sanitaria vigente
+// y guarda historial local de TXT generados.
+// Estructura basada en el ejemplo recibido:
 // [|PREFIJO_URUGUAY + CARAVANA_8_DIGITOS|DDMMAAAA|HHMMSS|NRO_GUIA|.|.|.|.|.|.|.|.|.|.|]
 
 let totalBloqueadosTxt = 0;
@@ -14,6 +15,7 @@ function inicializarTxtSnig() {
   const formAgregarAnimalTxt = document.getElementById("formAgregarAnimalTxt");
   const btnLimpiarListaTxt = document.getElementById("btnLimpiarListaTxt");
   const btnDescargarTxt = document.getElementById("btnDescargarTxt");
+  const btnLimpiarHistorialTxt = document.getElementById("btnLimpiarHistorialTxt");
   const numeroGuiaTxt = document.getElementById("numeroGuiaTxt");
   const inputIdentificacion = document.getElementById("identificacionTxt");
 
@@ -29,6 +31,10 @@ function inicializarTxtSnig() {
     btnDescargarTxt.addEventListener("click", descargarTxtPreventivo);
   }
 
+  if (btnLimpiarHistorialTxt) {
+    btnLimpiarHistorialTxt.addEventListener("click", limpiarHistorialTxt);
+  }
+
   if (numeroGuiaTxt) {
     numeroGuiaTxt.addEventListener("input", function () {
       actualizarVistaPreviaTxt();
@@ -41,6 +47,7 @@ function inicializarTxtSnig() {
 
   mostrarListaTxt();
   actualizarVistaPreviaTxt();
+  mostrarHistorialTxt();
 }
 
 // Agrega animal apto a la lista.
@@ -429,9 +436,10 @@ function generarContenidoTxtPreventivo() {
   return lineas.join("\n");
 }
 
-// Descarga TXT preventivo.
+// Descarga TXT preventivo y guarda historial.
 function descargarTxtPreventivo() {
   const contenido = generarContenidoTxtPreventivo();
+  const lista = obtenerListaTxt();
 
   if (contenido.trim() === "") {
     mostrarResultadoTxt("No hay animales agregados para descargar.", "warning");
@@ -439,24 +447,202 @@ function descargarTxtPreventivo() {
     return;
   }
 
+  const nombreArchivo = generarNombreArchivoTxt();
+
+  descargarContenidoTxt(contenido, nombreArchivo);
+
+  guardarHistorialTxtGenerado(contenido, nombreArchivo, lista.length);
+  mostrarHistorialTxt();
+
+  mostrarResultadoTxt("TXT preventivo descargado y guardado en historial.", "success");
+  prepararInputTxt();
+}
+
+// Descarga un contenido TXT.
+function descargarContenidoTxt(contenido, nombreArchivo) {
   const blob = new Blob([contenido], {
     type: "text/plain;charset=utf-8"
   });
 
   const enlace = document.createElement("a");
-  const fechaNombre = obtenerFechaNombreArchivoTxt();
 
   enlace.href = URL.createObjectURL(blob);
-  enlace.download = "ruraldata_pre_txt_" + fechaNombre + ".txt";
+  enlace.download = nombreArchivo;
 
   document.body.appendChild(enlace);
   enlace.click();
   document.body.removeChild(enlace);
 
   URL.revokeObjectURL(enlace.href);
+}
 
-  mostrarResultadoTxt("TXT preventivo descargado correctamente.", "success");
-  prepararInputTxt();
+// Genera nombre del archivo.
+function generarNombreArchivoTxt() {
+  const fechaNombre = obtenerFechaNombreArchivoTxt();
+
+  return "ruraldata_pre_txt_" + fechaNombre + ".txt";
+}
+
+// Guarda historial de TXT generado.
+function guardarHistorialTxtGenerado(contenido, nombreArchivo, cantidadAnimales) {
+  const historial = obtenerHistorialTxt();
+
+  const nuevoRegistro = {
+    id: crypto.randomUUID(),
+    nombreArchivo: nombreArchivo,
+    numeroGuia: obtenerNumeroGuiaTxt(),
+    cantidadAnimales: cantidadAnimales,
+    fechaGeneracion: obtenerFechaActualTxt(),
+    horaGeneracion: obtenerHoraActualTxt(),
+    contenido: contenido,
+    fechaRegistro: new Date().toISOString()
+  };
+
+  historial.unshift(nuevoRegistro);
+
+  guardarHistorialTxt(historial);
+}
+
+// Muestra historial de TXT generados.
+function mostrarHistorialTxt() {
+  const contenedor = document.getElementById("historialTxtGenerados");
+
+  if (!contenedor) return;
+
+  const historial = obtenerHistorialTxt();
+
+  contenedor.innerHTML = "";
+
+  if (historial.length === 0) {
+    contenedor.innerHTML = `
+      <div class="alert alert-info mb-0">
+        Todavía no hay TXT generados en el historial.
+      </div>
+    `;
+    return;
+  }
+
+  for (let i = 0; i < historial.length; i++) {
+    const registro = historial[i];
+
+    const item = document.createElement("article");
+    item.className = "card";
+
+    item.innerHTML = `
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <span class="estado-pill badge-soft-yellow mb-3">
+              TXT generado
+            </span>
+
+            <h3 class="h5 mb-2">
+              ${escaparHTML(registro.nombreArchivo)}
+            </h3>
+
+            <p class="mb-1">
+              Guía: <strong>${escaparHTML(registro.numeroGuia)}</strong>
+            </p>
+
+            <p class="mb-1">
+              Animales: ${registro.cantidadAnimales}
+            </p>
+
+            <p class="mb-0">
+              Generado: ${formatearFechaTxt(registro.fechaGeneracion)} ${registro.horaGeneracion}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-outline-danger btn-sm"
+            onclick="eliminarRegistroHistorialTxt('${registro.id}')"
+          >
+            Eliminar
+          </button>
+        </div>
+
+        <textarea
+          class="form-control mb-3"
+          rows="4"
+          readonly
+        >${escaparHTML(registro.contenido)}</textarea>
+
+        <button
+          type="button"
+          class="btn btn-success w-100"
+          onclick="descargarTxtDesdeHistorial('${registro.id}')"
+        >
+          Descargar nuevamente
+        </button>
+      </div>
+    `;
+
+    contenedor.appendChild(item);
+  }
+}
+
+// Descarga nuevamente un TXT desde historial.
+function descargarTxtDesdeHistorial(id) {
+  const historial = obtenerHistorialTxt();
+
+  for (let i = 0; i < historial.length; i++) {
+    if (historial[i].id === id) {
+      descargarContenidoTxt(historial[i].contenido, historial[i].nombreArchivo);
+      mostrarResultadoTxt("TXT descargado nuevamente desde el historial.", "success");
+      prepararInputTxt();
+      return;
+    }
+  }
+
+  mostrarResultadoTxt("No se encontró ese TXT en el historial.", "warning");
+}
+
+// Elimina un registro del historial.
+function eliminarRegistroHistorialTxt(id) {
+  const confirmar = confirm("¿Seguro que querés eliminar este TXT del historial?");
+
+  if (!confirmar) return;
+
+  const historial = obtenerHistorialTxt();
+  const nuevoHistorial = [];
+
+  for (let i = 0; i < historial.length; i++) {
+    if (historial[i].id !== id) {
+      nuevoHistorial.push(historial[i]);
+    }
+  }
+
+  guardarHistorialTxt(nuevoHistorial);
+  mostrarHistorialTxt();
+}
+
+// Limpia historial completo.
+function limpiarHistorialTxt() {
+  const confirmar = confirm("¿Seguro que querés limpiar todo el historial de TXT generados?");
+
+  if (!confirmar) return;
+
+  guardarHistorialTxt([]);
+  mostrarHistorialTxt();
+  mostrarResultadoTxt("Historial de TXT limpiado correctamente.", "success");
+}
+
+// Obtiene historial.
+function obtenerHistorialTxt() {
+  const datos = localStorage.getItem(obtenerClaveHistorialTxt());
+
+  return datos ? JSON.parse(datos) : [];
+}
+
+// Guarda historial.
+function guardarHistorialTxt(historial) {
+  localStorage.setItem(obtenerClaveHistorialTxt(), JSON.stringify(historial));
+}
+
+// Clave separada por establecimiento para historial.
+function obtenerClaveHistorialTxt() {
+  return "ruraldata_historial_txt_" + obtenerEstablecimientoActivo();
 }
 
 // Obtiene identificador principal para el TXT.
@@ -729,6 +915,18 @@ function formatearFechaTxt(fechaISO) {
   }
 
   return partes[2] + "/" + partes[1] + "/" + partes[0];
+}
+
+// Evita problemas al mostrar texto dentro del HTML.
+function escaparHTML(texto) {
+  if (!texto) return "";
+
+  return String(texto)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 // Actualiza texto por id.
