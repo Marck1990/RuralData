@@ -1,4 +1,4 @@
-const CACHE_NAME = "ruraldata-cache-v20";
+const CACHE_NAME = "ruraldata-cache-v22";
 
 const ARCHIVOS_CACHE = [
   "./",
@@ -19,6 +19,7 @@ const ARCHIVOS_CACHE = [
   "js/listados.js",
   "js/reproduccion.js",
   "js/embarque.js",
+  "js/txt-snig.js",
 
   "pages/registrar-animal.html",
   "pages/buscar-animal.html",
@@ -28,6 +29,7 @@ const ARCHIVOS_CACHE = [
   "pages/listar-animales.html",
   "pages/listar-controles.html",
   "pages/embarque.html",
+  "pages/txt-snig.html",
 
   "assets/img/logo-ruraldata.png",
   "assets/img/SoloLogo.png"

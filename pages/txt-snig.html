@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>TXT / SNIG - RuralData</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+
+<body>
+
+  <main class="container py-4">
+
+    <section class="mb-4">
+      <a href="../index.html" class="btn btn-outline-success mb-3">
+        <i class="bi bi-arrow-left"></i>
+        Volver al inicio
+      </a>
+
+      <div class="card">
+        <div class="card-body">
+          <span class="badge badge-soft-yellow mb-3">
+            Exportación preventiva
+          </span>
+
+          <h1 class="h3 mb-2">
+            Pre TXT / SNIG
+          </h1>
+
+          <p class="mb-0">
+            Armá una lista de animales aptos para futura exportación. RuralData
+            bloquea automáticamente los animales que estén en carencia sanitaria.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="usuarioActivo"></section>
+
+    <section class="card mb-4">
+      <div class="card-body">
+
+        <h2 class="h5 mb-2">
+          Datos del archivo
+        </h2>
+
+        <p class="text-muted mb-3">
+          El formato se basa en el ejemplo cargado: prefijo Uruguay, caravana,
+          fecha de lectura, hora de lectura, número de guía y campos vacíos con punto.
+          No se presenta todavía como TXT oficial.
+        </p>
+
+        <div class="mb-3">
+          <label for="prefijoUruguayTxt" class="form-label">
+            Prefijo país / Uruguay
+          </label>
+
+          <input
+            type="text"
+            id="prefijoUruguayTxt"
+            class="form-control"
+            value="A00000008580000"
+            readonly
+          />
+
+          <small class="text-muted">
+            RuralData usará este prefijo y luego agregará los 8 números de caravana.
+          </small>
+        </div>
+
+        <div>
+          <label for="numeroGuiaTxt" class="form-label">
+            Número de guía de propiedad de tránsito
+          </label>
+
+          <input
+            type="text"
+            id="numeroGuiaTxt"
+            class="form-control"
+            value="D661446"
+            placeholder="Ej: D661446"
+          />
+
+          <small class="text-muted">
+            En el ejemplo recibido aparece como D661446. Este número corresponde
+            a la guía usada para el movimiento o tránsito.
+          </small>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="card mb-4">
+      <div class="card-body">
+
+        <h2 class="h5 mb-2">
+          Leer o ingresar caravana / RFID
+        </h2>
+
+        <p class="text-muted mb-3">
+          Podés escribir la caravana manualmente o leerla con un bastón RFID
+          conectado como teclado.
+        </p>
+
+        <form id="formAgregarAnimalTxt" class="d-grid gap-3">
+
+          <div>
+            <label for="identificacionTxt" class="form-label">
+              Caravana visual o RFID
+            </label>
+
+            <input
+              type="text"
+              id="identificacionTxt"
+              class="form-control form-control-lg"
+              placeholder="Leer RFID o escribir caravana"
+              autocomplete="off"
+              autofocus
+            />
+
+            <small class="text-muted">
+              Si el animal está en carencia, RuralData no lo agregará a la lista.
+            </small>
+          </div>
+
+          <button type="submit" class="btn btn-success btn-lg">
+            Agregar a lista
+          </button>
+
+        </form>
+
+        <div id="resultadoTxt" class="mt-3"></div>
+
+      </div>
+    </section>
+
+    <section class="row g-3 mb-4">
+
+      <div class="col-6">
+        <div class="app-rural-stat-card">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+
+          <p>Animales agregados</p>
+          <strong id="totalAnimalesTxt">0</strong>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="app-rural-stat-card alerta">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-shield-exclamation"></i>
+          </div>
+
+          <p>Bloqueados</p>
+          <strong id="totalBloqueadosTxt">0</strong>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="card mb-4">
+      <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <h2 class="h5 mb-1">
+              Lista preventiva
+            </h2>
+
+            <p class="text-muted mb-0">
+              Animales aptos agregados para futura exportación.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            id="btnLimpiarListaTxt"
+            class="btn btn-outline-danger btn-sm"
+          >
+            Limpiar
+          </button>
+        </div>
+
+        <div id="listaAnimalesTxt" class="d-grid gap-3"></div>
+
+      </div>
+    </section>
+
+    <section class="card mb-4">
+      <div class="card-body">
+
+        <h2 class="h5 mb-2">
+          Vista previa del TXT
+        </h2>
+
+        <p class="text-muted mb-3">
+          Formato preventivo basado en el ejemplo recibido:
+          <strong>[|PREFIJO+CARAVANA|DDMMAAAA|HHMMSS|NRO_GUÍA|.|.|.|.|.|.|.|.|.|.|]</strong>
+        </p>
+
+        <textarea
+          id="vistaPreviaTxt"
+          class="form-control mb-3"
+          rows="10"
+          readonly
+        ></textarea>
+
+        <button
+          type="button"
+          id="btnDescargarTxt"
+          class="btn btn-success btn-lg w-100"
+        >
+          Descargar TXT preventivo
+        </button>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/txt-snig.js"></script>
+</body>
+</html>
