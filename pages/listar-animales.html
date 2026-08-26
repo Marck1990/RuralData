@@ -11,21 +11,131 @@
     rel="stylesheet"
   />
 
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet"
+  />
+
   <link rel="stylesheet" href="../css/styles.css" />
 </head>
 
 <body>
+
   <main class="container py-4">
 
-    <a href="../index.html" class="btn btn-outline-secondary mb-3">
-      Volver
-    </a>
+    <section class="mb-4">
+      <a href="../index.html" class="btn btn-outline-success mb-3">
+        <i class="bi bi-arrow-left"></i>
+        Volver al inicio
+      </a>
+
+      <div class="card">
+        <div class="card-body">
+          <span class="badge badge-soft-green mb-3">
+            Rodeo registrado
+          </span>
+
+          <h1 class="h3 mb-2">
+            Animales
+          </h1>
+
+          <p class="mb-0">
+            Listado compacto de animales registrados. Podés desplegar la ficha,
+            completar datos pendientes y volver a replegarla.
+          </p>
+        </div>
+      </div>
+    </section>
 
     <section id="usuarioActivo"></section>
 
-    <h1 class="h3 fw-bold mb-3">Animales registrados</h1>
+    <section class="row g-3 mb-4">
 
-    <section id="listaAnimales" class="d-grid gap-3"></section>
+      <div class="col-6 col-md-3">
+        <div class="app-rural-stat-card">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-diagram-3"></i>
+          </div>
+
+          <p>Total animales</p>
+          <strong id="totalAnimalesListado">0</strong>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="app-rural-stat-card">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+
+          <p>Completos</p>
+          <strong id="totalAnimalesCompletos">0</strong>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="app-rural-stat-card alerta">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-pencil-square"></i>
+          </div>
+
+          <p>Pendientes</p>
+          <strong id="totalAnimalesPendientes">0</strong>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="app-rural-stat-card alerta">
+          <div class="app-rural-stat-icon">
+            <i class="bi bi-shield-exclamation"></i>
+          </div>
+
+          <p>En carencia</p>
+          <strong id="totalAnimalesCarencia">0</strong>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="card mb-4">
+      <div class="card-body">
+
+        <h2 class="h5 mb-2">
+          Buscar dentro del listado
+        </h2>
+
+        <p class="text-muted mb-3">
+          Podés filtrar por caravana visual, RFID, campo, categoría o sexo.
+        </p>
+
+        <input
+          type="text"
+          id="filtroListadoAnimales"
+          class="form-control form-control-lg"
+          placeholder="Buscar animal..."
+          autocomplete="off"
+        />
+
+      </div>
+    </section>
+
+    <section class="mb-4">
+
+      <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+        <div>
+          <h2 class="h5 mb-1">
+            Listado compacto
+          </h2>
+
+          <p class="text-muted mb-0">
+            Tocá la hoja para desplegar la ficha del animal.
+          </p>
+        </div>
+      </div>
+
+      <div id="listaAnimales" class="d-grid gap-3"></div>
+
+    </section>
 
   </main>
 
