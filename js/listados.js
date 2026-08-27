@@ -1,6 +1,6 @@
 // Listados de RuralData.
-// Muestra animales en formato compacto, permite filtrar por estado
-// y desplegar ficha editable.
+// Muestra animales en formato compacto, permite filtrar por estado,
+// desplegar ficha editable y manejar pesajes por animal.
 
 let filtroEstadoAnimales = "todos";
 
@@ -158,6 +158,7 @@ function mostrarListadoAnimales() {
     const estado = obtenerEstadoVisualAnimalListado(animal);
     const sexoTexto = obtenerTextoSexoAnimalListado(animal);
     const iconoSexo = obtenerIconoSexoAnimalListado(animal);
+    const textoPeso = obtenerTextoPesoAnimalListado(animal.id);
 
     const item = document.createElement("article");
     item.className = "animal-linea-compacta " + estado.claseLinea;
@@ -193,6 +194,15 @@ function mostrarListadoAnimales() {
           ${escaparHTMLListado(animal.campo || "Pendiente")}
         </span>
 
+        <button
+          type="button"
+          class="animal-linea-peso-btn"
+          onclick="desplegarPesajesAnimalListado('${animal.id}')"
+          title="Pesajes del animal"
+        >
+          ${escaparHTMLListado(textoPeso)}
+        </button>
+
         <span class="estado-pill ${estado.claseBadge}">
           ${estado.texto}
         </span>
@@ -201,6 +211,11 @@ function mostrarListadoAnimales() {
 
       <section
         id="fichaAnimalListado_${animal.id}"
+        class="d-none animal-ficha-listado"
+      ></section>
+
+      <section
+        id="pesajesAnimalListado_${animal.id}"
         class="d-none animal-ficha-listado"
       ></section>
     `;
@@ -543,6 +558,592 @@ function cerrarFichasAnimalesListado() {
     fichas[i].classList.add("d-none");
     fichas[i].innerHTML = "";
   }
+}
+
+// Despliega panel de pesajes.
+function desplegarPesajesAnimalListado(idAnimal) {
+  const animal = obtenerAnimalPorIdListado(idAnimal);
+  const panel = document.getElementById("pesajesAnimalListado_" + idAnimal);
+
+  if (!animal || !panel) return;
+
+  const yaAbierto = !panel.classList.contains("d-none");
+
+  cerrarFichasAnimalesListado();
+
+  if (yaAbierto) {
+    return;
+  }
+
+  panel.classList.remove("d-none");
+  panel.innerHTML = crearPanelPesajesAnimalListado(animal);
+
+  const formPesaje = document.getElementById("formPesajeAnimalListado_" + idAnimal);
+
+  if (formPesaje) {
+    formPesaje.addEventListener("submit", function (event) {
+      event.preventDefault();
+      guardarPesajeAnimalListado(idAnimal);
+    });
+  }
+}
+
+// Crea el panel completo de pesajes.
+function crearPanelPesajesAnimalListado(animal) {
+  const pesajes = obtenerPesajesAnimalOrdenadosListado(animal.id);
+  const ultimoPesaje = obtenerUltimoPesajeAnimalListado(animal.id);
+
+  let bloqueUltimo = `
+    <div class="alert alert-info mb-3">
+      Este animal todavía no tiene pesajes registrados.
+    </div>
+  `;
+
+  if (ultimoPesaje) {
+    bloqueUltimo = `
+      <div class="pesaje-ultimo-card mb-3">
+        <span>Último pesaje</span>
+        <strong>${formatearPesoListado(ultimoPesaje.pesoKg)}</strong>
+        <small>${formatearFechaListado(ultimoPesaje.fecha)}</small>
+      </div>
+    `;
+  }
+
+  return `
+    <article class="card mt-3">
+      <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <span class="badge badge-soft-green mb-2">
+              Pesajes
+            </span>
+
+            <h2 class="h5 mb-1">
+              ${escaparHTMLListado(animal.caravanaVisual || "Animal sin caravana")}
+            </h2>
+
+            <p class="text-muted mb-0">
+              Registrá el peso del animal y revisá su desarrollo.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            onclick="replegarPesajesAnimalListado('${animal.id}')"
+          >
+            Replegar
+          </button>
+        </div>
+
+        ${bloqueUltimo}
+
+        <div id="mensajePesajeAnimalListado_${animal.id}" class="mb-3"></div>
+
+        <form id="formPesajeAnimalListado_${animal.id}" class="card pesaje-form-card mb-4">
+          <div class="card-body">
+
+            <input type="hidden" id="pesajeEditando_${animal.id}" value="" />
+
+            <h3 class="h6 mb-3" id="tituloFormPesaje_${animal.id}">
+              Agregar pesaje
+            </h3>
+
+            <div class="row g-3">
+
+              <div class="col-12 col-md-4">
+                <label for="fechaPesaje_${animal.id}" class="form-label">
+                  Fecha
+                </label>
+
+                <input
+                  type="date"
+                  id="fechaPesaje_${animal.id}"
+                  class="form-control"
+                  value="${obtenerFechaHoyListado()}"
+                  required
+                />
+              </div>
+
+              <div class="col-12 col-md-4">
+                <label for="pesoKg_${animal.id}" class="form-label">
+                  Peso en kg
+                </label>
+
+                <input
+                  type="number"
+                  id="pesoKg_${animal.id}"
+                  class="form-control"
+                  min="1"
+                  step="0.1"
+                  placeholder="Ej: 318"
+                  required
+                />
+              </div>
+
+              <div class="col-12 col-md-4">
+                <label for="observacionPesaje_${animal.id}" class="form-label">
+                  Observación
+                </label>
+
+                <input
+                  type="text"
+                  id="observacionPesaje_${animal.id}"
+                  class="form-control"
+                  placeholder="Opcional"
+                />
+              </div>
+
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <button
+                type="submit"
+                id="btnGuardarPesaje_${animal.id}"
+                class="btn btn-success"
+              >
+                Guardar pesaje
+              </button>
+
+              <button
+                type="button"
+                id="btnCancelarEdicionPesaje_${animal.id}"
+                class="btn btn-outline-secondary d-none"
+                onclick="cancelarEdicionPesajeListado('${animal.id}')"
+              >
+                Cancelar edición
+              </button>
+            </div>
+
+          </div>
+        </form>
+
+        ${crearBloqueHistorialPesajesListado(animal.id, pesajes)}
+
+        ${crearBloqueDesarrolloPesajesListado(pesajes)}
+
+      </div>
+    </article>
+  `;
+}
+
+// Crea historial de pesajes.
+function crearBloqueHistorialPesajesListado(idAnimal, pesajes) {
+  if (pesajes.length === 0) {
+    return `
+      <div class="alert alert-light border mb-0">
+        Sin historial de pesajes.
+      </div>
+    `;
+  }
+
+  let html = `
+    <div class="mb-4">
+      <h3 class="h6 mb-3">
+        Historial
+      </h3>
+
+      <div class="d-grid gap-2">
+  `;
+
+  for (let i = 0; i < pesajes.length; i++) {
+    const pesaje = pesajes[i];
+
+    html += `
+      <div class="pesaje-historial-item">
+        <div>
+          <strong>${formatearPesoListado(pesaje.pesoKg)}</strong>
+          <span>${formatearFechaListado(pesaje.fecha)}</span>
+          <small>${escaparHTMLListado(pesaje.observaciones || "Sin observación")}</small>
+        </div>
+
+        <div class="pesaje-historial-actions">
+          <button
+            type="button"
+            class="btn btn-outline-success btn-sm"
+            onclick="editarPesajeAnimalListado('${idAnimal}', '${pesaje.id}')"
+          >
+            Editar
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline-danger btn-sm"
+            onclick="eliminarPesajeAnimalListado('${idAnimal}', '${pesaje.id}')"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  html += `
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+// Crea bloque de desarrollo.
+function crearBloqueDesarrolloPesajesListado(pesajesOrdenadosDesc) {
+  if (pesajesOrdenadosDesc.length < 2) {
+    return `
+      <div class="alert alert-warning mb-0">
+        El desarrollo se mostrará cuando el animal tenga 2 o más pesajes.
+      </div>
+    `;
+  }
+
+  const pesajesAsc = pesajesOrdenadosDesc.slice().reverse();
+
+  return `
+    <div class="desarrollo-pesaje-card">
+      <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+        <div>
+          <h3 class="h6 mb-1">
+            Desarrollo
+          </h3>
+
+          <p class="text-muted mb-0">
+            Evolución entre pesaje y pesaje.
+          </p>
+        </div>
+
+        <span class="estado-pill badge-soft-green">
+          ${calcularDiferenciaPesoListado(pesajesAsc)}
+        </span>
+      </div>
+
+      ${crearGraficaPesajesListado(pesajesAsc)}
+    </div>
+  `;
+}
+
+// Crea gráfica simple en SVG.
+function crearGraficaPesajesListado(pesajesAsc) {
+  const ancho = 340;
+  const alto = 180;
+  const margen = 28;
+
+  let pesoMin = Number(pesajesAsc[0].pesoKg);
+  let pesoMax = Number(pesajesAsc[0].pesoKg);
+
+  for (let i = 0; i < pesajesAsc.length; i++) {
+    const peso = Number(pesajesAsc[i].pesoKg);
+
+    if (peso < pesoMin) pesoMin = peso;
+    if (peso > pesoMax) pesoMax = peso;
+  }
+
+  if (pesoMin === pesoMax) {
+    pesoMin = pesoMin - 5;
+    pesoMax = pesoMax + 5;
+  }
+
+  let puntos = "";
+  let circulos = "";
+
+  for (let i = 0; i < pesajesAsc.length; i++) {
+    const peso = Number(pesajesAsc[i].pesoKg);
+
+    const x = pesajesAsc.length === 1
+      ? ancho / 2
+      : margen + (i * (ancho - margen * 2)) / (pesajesAsc.length - 1);
+
+    const y = alto - margen - ((peso - pesoMin) * (alto - margen * 2)) / (pesoMax - pesoMin);
+
+    puntos += x + "," + y + " ";
+
+    circulos += `
+      <circle cx="${x}" cy="${y}" r="4"></circle>
+    `;
+  }
+
+  const primerPesaje = pesajesAsc[0];
+  const ultimoPesaje = pesajesAsc[pesajesAsc.length - 1];
+
+  return `
+    <div class="grafica-pesaje-wrapper">
+
+      <svg
+        class="grafica-pesaje"
+        viewBox="0 0 ${ancho} ${alto}"
+        role="img"
+        aria-label="Gráfica de evolución de peso"
+      >
+        <line x1="${margen}" y1="${alto - margen}" x2="${ancho - margen}" y2="${alto - margen}"></line>
+        <line x1="${margen}" y1="${margen}" x2="${margen}" y2="${alto - margen}"></line>
+
+        <polyline points="${puntos.trim()}"></polyline>
+
+        ${circulos}
+      </svg>
+
+      <div class="grafica-pesaje-info">
+        <span>
+          Inicio: ${formatearPesoListado(primerPesaje.pesoKg)}
+        </span>
+
+        <span>
+          Actual: ${formatearPesoListado(ultimoPesaje.pesoKg)}
+        </span>
+      </div>
+
+    </div>
+  `;
+}
+
+// Guarda un pesaje nuevo o editado.
+function guardarPesajeAnimalListado(idAnimal) {
+  const inputFecha = document.getElementById("fechaPesaje_" + idAnimal);
+  const inputPeso = document.getElementById("pesoKg_" + idAnimal);
+  const inputObservacion = document.getElementById("observacionPesaje_" + idAnimal);
+  const inputEditando = document.getElementById("pesajeEditando_" + idAnimal);
+
+  if (!inputFecha || !inputPeso || !inputObservacion || !inputEditando) return;
+
+  const fecha = inputFecha.value;
+  const pesoKg = Number(inputPeso.value);
+  const observaciones = inputObservacion.value.trim();
+  const idEditando = inputEditando.value;
+
+  if (!fecha) {
+    mostrarMensajePesajeListado(idAnimal, "Debe ingresar una fecha.", "warning");
+    return;
+  }
+
+  if (isNaN(pesoKg) || pesoKg <= 0) {
+    mostrarMensajePesajeListado(idAnimal, "Debe ingresar un peso válido.", "warning");
+    return;
+  }
+
+  const pesajes = obtenerPesajes();
+
+  if (idEditando) {
+    for (let i = 0; i < pesajes.length; i++) {
+      if (pesajes[i].id === idEditando) {
+        pesajes[i].fecha = fecha;
+        pesajes[i].pesoKg = pesoKg;
+        pesajes[i].observaciones = observaciones;
+        pesajes[i].fechaActualizacion = new Date().toISOString();
+      }
+    }
+  } else {
+    const nuevoPesaje = {
+      id: crypto.randomUUID(),
+      animalId: idAnimal,
+      fecha: fecha,
+      pesoKg: pesoKg,
+      observaciones: observaciones,
+      origen: "manual",
+      fechaRegistro: new Date().toISOString()
+    };
+
+    pesajes.push(nuevoPesaje);
+  }
+
+  guardarPesajes(pesajes);
+
+  mostrarListadoAnimales();
+
+  setTimeout(function () {
+    desplegarPesajesAnimalListado(idAnimal);
+  }, 100);
+}
+
+// Carga un pesaje en el formulario para editar.
+function editarPesajeAnimalListado(idAnimal, idPesaje) {
+  const pesajes = obtenerPesajes();
+  let pesajeEncontrado = null;
+
+  for (let i = 0; i < pesajes.length; i++) {
+    if (pesajes[i].id === idPesaje) {
+      pesajeEncontrado = pesajes[i];
+      break;
+    }
+  }
+
+  if (!pesajeEncontrado) return;
+
+  document.getElementById("pesajeEditando_" + idAnimal).value = pesajeEncontrado.id;
+  document.getElementById("fechaPesaje_" + idAnimal).value = pesajeEncontrado.fecha;
+  document.getElementById("pesoKg_" + idAnimal).value = pesajeEncontrado.pesoKg;
+  document.getElementById("observacionPesaje_" + idAnimal).value = pesajeEncontrado.observaciones || "";
+
+  actualizarTextoListado("tituloFormPesaje_" + idAnimal, "Editar pesaje");
+  actualizarTextoListado("btnGuardarPesaje_" + idAnimal, "Guardar cambios");
+
+  const btnCancelar = document.getElementById("btnCancelarEdicionPesaje_" + idAnimal);
+
+  if (btnCancelar) {
+    btnCancelar.classList.remove("d-none");
+  }
+}
+
+// Cancela edición.
+function cancelarEdicionPesajeListado(idAnimal) {
+  const inputEditando = document.getElementById("pesajeEditando_" + idAnimal);
+  const inputFecha = document.getElementById("fechaPesaje_" + idAnimal);
+  const inputPeso = document.getElementById("pesoKg_" + idAnimal);
+  const inputObservacion = document.getElementById("observacionPesaje_" + idAnimal);
+  const btnCancelar = document.getElementById("btnCancelarEdicionPesaje_" + idAnimal);
+
+  if (inputEditando) inputEditando.value = "";
+  if (inputFecha) inputFecha.value = obtenerFechaHoyListado();
+  if (inputPeso) inputPeso.value = "";
+  if (inputObservacion) inputObservacion.value = "";
+
+  actualizarTextoListado("tituloFormPesaje_" + idAnimal, "Agregar pesaje");
+  actualizarTextoListado("btnGuardarPesaje_" + idAnimal, "Guardar pesaje");
+
+  if (btnCancelar) {
+    btnCancelar.classList.add("d-none");
+  }
+}
+
+// Elimina un pesaje.
+function eliminarPesajeAnimalListado(idAnimal, idPesaje) {
+  const confirmar = confirm("¿Eliminar este pesaje?");
+
+  if (!confirmar) return;
+
+  const pesajes = obtenerPesajes();
+  const nuevosPesajes = [];
+
+  for (let i = 0; i < pesajes.length; i++) {
+    if (pesajes[i].id !== idPesaje) {
+      nuevosPesajes.push(pesajes[i]);
+    }
+  }
+
+  guardarPesajes(nuevosPesajes);
+
+  mostrarListadoAnimales();
+
+  setTimeout(function () {
+    desplegarPesajesAnimalListado(idAnimal);
+  }, 100);
+}
+
+// Repliega panel de pesajes.
+function replegarPesajesAnimalListado(idAnimal) {
+  const panel = document.getElementById("pesajesAnimalListado_" + idAnimal);
+
+  if (!panel) return;
+
+  panel.classList.add("d-none");
+  panel.innerHTML = "";
+}
+
+// Muestra mensaje dentro del panel de pesaje.
+function mostrarMensajePesajeListado(idAnimal, texto, tipo) {
+  const contenedor = document.getElementById("mensajePesajeAnimalListado_" + idAnimal);
+
+  if (!contenedor) return;
+
+  contenedor.innerHTML = `
+    <div class="alert alert-${tipo} mb-0">
+      ${texto}
+    </div>
+  `;
+}
+
+// Obtiene texto del botón de peso.
+function obtenerTextoPesoAnimalListado(idAnimal) {
+  const ultimoPesaje = obtenerUltimoPesajeAnimalListado(idAnimal);
+
+  if (!ultimoPesaje) {
+    return "Sin kg";
+  }
+
+  return formatearPesoListado(ultimoPesaje.pesoKg);
+}
+
+// Obtiene último pesaje.
+function obtenerUltimoPesajeAnimalListado(idAnimal) {
+  const pesajes = obtenerPesajesAnimalOrdenadosListado(idAnimal);
+
+  if (pesajes.length === 0) {
+    return null;
+  }
+
+  return pesajes[0];
+}
+
+// Obtiene pesajes de un animal ordenados del más nuevo al más viejo.
+function obtenerPesajesAnimalOrdenadosListado(idAnimal) {
+  const pesajes = obtenerPesajes();
+  const pesajesAnimal = [];
+
+  for (let i = 0; i < pesajes.length; i++) {
+    if (pesajes[i].animalId === idAnimal) {
+      pesajesAnimal.push(pesajes[i]);
+    }
+  }
+
+  pesajesAnimal.sort(function (a, b) {
+    if (a.fecha < b.fecha) return 1;
+    if (a.fecha > b.fecha) return -1;
+
+    const registroA = a.fechaRegistro || "";
+    const registroB = b.fechaRegistro || "";
+
+    if (registroA < registroB) return 1;
+    if (registroA > registroB) return -1;
+
+    return 0;
+  });
+
+  return pesajesAnimal;
+}
+
+// Calcula diferencia entre primer y último pesaje.
+function calcularDiferenciaPesoListado(pesajesAsc) {
+  if (pesajesAsc.length < 2) {
+    return "Sin evolución";
+  }
+
+  const primerPeso = Number(pesajesAsc[0].pesoKg);
+  const ultimoPeso = Number(pesajesAsc[pesajesAsc.length - 1].pesoKg);
+  const diferencia = ultimoPeso - primerPeso;
+
+  if (diferencia > 0) {
+    return "+" + diferencia.toFixed(1) + " kg";
+  }
+
+  if (diferencia < 0) {
+    return diferencia.toFixed(1) + " kg";
+  }
+
+  return "0 kg";
+}
+
+// Obtiene fecha de hoy.
+function obtenerFechaHoyListado() {
+  const hoy = new Date();
+  const anio = hoy.getFullYear();
+  const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoy.getDate()).padStart(2, "0");
+
+  return anio + "-" + mes + "-" + dia;
+}
+
+// Formatea peso.
+function formatearPesoListado(peso) {
+  const numero = Number(peso);
+
+  if (isNaN(numero)) {
+    return "Sin kg";
+  }
+
+  if (Number.isInteger(numero)) {
+    return numero + " kg";
+  }
+
+  return numero.toFixed(1) + " kg";
 }
 
 // Obtiene animal por id.

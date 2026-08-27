@@ -1,12 +1,13 @@
 // Manejo simple de almacenamiento local para RuralData.
-// Ahora los datos productivos se separan por establecimiento.
+// Los datos productivos se separan por establecimiento.
 
 const STORAGE_KEYS = {
   animales: "ruraldata_animales",
   sanidad: "ruraldata_sanidad",
   usuarios: "ruraldata_usuarios",
   sesion: "ruraldata_sesion",
-  reproduccion: "ruraldata_reproduccion"
+  reproduccion: "ruraldata_reproduccion",
+  pesajes: "ruraldata_pesajes"
 };
 
 // Obtiene datos desde localStorage.
@@ -100,6 +101,19 @@ function guardarReproduccion(registros) {
   const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.reproduccion);
 
   guardarDatos(clave, registros);
+}
+
+// Pesajes separados por establecimiento.
+function obtenerPesajes() {
+  const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.pesajes);
+
+  return obtenerDatos(clave);
+}
+
+function guardarPesajes(pesajes) {
+  const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.pesajes);
+
+  guardarDatos(clave, pesajes);
 }
 
 // Usuarios generales del sistema local.

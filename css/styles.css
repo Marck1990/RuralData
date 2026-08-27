@@ -1350,3 +1350,138 @@ button.app-rural-side-item {
 .animal-ficha-listado {
   grid-column: 1 / -1;
 }
+
+
+.animal-linea-peso-btn {
+  min-height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(25, 135, 84, 0.25);
+  background-color: #f3fbf6;
+  color: var(--verde-oscuro);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pesaje-ultimo-card {
+  border: 1px solid rgba(25, 135, 84, 0.2);
+  background-color: #f3fbf6;
+  border-radius: 18px;
+  padding: 14px;
+  display: grid;
+  gap: 4px;
+}
+
+.pesaje-ultimo-card span {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.pesaje-ultimo-card strong {
+  color: var(--verde-oscuro);
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.pesaje-ultimo-card small {
+  color: var(--texto-suave);
+}
+
+.pesaje-form-card {
+  border-radius: 18px;
+  border: 1px solid var(--borde);
+  box-shadow: none;
+}
+
+.pesaje-historial-item {
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  background-color: #ffffff;
+}
+
+.pesaje-historial-item strong {
+  display: block;
+  color: var(--verde-oscuro);
+  font-size: 1.05rem;
+}
+
+.pesaje-historial-item span {
+  display: block;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.pesaje-historial-item small {
+  display: block;
+  color: var(--texto-suave);
+}
+
+.pesaje-historial-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.desarrollo-pesaje-card {
+  border: 1px solid rgba(25, 135, 84, 0.2);
+  background-color: #ffffff;
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.grafica-pesaje-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.grafica-pesaje {
+  width: 100%;
+  min-width: 300px;
+  max-width: 520px;
+}
+
+.grafica-pesaje line {
+  stroke: rgba(18, 63, 43, 0.25);
+  stroke-width: 2;
+}
+
+.grafica-pesaje polyline {
+  fill: none;
+  stroke: var(--verde-oscuro);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.grafica-pesaje circle {
+  fill: var(--verde-oscuro);
+}
+
+.grafica-pesaje-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+@media (min-width: 768px) {
+  .pesaje-historial-item {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .pesaje-historial-actions {
+    justify-content: flex-end;
+  }
+}
