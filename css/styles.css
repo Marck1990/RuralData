@@ -1950,3 +1950,66 @@ button.app-rural-side-item {
     white-space: normal !important;
   }
 }
+
+
+/* =========================================================
+   MOBILE - Menú izquierda y Salir derecha
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .app-rural-top-bar {
+    width: 100% !important;
+    max-width: 430px !important;
+    margin: 0 auto !important;
+
+    display: flex !important;
+    justify-content: center !important;
+  }
+
+  .app-rural-header-actions {
+    width: 100% !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    gap: 0 !important;
+  }
+
+  .app-rural-menu-button {
+    margin-left: 0 !important;
+  }
+
+  #btnCerrarSesion {
+    margin-left: auto !important;
+  }
+}
+
+
+/* =========================================================
+   CONTROL FINAL - Pestaña superior del logo RuralData
+   Este bloque manda sobre los anteriores porque está al final.
+   ========================================================= */
+
+.app-rural-top-logo-tab {
+  /*
+    COLOR DE LA PESTAÑA DEL LOGO
+
+    Primer rgba = verde oscuro izquierdo
+    Segundo rgba = verde más claro derecho
+
+    Último número = opacidad:
+    1    = sólido
+    0.85 = un poco transparente
+    0.65 = bastante transparente
+  */
+  background: linear-gradient(
+    135deg,
+    #07271E,
+    #07271E
+  ) !important;
+
+  border: 1px solid rgb(255, 255, 255) !important;
+  border-top: none !important;
+}
