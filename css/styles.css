@@ -1346,3 +1346,7 @@ button.app-rural-side-item {
     justify-content: flex-end;
   }
 }
+
+.animal-ficha-listado {
+  grid-column: 1 / -1;
+}

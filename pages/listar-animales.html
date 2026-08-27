@@ -101,6 +101,52 @@
       <div class="card-body">
 
         <h2 class="h5 mb-2">
+          Filtros rápidos
+        </h2>
+
+        <p class="text-muted mb-3">
+          Filtrá el listado según el estado del animal.
+        </p>
+
+        <div class="sanidad-tabs mb-4">
+          <button
+            type="button"
+            id="btnFiltroTodosAnimales"
+            class="sanidad-tab activo"
+          >
+            <i class="bi bi-grid"></i>
+            Todos
+          </button>
+
+          <button
+            type="button"
+            id="btnFiltroPendientesAnimales"
+            class="sanidad-tab"
+          >
+            <i class="bi bi-pencil-square"></i>
+            Pendientes
+          </button>
+
+          <button
+            type="button"
+            id="btnFiltroCarenciaAnimales"
+            class="sanidad-tab"
+          >
+            <i class="bi bi-shield-exclamation"></i>
+            En carencia
+          </button>
+
+          <button
+            type="button"
+            id="btnFiltroCompletosAnimales"
+            class="sanidad-tab"
+          >
+            <i class="bi bi-check-circle"></i>
+            Completos
+          </button>
+        </div>
+
+        <h2 class="h5 mb-2">
           Buscar dentro del listado
         </h2>
 
@@ -127,8 +173,8 @@
             Listado compacto
           </h2>
 
-          <p class="text-muted mb-0">
-            Tocá la hoja para desplegar la ficha del animal.
+          <p id="textoFiltroAnimales" class="text-muted mb-0">
+            Mostrando todos los animales.
           </p>
         </div>
       </div>

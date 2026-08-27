@@ -1,7 +1,8 @@
 // Listados de RuralData.
-// Muestra animales en formato compacto y permite desplegar ficha editable.
+// Muestra animales en formato compacto, permite filtrar por estado
+// y desplegar ficha editable.
 
-let animalesListadoActual = [];
+let filtroEstadoAnimales = "todos";
 
 document.addEventListener("DOMContentLoaded", function () {
   inicializarListadoAnimales();
@@ -15,7 +16,7 @@ function inicializarListadoAnimales() {
 
   if (!contenedorAnimales) return;
 
-  animalesListadoActual = obtenerAnimales();
+  inicializarFiltrosEstadoAnimales();
 
   if (filtroListado) {
     filtroListado.addEventListener("input", function () {
@@ -24,6 +25,107 @@ function inicializarListadoAnimales() {
   }
 
   mostrarListadoAnimales();
+}
+
+// Inicializa botones de filtro por estado.
+function inicializarFiltrosEstadoAnimales() {
+  const btnTodos = document.getElementById("btnFiltroTodosAnimales");
+  const btnPendientes = document.getElementById("btnFiltroPendientesAnimales");
+  const btnCarencia = document.getElementById("btnFiltroCarenciaAnimales");
+  const btnCompletos = document.getElementById("btnFiltroCompletosAnimales");
+
+  if (btnTodos) {
+    btnTodos.addEventListener("click", function () {
+      cambiarFiltroEstadoAnimales("todos");
+    });
+  }
+
+  if (btnPendientes) {
+    btnPendientes.addEventListener("click", function () {
+      cambiarFiltroEstadoAnimales("pendientes");
+    });
+  }
+
+  if (btnCarencia) {
+    btnCarencia.addEventListener("click", function () {
+      cambiarFiltroEstadoAnimales("carencia");
+    });
+  }
+
+  if (btnCompletos) {
+    btnCompletos.addEventListener("click", function () {
+      cambiarFiltroEstadoAnimales("completos");
+    });
+  }
+}
+
+// Cambia filtro activo.
+function cambiarFiltroEstadoAnimales(filtro) {
+  filtroEstadoAnimales = filtro;
+
+  actualizarBotonesFiltroAnimales();
+  actualizarTextoFiltroAnimales();
+  mostrarListadoAnimales();
+}
+
+// Actualiza estilos de botones.
+function actualizarBotonesFiltroAnimales() {
+  const btnTodos = document.getElementById("btnFiltroTodosAnimales");
+  const btnPendientes = document.getElementById("btnFiltroPendientesAnimales");
+  const btnCarencia = document.getElementById("btnFiltroCarenciaAnimales");
+  const btnCompletos = document.getElementById("btnFiltroCompletosAnimales");
+
+  const botones = [
+    btnTodos,
+    btnPendientes,
+    btnCarencia,
+    btnCompletos
+  ];
+
+  for (let i = 0; i < botones.length; i++) {
+    if (botones[i]) {
+      botones[i].classList.remove("activo");
+    }
+  }
+
+  if (filtroEstadoAnimales === "todos" && btnTodos) {
+    btnTodos.classList.add("activo");
+  }
+
+  if (filtroEstadoAnimales === "pendientes" && btnPendientes) {
+    btnPendientes.classList.add("activo");
+  }
+
+  if (filtroEstadoAnimales === "carencia" && btnCarencia) {
+    btnCarencia.classList.add("activo");
+  }
+
+  if (filtroEstadoAnimales === "completos" && btnCompletos) {
+    btnCompletos.classList.add("activo");
+  }
+}
+
+// Actualiza texto explicativo del filtro.
+function actualizarTextoFiltroAnimales() {
+  const texto = document.getElementById("textoFiltroAnimales");
+
+  if (!texto) return;
+
+  if (filtroEstadoAnimales === "todos") {
+    texto.textContent = "Mostrando todos los animales.";
+  }
+
+  if (filtroEstadoAnimales === "pendientes") {
+    texto.textContent = "Mostrando animales con datos pendientes.";
+  }
+
+  if (filtroEstadoAnimales === "carencia") {
+    texto.textContent = "Mostrando animales en carencia sanitaria.";
+  }
+
+  if (filtroEstadoAnimales === "completos") {
+    texto.textContent = "Mostrando animales con datos completos.";
+  }
 }
 
 // Muestra listado compacto de animales.
@@ -38,11 +140,13 @@ function mostrarListadoAnimales() {
   contenedor.innerHTML = "";
 
   actualizarResumenListadoAnimales(todosLosAnimales);
+  actualizarBotonesFiltroAnimales();
+  actualizarTextoFiltroAnimales();
 
   if (animales.length === 0) {
     contenedor.innerHTML = `
       <div class="alert alert-info mb-0">
-        No hay animales para mostrar.
+        No hay animales para mostrar con este filtro.
       </div>
     `;
     return;
@@ -105,35 +209,66 @@ function mostrarListadoAnimales() {
   }
 }
 
-// Filtra animales por texto.
+// Filtra animales por texto y estado.
 function obtenerAnimalesFiltradosListado() {
   const animales = obtenerAnimales();
-  const filtro = document.getElementById("filtroListadoAnimales");
+  const filtroTexto = document.getElementById("filtroListadoAnimales");
 
-  if (!filtro || filtro.value.trim() === "") {
-    return animales;
-  }
-
-  const texto = filtro.value.trim().toLowerCase();
   const resultado = [];
+
+  const texto = filtroTexto && filtroTexto.value.trim() !== ""
+    ? filtroTexto.value.trim().toLowerCase()
+    : "";
 
   for (let i = 0; i < animales.length; i++) {
     const animal = animales[i];
 
-    const contenido =
-      (animal.caravanaVisual || "") + " " +
-      (animal.codigoRFID || "") + " " +
-      (animal.categoria || "") + " " +
-      (animal.sexo || "") + " " +
-      (animal.campo || "") + " " +
-      (animal.propietario || "");
-
-    if (contenido.toLowerCase().includes(texto)) {
-      resultado.push(animal);
+    if (!cumpleFiltroEstadoAnimal(animal)) {
+      continue;
     }
+
+    if (texto.length > 0) {
+      const contenido =
+        (animal.caravanaVisual || "") + " " +
+        (animal.codigoRFID || "") + " " +
+        (animal.categoria || "") + " " +
+        (animal.sexo || "") + " " +
+        (animal.campo || "") + " " +
+        (animal.propietario || "");
+
+      if (!contenido.toLowerCase().includes(texto)) {
+        continue;
+      }
+    }
+
+    resultado.push(animal);
   }
 
   return resultado;
+}
+
+// Revisa si el animal cumple el filtro activo.
+function cumpleFiltroEstadoAnimal(animal) {
+  const tieneCarencia = obtenerCarenciaActivaAnimalListado(animal) !== null;
+  const tienePendientes = animalTieneDatosPendientesListado(animal);
+
+  if (filtroEstadoAnimales === "todos") {
+    return true;
+  }
+
+  if (filtroEstadoAnimales === "pendientes") {
+    return tienePendientes;
+  }
+
+  if (filtroEstadoAnimales === "carencia") {
+    return tieneCarencia;
+  }
+
+  if (filtroEstadoAnimales === "completos") {
+    return !tienePendientes && !tieneCarencia;
+  }
+
+  return true;
 }
 
 // Actualiza contadores del listado.
@@ -145,13 +280,18 @@ function actualizarResumenListadoAnimales(animales) {
   for (let i = 0; i < animales.length; i++) {
     const animal = animales[i];
 
-    if (obtenerCarenciaActivaAnimalListado(animal)) {
+    const tieneCarencia = obtenerCarenciaActivaAnimalListado(animal) !== null;
+    const tienePendientes = animalTieneDatosPendientesListado(animal);
+
+    if (tieneCarencia) {
       carencia++;
     }
 
-    if (animalTieneDatosPendientesListado(animal)) {
+    if (tienePendientes) {
       pendientes++;
-    } else {
+    }
+
+    if (!tienePendientes && !tieneCarencia) {
       completos++;
     }
   }
