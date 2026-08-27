@@ -8,7 +8,6 @@
   <title>RuralData</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
 
   <link rel="stylesheet" href="css/styles.css" />
@@ -21,8 +20,17 @@
 
     <section class="app-rural-top-panel">
 
-      <section class="app-rural-user-header">
+      <div class="app-rural-top-video">
+        <video autoplay muted loop playsinline class="app-rural-top-video-media">
+          <source src="assets/video/fondo-campo.mp4" type="video/mp4" />
+        </video>
+      </div>
 
+      <div class="app-rural-top-logo-tab">
+        <img src="assets/img/logo-ruraldata.png" alt="Logo RuralData" class="app-rural-top-logo-tab-img" />
+      </div>
+
+      <section class="app-rural-top-bar">
         <div class="app-rural-header-actions">
           <button id="btnAbrirMenuLateral" class="app-rural-menu-button" type="button" aria-label="Abrir menú">
             <i class="bi bi-list"></i>
@@ -32,24 +40,16 @@
             Salir
           </button>
         </div>
-
-        <div class="app-rural-logo-header">
-          <img src="assets/img/logo-ruraldata.png" alt="Logo RuralData" class="app-rural-brand-logo" />
-        </div>
-
-        <label for="inputFotoPerfil" class="app-rural-profile-photo">
-          <img id="fotoPerfilUsuario" src="" alt="Foto de perfil" class="d-none" />
-
-          <span id="iconoPerfilUsuario">
-            <i class="bi bi-person"></i>
-          </span>
-        </label>
-
-        <input type="file" id="inputFotoPerfil" accept="image/*" class="d-none" />
-
       </section>
 
       <section id="usuarioActivo"></section>
+
+      <!-- Se dejan ocultos para no romper lógica vieja del app.js -->
+      <input type="file" id="inputFotoPerfil" accept="image/*" class="d-none" />
+      <img id="fotoPerfilUsuario" src="" alt="Foto de perfil" class="d-none" />
+      <span id="iconoPerfilUsuario" class="d-none">
+        <i class="bi bi-person"></i>
+      </span>
 
     </section>
 
@@ -247,7 +247,6 @@
         </div>
       </a>
 
-
       <a href="pages/importar-txt.html" class="app-rural-side-item" data-roles="propietario,trabajador,veterinario">
         <i class="bi bi-file-earmark-arrow-up"></i>
 
@@ -257,7 +256,6 @@
         </div>
       </a>
 
-
       <button type="button" class="app-rural-side-item" disabled>
         <i class="bi bi-file-earmark-arrow-down"></i>
 
@@ -266,15 +264,6 @@
           <span>Exportar datos cargados</span>
         </div>
       </button>
-
-      <label for="inputFotoPerfil" class="app-rural-side-item">
-        <i class="bi bi-person-circle"></i>
-
-        <div>
-          <strong>Cargar perfil</strong>
-          <span>Actualizar foto de usuario</span>
-        </div>
-      </label>
 
     </nav>
 
