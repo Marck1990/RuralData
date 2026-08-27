@@ -2013,3 +2013,182 @@ button.app-rural-side-item {
   border: 1px solid rgb(255, 255, 255) !important;
   border-top: none !important;
 }
+
+
+
+/* =========================================================
+   Transición login → dashboard
+   Video de entrada al establecimiento
+   ========================================================= */
+
+.login-transicion {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: #061812;
+
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+
+  transition:
+    opacity 0.45s ease,
+    visibility 0.45s ease;
+}
+
+.login-transicion.activo {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.login-transicion.saliendo {
+  opacity: 0;
+}
+
+.login-transicion-video {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  transform: scale(1.02);
+}
+
+/*
+  Capa oscura arriba del video:
+  subí 0.38 a 0.50 si el texto no se lee.
+  bajá 0.38 a 0.25 si querés ver más el video.
+*/
+.login-transicion-capa {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(3, 18, 13, 0.28) 0%,
+      rgba(5, 32, 22, 0.38) 45%,
+      rgba(3, 18, 13, 0.62) 100%
+    );
+}
+
+/* Texto de la transición */
+.login-transicion-contenido {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 54px;
+  z-index: 2;
+
+  max-width: 520px;
+  margin: 0 auto;
+
+  text-align: center;
+  color: #ffffff;
+
+  animation: loginTransicionTexto 0.9s ease both;
+}
+
+.login-transicion-contenido span {
+  display: inline-block;
+  margin-bottom: 10px;
+
+  border-radius: 999px;
+  padding: 8px 14px;
+
+  background-color: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.login-transicion-contenido h2 {
+  color: #ffffff;
+  font-size: 1.55rem;
+  line-height: 1.1;
+  margin-bottom: 8px;
+  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.login-transicion-contenido p {
+  color: #e3eee8;
+  margin-bottom: 18px;
+  font-weight: 700;
+}
+
+/* Loader inferior */
+.login-transicion-loader {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+
+  background-color: rgba(255, 255, 255, 0.24);
+}
+
+.login-transicion-loader div {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+
+  background-color: #dcefdc;
+
+  animation: loginTransicionCarga 4.8s ease forwards;
+}
+
+@keyframes loginTransicionTexto {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loginTransicionCarga {
+  0% {
+    width: 0%;
+  }
+
+  100% {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .login-transicion-contenido {
+    bottom: 70px;
+  }
+
+  .login-transicion-contenido h2 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-transicion-contenido {
+    left: 18px;
+    right: 18px;
+    bottom: 46px;
+  }
+
+  .login-transicion-contenido h2 {
+    font-size: 1.35rem;
+  }
+
+  .login-transicion-video {
+    transform: scale(1.04);
+  }
+}

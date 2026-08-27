@@ -85,6 +85,7 @@ function iniciarSesion(event) {
   const usuarioIngresado = document.getElementById("usuario").value.trim();
   const passwordIngresado = document.getElementById("password").value.trim();
   const mensaje = document.getElementById("mensajeLogin");
+  const btnIngresar = document.getElementById("btnIngresarLogin");
 
   const usuarios = obtenerUsuarios();
 
@@ -102,6 +103,11 @@ function iniciarSesion(event) {
     return;
   }
 
+  if (btnIngresar) {
+    btnIngresar.disabled = true;
+    btnIngresar.textContent = "Ingresando...";
+  }
+
   if (!usuarioEncontrado.establecimientoId) {
     usuarioEncontrado.establecimientoId = "establecimiento_usuario_" + usuarioEncontrado.id;
     guardarUsuarios(usuarios);
@@ -115,7 +121,59 @@ function iniciarSesion(event) {
     establecimientoId: usuarioEncontrado.establecimientoId
   });
 
-  window.location.href = "index.html";
+  mostrarTransicionLogin(function () {
+    window.location.href = "index.html";
+  });
+}
+
+// Muestra la transición visual entre login y dashboard.
+function mostrarTransicionLogin(callback) {
+  const transicion = document.getElementById("transicionLogin");
+  const video = document.getElementById("videoTransicionLogin");
+
+  if (!transicion) {
+    callback();
+    return;
+  }
+
+  transicion.classList.add("activo");
+
+  let yaRedirigio = false;
+
+  function continuar() {
+    if (yaRedirigio) return;
+
+    yaRedirigio = true;
+    transicion.classList.add("saliendo");
+
+    setTimeout(function () {
+      callback();
+    }, 450);
+  }
+
+  if (video) {
+    video.currentTime = 0;
+
+    const promesaVideo = video.play();
+
+    if (promesaVideo && promesaVideo.catch) {
+      promesaVideo.catch(function () {
+        setTimeout(continuar, 2500);
+      });
+    }
+
+    video.onended = function () {
+      continuar();
+    };
+
+    setTimeout(function () {
+      continuar();
+    }, 5200);
+
+    return;
+  }
+
+  setTimeout(continuar, 2800);
 }
 
 function registrarUsuario(event) {
