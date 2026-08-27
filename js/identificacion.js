@@ -1,5 +1,6 @@
 // Búsqueda rápida por caravana visual o RFID.
-// Muestra una línea compacta y permite desplegar la ficha completa para editar.
+// Muestra una línea compacta, permite desplegar ficha completa
+// y manejar pesajes del animal.
 
 let animalBuscadoActual = null;
 
@@ -109,16 +110,17 @@ function mostrarAnimalCompacto(animal) {
   const estado = obtenerEstadoVisualAnimal(animal);
   const sexoTexto = obtenerTextoSexoAnimal(animal);
   const iconoSexo = obtenerIconoSexoAnimal(animal);
+  const textoPeso = obtenerTextoPesoAnimalIdentificacion(animal.id);
 
   contenedor.innerHTML = `
     <article class="animal-linea-compacta ${estado.claseLinea}">
       <div class="animal-linea-main">
         <strong>
-          ${animal.caravanaVisual || obtenerUltimosOchoDigitosIdentificacion(animal.codigoRFID) || "Sin caravana"}
+          ${escaparHTMLIdentificacion(animal.caravanaVisual || obtenerUltimosOchoDigitosIdentificacion(animal.codigoRFID) || "Sin caravana")}
         </strong>
 
         <span>
-          RFID: ${animal.codigoRFID || "Sin dato"}
+          RFID: ${escaparHTMLIdentificacion(animal.codigoRFID || "Sin dato")}
         </span>
       </div>
 
@@ -133,14 +135,23 @@ function mostrarAnimalCompacto(animal) {
           <i class="bi bi-file-earmark-text"></i>
         </button>
 
-        <span class="animal-linea-icon-info" title="${sexoTexto}">
+        <span class="animal-linea-icon-info" title="${escaparHTMLIdentificacion(sexoTexto)}">
           <i class="bi ${iconoSexo}"></i>
         </span>
 
         <span class="animal-linea-campo" title="Campo / establecimiento">
           <i class="bi bi-geo-alt"></i>
-          ${animal.campo || "Pendiente"}
+          ${escaparHTMLIdentificacion(animal.campo || "Pendiente")}
         </span>
+
+        <button
+          type="button"
+          class="animal-linea-peso-btn"
+          onclick="desplegarPesajesAnimalIdentificacion('${animal.id}')"
+          title="Pesajes del animal"
+        >
+          ${escaparHTMLIdentificacion(textoPeso)}
+        </button>
 
         <span class="estado-pill ${estado.claseBadge}">
           ${estado.texto}
@@ -149,7 +160,8 @@ function mostrarAnimalCompacto(animal) {
       </div>
     </article>
 
-    <section id="fichaAnimalDesplegada" class="d-none"></section>
+    <section id="fichaAnimalDesplegada" class="d-none animal-ficha-listado"></section>
+    <section id="pesajesAnimalBusqueda_${animal.id}" class="d-none animal-ficha-listado"></section>
   `;
 }
 
@@ -159,6 +171,14 @@ function desplegarFichaAnimal(idAnimal) {
   const ficha = document.getElementById("fichaAnimalDesplegada");
 
   if (!animal || !ficha) return;
+
+  const yaAbierta = !ficha.classList.contains("d-none");
+
+  cerrarPanelesBusquedaAnimal();
+
+  if (yaAbierta) {
+    return;
+  }
 
   ficha.classList.remove("d-none");
 
@@ -173,7 +193,7 @@ function desplegarFichaAnimal(idAnimal) {
             </span>
 
             <h2 class="h5 mb-1">
-              ${animal.caravanaVisual || "Animal sin caravana"}
+              ${escaparHTMLIdentificacion(animal.caravanaVisual || "Animal sin caravana")}
             </h2>
 
             <p class="text-muted mb-0">
@@ -201,7 +221,7 @@ function desplegarFichaAnimal(idAnimal) {
               type="text"
               id="editarCaravanaVisual"
               class="form-control"
-              value="${animal.caravanaVisual || ""}"
+              value="${escaparAttrIdentificacion(animal.caravanaVisual || "")}"
             />
           </div>
 
@@ -214,7 +234,7 @@ function desplegarFichaAnimal(idAnimal) {
               type="text"
               id="editarCodigoRFID"
               class="form-control"
-              value="${animal.codigoRFID || ""}"
+              value="${escaparAttrIdentificacion(animal.codigoRFID || "")}"
             />
           </div>
 
@@ -253,7 +273,7 @@ function desplegarFichaAnimal(idAnimal) {
                 type="text"
                 id="editarRazaAnimal"
                 class="form-control"
-                value="${animal.raza || ""}"
+                value="${escaparAttrIdentificacion(animal.raza || "")}"
                 placeholder="Ej: Hereford, Aberdeen Angus"
               />
             </div>
@@ -267,7 +287,7 @@ function desplegarFichaAnimal(idAnimal) {
                 type="date"
                 id="editarFechaNacimientoAnimal"
                 class="form-control"
-                value="${animal.fechaNacimiento || ""}"
+                value="${escaparAttrIdentificacion(animal.fechaNacimiento || "")}"
               />
             </div>
 
@@ -284,7 +304,7 @@ function desplegarFichaAnimal(idAnimal) {
                 type="text"
                 id="editarPropietarioAnimal"
                 class="form-control"
-                value="${animal.propietario || ""}"
+                value="${escaparAttrIdentificacion(animal.propietario || "")}"
                 placeholder="Pendiente SNIG"
               />
             </div>
@@ -298,7 +318,7 @@ function desplegarFichaAnimal(idAnimal) {
                 type="text"
                 id="editarCampoAnimal"
                 class="form-control"
-                value="${animal.campo || ""}"
+                value="${escaparAttrIdentificacion(animal.campo || "")}"
                 placeholder="Ej: San Jorge"
               />
             </div>
@@ -315,7 +335,7 @@ function desplegarFichaAnimal(idAnimal) {
               class="form-control"
               rows="3"
               placeholder="Observaciones generales"
-            >${animal.observaciones || ""}</textarea>
+            >${escaparHTMLIdentificacion(animal.observaciones || "")}</textarea>
           </div>
 
           <button type="submit" class="btn btn-success btn-lg">
@@ -361,13 +381,516 @@ function guardarCambiosAnimalBuscado(idAnimal) {
 
       mostrarMensajeBusquedaAnimal("Datos del animal actualizados correctamente.", "success");
       mostrarAnimalCompacto(animales[i]);
-      desplegarFichaAnimal(idAnimal);
+
+      setTimeout(function () {
+        desplegarFichaAnimal(idAnimal);
+      }, 100);
 
       return;
     }
   }
 
   mostrarMensajeBusquedaAnimal("No se pudo guardar el animal.", "danger");
+}
+
+// Despliega panel de pesajes.
+function desplegarPesajesAnimalIdentificacion(idAnimal) {
+  const animal = obtenerAnimalPorId(idAnimal);
+  const panel = document.getElementById("pesajesAnimalBusqueda_" + idAnimal);
+
+  if (!animal || !panel) return;
+
+  const yaAbierto = !panel.classList.contains("d-none");
+
+  cerrarPanelesBusquedaAnimal();
+
+  if (yaAbierto) {
+    return;
+  }
+
+  panel.classList.remove("d-none");
+  panel.innerHTML = crearPanelPesajesAnimalIdentificacion(animal);
+
+  const formPesaje = document.getElementById("formPesajeAnimalBusqueda_" + idAnimal);
+
+  if (formPesaje) {
+    formPesaje.addEventListener("submit", function (event) {
+      event.preventDefault();
+      guardarPesajeAnimalIdentificacion(idAnimal);
+    });
+  }
+}
+
+// Crea panel de pesajes.
+function crearPanelPesajesAnimalIdentificacion(animal) {
+  const pesajes = obtenerPesajesAnimalOrdenadosIdentificacion(animal.id);
+  const ultimoPesaje = obtenerUltimoPesajeAnimalIdentificacion(animal.id);
+
+  let bloqueUltimo = `
+    <div class="alert alert-info mb-3">
+      Este animal todavía no tiene pesajes registrados.
+    </div>
+  `;
+
+  if (ultimoPesaje) {
+    bloqueUltimo = `
+      <div class="pesaje-ultimo-card mb-3">
+        <span>Último pesaje</span>
+        <strong>${formatearPesoIdentificacion(ultimoPesaje.pesoKg)}</strong>
+        <small>${formatearFechaIdentificacion(ultimoPesaje.fecha)}</small>
+      </div>
+    `;
+  }
+
+  return `
+    <article class="card mt-3">
+      <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <span class="badge badge-soft-green mb-2">
+              Pesajes
+            </span>
+
+            <h2 class="h5 mb-1">
+              ${escaparHTMLIdentificacion(animal.caravanaVisual || "Animal sin caravana")}
+            </h2>
+
+            <p class="text-muted mb-0">
+              Registrá el peso del animal y revisá su desarrollo.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            onclick="replegarPesajesAnimalIdentificacion('${animal.id}')"
+          >
+            Replegar
+          </button>
+        </div>
+
+        ${bloqueUltimo}
+
+        <div id="mensajePesajeAnimalBusqueda_${animal.id}" class="mb-3"></div>
+
+        <form id="formPesajeAnimalBusqueda_${animal.id}" class="card pesaje-form-card mb-4">
+          <div class="card-body">
+
+            <input type="hidden" id="pesajeEditandoBusqueda_${animal.id}" value="" />
+
+            <h3 class="h6 mb-3" id="tituloFormPesajeBusqueda_${animal.id}">
+              Agregar pesaje
+            </h3>
+
+            <div class="row g-3">
+
+              <div class="col-12 col-md-4">
+                <label for="fechaPesajeBusqueda_${animal.id}" class="form-label">
+                  Fecha
+                </label>
+
+                <input
+                  type="date"
+                  id="fechaPesajeBusqueda_${animal.id}"
+                  class="form-control"
+                  value="${obtenerFechaHoyIdentificacion()}"
+                  required
+                />
+              </div>
+
+              <div class="col-12 col-md-4">
+                <label for="pesoKgBusqueda_${animal.id}" class="form-label">
+                  Peso en kg
+                </label>
+
+                <input
+                  type="number"
+                  id="pesoKgBusqueda_${animal.id}"
+                  class="form-control"
+                  min="1"
+                  step="0.1"
+                  placeholder="Ej: 318"
+                  required
+                />
+              </div>
+
+              <div class="col-12 col-md-4">
+                <label for="observacionPesajeBusqueda_${animal.id}" class="form-label">
+                  Observación
+                </label>
+
+                <input
+                  type="text"
+                  id="observacionPesajeBusqueda_${animal.id}"
+                  class="form-control"
+                  placeholder="Opcional"
+                />
+              </div>
+
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <button
+                type="submit"
+                id="btnGuardarPesajeBusqueda_${animal.id}"
+                class="btn btn-success"
+              >
+                Guardar pesaje
+              </button>
+
+              <button
+                type="button"
+                id="btnCancelarEdicionPesajeBusqueda_${animal.id}"
+                class="btn btn-outline-secondary d-none"
+                onclick="cancelarEdicionPesajeIdentificacion('${animal.id}')"
+              >
+                Cancelar edición
+              </button>
+            </div>
+
+          </div>
+        </form>
+
+        ${crearBloqueHistorialPesajesIdentificacion(animal.id, pesajes)}
+
+        ${crearBloqueDesarrolloPesajesIdentificacion(pesajes)}
+
+      </div>
+    </article>
+  `;
+}
+
+// Historial de pesajes.
+function crearBloqueHistorialPesajesIdentificacion(idAnimal, pesajes) {
+  if (pesajes.length === 0) {
+    return `
+      <div class="alert alert-light border mb-0">
+        Sin historial de pesajes.
+      </div>
+    `;
+  }
+
+  let html = `
+    <div class="mb-4">
+      <h3 class="h6 mb-3">
+        Historial
+      </h3>
+
+      <div class="d-grid gap-2">
+  `;
+
+  for (let i = 0; i < pesajes.length; i++) {
+    const pesaje = pesajes[i];
+
+    html += `
+      <div class="pesaje-historial-item">
+        <div>
+          <strong>${formatearPesoIdentificacion(pesaje.pesoKg)}</strong>
+          <span>${formatearFechaIdentificacion(pesaje.fecha)}</span>
+          <small>${escaparHTMLIdentificacion(pesaje.observaciones || "Sin observación")}</small>
+        </div>
+
+        <div class="pesaje-historial-actions">
+          <button
+            type="button"
+            class="btn btn-outline-success btn-sm"
+            onclick="editarPesajeAnimalIdentificacion('${idAnimal}', '${pesaje.id}')"
+          >
+            Editar
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline-danger btn-sm"
+            onclick="eliminarPesajeAnimalIdentificacion('${idAnimal}', '${pesaje.id}')"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  html += `
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+// Desarrollo.
+function crearBloqueDesarrolloPesajesIdentificacion(pesajesOrdenadosDesc) {
+  if (pesajesOrdenadosDesc.length < 2) {
+    return `
+      <div class="alert alert-warning mb-0">
+        El desarrollo se mostrará cuando el animal tenga 2 o más pesajes.
+      </div>
+    `;
+  }
+
+  const pesajesAsc = pesajesOrdenadosDesc.slice().reverse();
+
+  return `
+    <div class="desarrollo-pesaje-card">
+      <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+        <div>
+          <h3 class="h6 mb-1">
+            Desarrollo
+          </h3>
+
+          <p class="text-muted mb-0">
+            Evolución entre pesaje y pesaje.
+          </p>
+        </div>
+
+        <span class="estado-pill badge-soft-green">
+          ${calcularDiferenciaPesoIdentificacion(pesajesAsc)}
+        </span>
+      </div>
+
+      ${crearGraficaPesajesIdentificacion(pesajesAsc)}
+    </div>
+  `;
+}
+
+// Gráfica simple en SVG.
+function crearGraficaPesajesIdentificacion(pesajesAsc) {
+  const ancho = 340;
+  const alto = 180;
+  const margen = 28;
+
+  let pesoMin = Number(pesajesAsc[0].pesoKg);
+  let pesoMax = Number(pesajesAsc[0].pesoKg);
+
+  for (let i = 0; i < pesajesAsc.length; i++) {
+    const peso = Number(pesajesAsc[i].pesoKg);
+
+    if (peso < pesoMin) pesoMin = peso;
+    if (peso > pesoMax) pesoMax = peso;
+  }
+
+  if (pesoMin === pesoMax) {
+    pesoMin = pesoMin - 5;
+    pesoMax = pesoMax + 5;
+  }
+
+  let puntos = "";
+  let circulos = "";
+
+  for (let i = 0; i < pesajesAsc.length; i++) {
+    const peso = Number(pesajesAsc[i].pesoKg);
+
+    const x = margen + (i * (ancho - margen * 2)) / (pesajesAsc.length - 1);
+    const y = alto - margen - ((peso - pesoMin) * (alto - margen * 2)) / (pesoMax - pesoMin);
+
+    puntos += x + "," + y + " ";
+
+    circulos += `
+      <circle cx="${x}" cy="${y}" r="4"></circle>
+    `;
+  }
+
+  const primerPesaje = pesajesAsc[0];
+  const ultimoPesaje = pesajesAsc[pesajesAsc.length - 1];
+
+  return `
+    <div class="grafica-pesaje-wrapper">
+
+      <svg
+        class="grafica-pesaje"
+        viewBox="0 0 ${ancho} ${alto}"
+        role="img"
+        aria-label="Gráfica de evolución de peso"
+      >
+        <line x1="${margen}" y1="${alto - margen}" x2="${ancho - margen}" y2="${alto - margen}"></line>
+        <line x1="${margen}" y1="${margen}" x2="${margen}" y2="${alto - margen}"></line>
+
+        <polyline points="${puntos.trim()}"></polyline>
+
+        ${circulos}
+      </svg>
+
+      <div class="grafica-pesaje-info">
+        <span>
+          Inicio: ${formatearPesoIdentificacion(primerPesaje.pesoKg)}
+        </span>
+
+        <span>
+          Actual: ${formatearPesoIdentificacion(ultimoPesaje.pesoKg)}
+        </span>
+      </div>
+
+    </div>
+  `;
+}
+
+// Guarda pesaje.
+function guardarPesajeAnimalIdentificacion(idAnimal) {
+  const inputFecha = document.getElementById("fechaPesajeBusqueda_" + idAnimal);
+  const inputPeso = document.getElementById("pesoKgBusqueda_" + idAnimal);
+  const inputObservacion = document.getElementById("observacionPesajeBusqueda_" + idAnimal);
+  const inputEditando = document.getElementById("pesajeEditandoBusqueda_" + idAnimal);
+
+  if (!inputFecha || !inputPeso || !inputObservacion || !inputEditando) return;
+
+  const fecha = inputFecha.value;
+  const pesoKg = Number(inputPeso.value);
+  const observaciones = inputObservacion.value.trim();
+  const idEditando = inputEditando.value;
+
+  if (!fecha) {
+    mostrarMensajePesajeIdentificacion(idAnimal, "Debe ingresar una fecha.", "warning");
+    return;
+  }
+
+  if (isNaN(pesoKg) || pesoKg <= 0) {
+    mostrarMensajePesajeIdentificacion(idAnimal, "Debe ingresar un peso válido.", "warning");
+    return;
+  }
+
+  const pesajes = obtenerPesajes();
+
+  if (idEditando) {
+    for (let i = 0; i < pesajes.length; i++) {
+      if (pesajes[i].id === idEditando) {
+        pesajes[i].fecha = fecha;
+        pesajes[i].pesoKg = pesoKg;
+        pesajes[i].observaciones = observaciones;
+        pesajes[i].fechaActualizacion = new Date().toISOString();
+      }
+    }
+  } else {
+    const nuevoPesaje = {
+      id: crypto.randomUUID(),
+      animalId: idAnimal,
+      fecha: fecha,
+      pesoKg: pesoKg,
+      observaciones: observaciones,
+      origen: "manual",
+      fechaRegistro: new Date().toISOString()
+    };
+
+    pesajes.push(nuevoPesaje);
+  }
+
+  guardarPesajes(pesajes);
+
+  const animal = obtenerAnimalPorId(idAnimal);
+
+  if (animal) {
+    mostrarAnimalCompacto(animal);
+
+    setTimeout(function () {
+      desplegarPesajesAnimalIdentificacion(idAnimal);
+    }, 100);
+  }
+}
+
+// Edita pesaje.
+function editarPesajeAnimalIdentificacion(idAnimal, idPesaje) {
+  const pesajes = obtenerPesajes();
+  let pesajeEncontrado = null;
+
+  for (let i = 0; i < pesajes.length; i++) {
+    if (pesajes[i].id === idPesaje) {
+      pesajeEncontrado = pesajes[i];
+      break;
+    }
+  }
+
+  if (!pesajeEncontrado) return;
+
+  document.getElementById("pesajeEditandoBusqueda_" + idAnimal).value = pesajeEncontrado.id;
+  document.getElementById("fechaPesajeBusqueda_" + idAnimal).value = pesajeEncontrado.fecha;
+  document.getElementById("pesoKgBusqueda_" + idAnimal).value = pesajeEncontrado.pesoKg;
+  document.getElementById("observacionPesajeBusqueda_" + idAnimal).value = pesajeEncontrado.observaciones || "";
+
+  actualizarTextoIdentificacion("tituloFormPesajeBusqueda_" + idAnimal, "Editar pesaje");
+  actualizarTextoIdentificacion("btnGuardarPesajeBusqueda_" + idAnimal, "Guardar cambios");
+
+  const btnCancelar = document.getElementById("btnCancelarEdicionPesajeBusqueda_" + idAnimal);
+
+  if (btnCancelar) {
+    btnCancelar.classList.remove("d-none");
+  }
+}
+
+// Cancela edición.
+function cancelarEdicionPesajeIdentificacion(idAnimal) {
+  const inputEditando = document.getElementById("pesajeEditandoBusqueda_" + idAnimal);
+  const inputFecha = document.getElementById("fechaPesajeBusqueda_" + idAnimal);
+  const inputPeso = document.getElementById("pesoKgBusqueda_" + idAnimal);
+  const inputObservacion = document.getElementById("observacionPesajeBusqueda_" + idAnimal);
+  const btnCancelar = document.getElementById("btnCancelarEdicionPesajeBusqueda_" + idAnimal);
+
+  if (inputEditando) inputEditando.value = "";
+  if (inputFecha) inputFecha.value = obtenerFechaHoyIdentificacion();
+  if (inputPeso) inputPeso.value = "";
+  if (inputObservacion) inputObservacion.value = "";
+
+  actualizarTextoIdentificacion("tituloFormPesajeBusqueda_" + idAnimal, "Agregar pesaje");
+  actualizarTextoIdentificacion("btnGuardarPesajeBusqueda_" + idAnimal, "Guardar pesaje");
+
+  if (btnCancelar) {
+    btnCancelar.classList.add("d-none");
+  }
+}
+
+// Elimina pesaje.
+function eliminarPesajeAnimalIdentificacion(idAnimal, idPesaje) {
+  const confirmar = confirm("¿Eliminar este pesaje?");
+
+  if (!confirmar) return;
+
+  const pesajes = obtenerPesajes();
+  const nuevosPesajes = [];
+
+  for (let i = 0; i < pesajes.length; i++) {
+    if (pesajes[i].id !== idPesaje) {
+      nuevosPesajes.push(pesajes[i]);
+    }
+  }
+
+  guardarPesajes(nuevosPesajes);
+
+  const animal = obtenerAnimalPorId(idAnimal);
+
+  if (animal) {
+    mostrarAnimalCompacto(animal);
+
+    setTimeout(function () {
+      desplegarPesajesAnimalIdentificacion(idAnimal);
+    }, 100);
+  }
+}
+
+// Repliega pesajes.
+function replegarPesajesAnimalIdentificacion(idAnimal) {
+  const panel = document.getElementById("pesajesAnimalBusqueda_" + idAnimal);
+
+  if (!panel) return;
+
+  panel.classList.add("d-none");
+  panel.innerHTML = "";
+}
+
+// Cierra paneles abiertos.
+function cerrarPanelesBusquedaAnimal() {
+  const ficha = document.getElementById("fichaAnimalDesplegada");
+
+  if (ficha) {
+    ficha.classList.add("d-none");
+    ficha.innerHTML = "";
+  }
+
+  const panelesPesaje = document.querySelectorAll("[id^='pesajesAnimalBusqueda_']");
+
+  for (let i = 0; i < panelesPesaje.length; i++) {
+    panelesPesaje[i].classList.add("d-none");
+    panelesPesaje[i].innerHTML = "";
+  }
 }
 
 // Repliega la ficha completa.
@@ -378,6 +901,125 @@ function replegarFichaAnimal() {
 
   ficha.classList.add("d-none");
   ficha.innerHTML = "";
+}
+
+// Mensaje de pesaje.
+function mostrarMensajePesajeIdentificacion(idAnimal, texto, tipo) {
+  const contenedor = document.getElementById("mensajePesajeAnimalBusqueda_" + idAnimal);
+
+  if (!contenedor) return;
+
+  contenedor.innerHTML = `
+    <div class="alert alert-${tipo} mb-0">
+      ${texto}
+    </div>
+  `;
+}
+
+// Texto del botón kg.
+function obtenerTextoPesoAnimalIdentificacion(idAnimal) {
+  const ultimoPesaje = obtenerUltimoPesajeAnimalIdentificacion(idAnimal);
+
+  if (!ultimoPesaje) {
+    return "Sin kg";
+  }
+
+  return formatearPesoIdentificacion(ultimoPesaje.pesoKg);
+}
+
+// Último pesaje.
+function obtenerUltimoPesajeAnimalIdentificacion(idAnimal) {
+  const pesajes = obtenerPesajesAnimalOrdenadosIdentificacion(idAnimal);
+
+  if (pesajes.length === 0) {
+    return null;
+  }
+
+  return pesajes[0];
+}
+
+// Pesajes ordenados del más nuevo al más viejo.
+function obtenerPesajesAnimalOrdenadosIdentificacion(idAnimal) {
+  const pesajes = obtenerPesajes();
+  const pesajesAnimal = [];
+
+  for (let i = 0; i < pesajes.length; i++) {
+    if (pesajes[i].animalId === idAnimal) {
+      pesajesAnimal.push(pesajes[i]);
+    }
+  }
+
+  pesajesAnimal.sort(function (a, b) {
+    if (a.fecha < b.fecha) return 1;
+    if (a.fecha > b.fecha) return -1;
+
+    const registroA = a.fechaRegistro || "";
+    const registroB = b.fechaRegistro || "";
+
+    if (registroA < registroB) return 1;
+    if (registroA > registroB) return -1;
+
+    return 0;
+  });
+
+  return pesajesAnimal;
+}
+
+// Diferencia de peso.
+function calcularDiferenciaPesoIdentificacion(pesajesAsc) {
+  if (pesajesAsc.length < 2) {
+    return "Sin evolución";
+  }
+
+  const primerPeso = Number(pesajesAsc[0].pesoKg);
+  const ultimoPeso = Number(pesajesAsc[pesajesAsc.length - 1].pesoKg);
+  const diferencia = ultimoPeso - primerPeso;
+
+  if (diferencia > 0) {
+    return "+" + diferencia.toFixed(1) + " kg";
+  }
+
+  if (diferencia < 0) {
+    return diferencia.toFixed(1) + " kg";
+  }
+
+  return "0 kg";
+}
+
+// Fecha de hoy.
+function obtenerFechaHoyIdentificacion() {
+  const hoy = new Date();
+  const anio = hoy.getFullYear();
+  const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoy.getDate()).padStart(2, "0");
+
+  return anio + "-" + mes + "-" + dia;
+}
+
+// Formatea peso.
+function formatearPesoIdentificacion(peso) {
+  const numero = Number(peso);
+
+  if (isNaN(numero)) {
+    return "Sin kg";
+  }
+
+  if (Number.isInteger(numero)) {
+    return numero + " kg";
+  }
+
+  return numero.toFixed(1) + " kg";
+}
+
+// Formatea fecha.
+function formatearFechaIdentificacion(fechaISO) {
+  if (!fechaISO) return "Sin dato";
+
+  const partes = fechaISO.split("-");
+
+  if (partes.length !== 3) return fechaISO;
+
+  return partes[2] + "/" + partes[1] + "/" + partes[0];
 }
 
 // Obtiene animal por id.
@@ -431,8 +1073,8 @@ function crearOpcionesSelect(opciones, valorActual) {
     const seleccionada = opciones[i] === valorActual ? "selected" : "";
 
     html += `
-      <option value="${opciones[i]}" ${seleccionada}>
-        ${opciones[i]}
+      <option value="${escaparAttrIdentificacion(opciones[i])}" ${seleccionada}>
+        ${escaparHTMLIdentificacion(opciones[i])}
       </option>
     `;
   }
@@ -647,6 +1289,23 @@ function prepararInputBusquedaAnimal() {
     inputBusqueda.focus();
     inputBusqueda.select();
   }, 150);
+}
+
+// Escapa texto.
+function escaparHTMLIdentificacion(texto) {
+  if (!texto) return "";
+
+  return String(texto)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+// Escapa atributos.
+function escaparAttrIdentificacion(texto) {
+  return escaparHTMLIdentificacion(texto);
 }
 
 // Datos vivos de cabecera.
