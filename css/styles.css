@@ -184,12 +184,10 @@ label {
   padding: 24px;
 
   background:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(3, 18, 13, 0.18) 0%,
       rgba(5, 32, 22, 0.10) 45%,
-      rgba(3, 18, 13, 0.32) 100%
-    ),
+      rgba(3, 18, 13, 0.32) 100%),
     url("../assets/img/fondo-login-ruraldata.png");
 
   background-size: cover;
@@ -235,21 +233,17 @@ label {
   box-shadow: none;
   border: none;
 
-  -webkit-mask-image: radial-gradient(
-    ellipse at center,
-    black 0%,
-    black 58%,
-    rgba(0, 0, 0, 0.75) 72%,
-    transparent 100%
-  );
+  -webkit-mask-image: radial-gradient(ellipse at center,
+      black 0%,
+      black 58%,
+      rgba(0, 0, 0, 0.75) 72%,
+      transparent 100%);
 
-  mask-image: radial-gradient(
-    ellipse at center,
-    black 0%,
-    black 58%,
-    rgba(0, 0, 0, 0.75) 72%,
-    transparent 100%
-  );
+  mask-image: radial-gradient(ellipse at center,
+      black 0%,
+      black 58%,
+      rgba(0, 0, 0, 0.75) 72%,
+      transparent 100%);
 }
 
 .login-rural-header-logo p {
@@ -342,6 +336,7 @@ label {
     padding: 24px;
   }
 }
+
 /* =========================================================
    Dashboard mobile first
    ========================================================= */
@@ -359,10 +354,7 @@ label {
 }
 
 /* =========================================================
-   Cabecera superior
-   Esta es la lengüeta verde principal del dashboard.
-   Ahora ya no usa foto de perfil visible.
-   En su lugar usa el logo como pestaña superior.
+   Cabecera dashboard con video
    ========================================================= */
 
 .app-rural-top-panel {
@@ -372,30 +364,25 @@ label {
 
   width: 100vw;
   margin: -22px 0 22px calc(50% - 50vw);
-  padding: 18px max(18px, calc((100vw - 430px) / 2 + 18px)) 16px
-    max(18px, calc((100vw - 430px) / 2 + 18px));
+
+  padding:
+    0 max(18px, calc((100vw - 430px) / 2 + 18px)) 18px max(18px, calc((100vw - 430px) / 2 + 18px));
 
   background: linear-gradient(135deg, #08251c, #123f2b 55%, #061812);
 
-  border-radius: 0 0 28px 28px;
-  box-shadow: 0 14px 34px rgba(18, 63, 43, 0.28);
+  border-radius: 0;
+  border-bottom: none;
+  box-shadow: none;
 
-  /*
-    Importante:
-    hidden permite que el video quede recortado dentro de la lengüeta.
-    La pestaña del logo queda dentro del panel, por eso no se corta.
-  */
   overflow: hidden;
 }
 
-/* 
-  Si el index tiene video dentro de la cabecera, esta capa lo posiciona.
-  Si no pusiste video, no rompe nada.
-*/
+/* Video de fondo de la cabecera */
 .app-rural-top-video {
   position: absolute;
   inset: 0;
   z-index: 0;
+
   overflow: hidden;
   pointer-events: none;
 }
@@ -403,27 +390,10 @@ label {
 .app-rural-top-video-media {
   width: 100%;
   height: 100%;
+
   object-fit: cover;
 
-  /*
-    CONTROL DEL VIDEO:
-
-    blur(1px)  = se ve más definido
-    blur(6px)  = difuminado medio
-    blur(10px) = muy difuminado
-
-    brightness(0.50) = más oscuro
-    brightness(0.70) = más visible
-    brightness(0.90) = muy claro
-
-    Para que se vea más el video:
-    bajá blur y subí brightness.
-  */
-  filter: blur(1px) brightness(0.68) saturate(0.9);
-
-  /*
-    Zoom para que el blur no deje bordes raros.
-  */
+  filter: blur(1px) brightness(0.72) saturate(0.9);
   transform: scale(1.08);
 }
 
@@ -434,114 +404,140 @@ label {
   inset: 0;
   z-index: 1;
 
-  /*
-    OPACIDAD DE LA CAPA VERDE:
-
-    0.00 = se ve el video casi puro
-    0.35 = se ve bastante el video
-    0.55 = equilibrio
-    0.75 = casi todo verde oscuro
-
-    Si querés que se vea más el video, bajá este número.
-  */
-  background: rgba(4, 38, 27, 0.32);
+  background: rgba(4, 38, 27, 0.38);
 }
 
-/* Contenido interno de la cabecera */
+/* Fundido inferior hacia el fondo crema */
+.app-rural-top-panel::after {
+  content: "";
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: -1px;
+
+  height: 46px;
+
+  pointer-events: none;
+  z-index: 3;
+
+  background: linear-gradient(180deg,
+      rgba(244, 241, 225, 0) 0%,
+      rgba(244, 241, 225, 0.35) 45%,
+      rgba(244, 241, 225, 1) 100%);
+}
+
+/* Contenedor interno opcional */
 .app-rural-top-panel-inner {
   position: relative;
-  z-index: 2;
+  z-index: 4;
+
   width: 100%;
   max-width: 430px;
+
   margin-left: auto;
   margin-right: auto;
 }
 
-/* Barra superior donde quedan menú y salir */
-.app-rural-top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 64px;
-
-  /*
-    Este padding deja espacio para que el logo superior no tape botones.
-  */
-  padding-top: 24px;
-}
-
-/* Pestaña superior del logo */
+/* Franja superior del logo */
 .app-rural-top-logo-tab {
   position: absolute;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
 
-  z-index: 5;
+  z-index: 8;
 
-  background: linear-gradient(
-    135deg,
-    rgba(7, 43, 31, 0.98),
-    rgba(10, 72, 48, 0.94)
-  );
+  width: 100%;
+  max-width: none;
 
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-top: none;
-  border-radius: 0 0 22px 22px;
+  transform: none;
+  margin: 0;
 
-  padding: 10px 18px 14px 18px;
-
-  box-shadow: 0 14px 28px rgba(6, 43, 37, 0.26);
-}
-
-/* Imagen del logo dentro de la pestaña */
-.app-rural-top-logo-tab-img {
-  width: 150px;
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-  display: block;
-}
-
-/* Soporte para estructura vieja de header, por si alguna página la usa */
-.app-rural-user-header {
-  position: relative;
-  z-index: 3;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-/* Botones menú y salir */
-.app-rural-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-  z-index: 4;
-}
-
-.app-rural-menu-button {
-  width: 46px;
-  height: 46px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-
-  /*
-    OPACIDAD DEL BOTÓN MENÚ:
-    0.10 = más transparente
-    0.20 = más visible
-    0.35 = más sólido
-  */
-  background-color: rgba(255, 255, 255, 0.14);
-
-  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  padding: 13px 16px 14px 16px;
+
+  background: rgba(5, 44, 31, 0.975);
+
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 0 0 22px 22px;
+
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+.app-rural-top-logo-tab-img {
+  display: block;
+
+  width: 112px;
+  max-width: 112px;
+  height: auto;
+
+  margin: 0 auto;
+
+  object-fit: contain;
+  transform: none;
+}
+
+/* Barra de botones */
+.app-rural-top-bar {
+  position: relative;
+  z-index: 20;
+
+  width: 100%;
+  max-width: 430px;
+
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding-top: 88px;
+  min-height: 140px;
+}
+
+.app-rural-header-actions {
+  position: relative;
+  z-index: 25;
+
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+}
+
+/* Botones menú y salir */
+.app-rural-menu-button {
+  position: relative;
+  z-index: 30;
+
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+
+  background-color: rgba(255, 255, 255, 0.14);
+
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   font-size: 1.35rem;
+
   box-shadow: none;
 
   backdrop-filter: blur(8px);
@@ -553,14 +549,16 @@ label {
 }
 
 #btnCerrarSesion {
-  min-height: 46px;
-  padding: 10px 16px;
+  position: relative;
+  z-index: 30;
+
+  height: 44px;
+  min-height: 44px;
+
+  padding: 8px 13px;
+
   border-radius: 16px;
 
-  /*
-    OPACIDAD DEL BOTÓN SALIR:
-    subí el último número si querés que resalte más.
-  */
   background-color: rgba(255, 255, 255, 0.14);
 
   color: #ffffff;
@@ -576,13 +574,26 @@ label {
   border-color: rgba(255, 255, 255, 0.35);
 }
 
-/* Logo viejo centrado.
-   Lo dejamos por compatibilidad, pero en el nuevo index no es protagonista. */
+/* Compatibilidad con estructura vieja */
+.app-rural-user-header {
+  position: relative;
+  z-index: 4;
+
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
 .app-rural-logo-header {
   display: flex;
   justify-content: center;
   align-items: center;
+
   min-width: 0;
+
   position: relative;
   z-index: 4;
 }
@@ -591,26 +602,32 @@ label {
   width: 140px;
   max-width: 100%;
   height: auto;
+
   object-fit: contain;
   display: block;
+
   border-radius: 18px;
 }
 
-/* Foto de perfil:
-   queda definida por compatibilidad, pero en el nuevo index va oculta. */
 .app-rural-profile-photo {
   width: 58px;
   height: 58px;
   min-width: 58px;
+
   border-radius: 50%;
+
   background: linear-gradient(135deg, #ffffff, #eaf4ec);
   border: 2px solid rgba(255, 255, 255, 0.55);
+
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   overflow: hidden;
   cursor: pointer;
+
   position: relative;
   z-index: 4;
 }
@@ -618,6 +635,7 @@ label {
 .app-rural-profile-photo img {
   width: 100%;
   height: 100%;
+
   object-fit: cover;
 }
 
@@ -626,35 +644,35 @@ label {
   font-size: 1.55rem;
 }
 
-/* =========================================================
-   Card del usuario con datos vivos
-   ========================================================= */
-
+/* Card del usuario */
 #usuarioActivo {
   position: relative;
-  z-index: 3;
-  margin-top: 14px;
+  z-index: 10;
+
+  width: 100%;
+  max-width: 430px;
+
+  margin: 8px auto 0 auto;
 }
 
 .app-rural-user-card {
-  /*
-    OPACIDAD DE LA CARD DEL USUARIO:
-    si hay video debajo y querés más lectura, subí a 0.98.
-  */
-  background-color: rgba(220, 239, 220, 0.96);
+  background: rgba(255, 255, 255, 0.18);
 
-  border: 1px solid #b8d4bf;
+  border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 24px;
-  padding: 16px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+
+  padding: 15px;
+
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
 
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  gap: 14px;
 
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  gap: 12px;
+
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
 }
 
 .app-rural-user-card-info {
@@ -663,20 +681,29 @@ label {
 
 .app-rural-user-card-info strong {
   display: block;
-  color: var(--texto);
+
+  color: #ffffff;
+
   font-size: 1.08rem;
   line-height: 1.15;
+
   margin-bottom: 8px;
+
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
 }
 
 .app-rural-user-card-info span {
   display: block;
-  color: var(--texto);
+
+  color: #ffffff;
   font-size: 0.95rem;
+
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
 }
 
 .app-rural-user-card-live {
   min-width: 0;
+  overflow: hidden;
 }
 
 .app-rural-live-desktop {
@@ -688,18 +715,34 @@ label {
 }
 
 .app-rural-live-mobile-card {
+  width: 100%;
   min-height: 54px;
-  background-color: rgba(31, 107, 67, 0.1);
-  border: 1px solid rgba(31, 107, 67, 0.16);
+
+  padding: 10px 12px;
+
   border-radius: 18px;
-  color: var(--texto);
+
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+
+  color: #ffffff;
+
+  font-size: 0.9rem;
   font-weight: 800;
-  padding: 13px 14px;
+  line-height: 1.25;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   text-align: center;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
 }
 
 .app-rural-live-mobile-card.animar {
@@ -719,48 +762,221 @@ label {
 }
 
 .app-rural-live-card {
-  background-color: rgba(255, 255, 255, 0.58);
-  border: 1px solid rgba(31, 107, 67, 0.14);
+  min-width: 0;
+
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   border-radius: 18px;
+
   padding: 12px;
+
   display: grid;
   grid-template-columns: 38px 1fr;
   align-items: center;
+
   gap: 10px;
-  color: var(--texto);
-  min-width: 0;
+
+  color: #ffffff;
+
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
 }
 
 .app-rural-live-card i {
   width: 38px;
   height: 38px;
+
   border-radius: 14px;
+
   background-color: var(--verde-suave);
+  color: var(--verde-principal);
+
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--verde-principal);
+
   font-size: 1rem;
 }
 
 .app-rural-live-card span {
   display: block;
+
+  color: #ffffff;
+
   font-size: 0.68rem;
-  color: var(--verde-principal);
   font-weight: 900;
+
   text-transform: uppercase;
   letter-spacing: 0.08em;
+
   margin-bottom: 2px;
+
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
 }
 
 .app-rural-live-card strong {
   display: block;
-  color: var(--texto);
+
+  color: #ffffff;
+
   font-size: 0.86rem;
   line-height: 1.15;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+
+  white-space: normal;
+
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+}
+
+@media (min-width: 768px) {
+  .app-rural-top-panel {
+    margin: -28px 0 28px calc(50% - 50vw);
+
+    padding:
+      0 max(24px, calc((100vw - 760px) / 2 + 24px)) 18px max(24px, calc((100vw - 760px) / 2 + 24px));
+  }
+
+  .app-rural-top-panel-inner,
+  .app-rural-top-bar,
+  #usuarioActivo {
+    max-width: 760px;
+  }
+
+  .app-rural-top-logo-tab-img {
+    width: 112px;
+    max-width: 112px;
+  }
+
+  .app-rural-user-card {
+    grid-template-columns: 240px 1fr;
+  }
+
+  .app-rural-live-desktop {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .app-rural-live-mobile {
+    display: none;
+  }
+}
+
+@media (min-width: 1100px) {
+  .app-rural-top-panel {
+    margin: -38px 0 34px calc(50% - 50vw);
+
+    padding:
+      0 max(32px, calc((100vw - 1120px) / 2 + 32px)) 22px max(32px, calc((100vw - 1120px) / 2 + 32px));
+  }
+
+  .app-rural-top-panel-inner,
+  .app-rural-top-bar,
+  #usuarioActivo {
+    max-width: 1120px;
+  }
+
+  .app-rural-user-card {
+    grid-template-columns: 300px 1fr;
+    padding: 20px;
+  }
+
+  .app-rural-user-card-info strong {
+    font-size: 1.25rem;
+  }
+
+  .app-rural-user-card-info span {
+    font-size: 1rem;
+  }
+
+  .app-rural-live-card {
+    padding: 14px;
+  }
+
+  .app-rural-live-card strong {
+    font-size: 0.95rem;
+  }
+
+  .app-rural-brand-logo {
+    width: 210px;
+  }
+
+  .app-rural-profile-photo {
+    width: 76px;
+    height: 76px;
+    min-width: 76px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-rural-top-panel {
+    margin: -22px 0 22px calc(50% - 50vw);
+
+    padding:
+      0 max(16px, calc((100vw - 430px) / 2 + 16px)) 16px max(16px, calc((100vw - 430px) / 2 + 16px));
+  }
+
+  .app-rural-top-bar {
+    padding-top: 84px;
+    min-height: 136px;
+  }
+
+  .app-rural-menu-button {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+  }
+
+  #btnCerrarSesion {
+    height: 42px;
+    min-height: 42px;
+
+    padding: 7px 11px;
+
+    font-size: 0.8rem;
+  }
+
+  .app-rural-user-card {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+
+    padding: 14px;
+  }
+
+  .app-rural-user-card-info strong {
+    font-size: 1rem;
+  }
+
+  .app-rural-user-card-info span {
+    font-size: 0.9rem;
+  }
+
+  .app-rural-live-mobile-card {
+    min-height: 50px;
+    padding: 12px;
+
+    font-size: 0.86rem;
+  }
+
+  .app-rural-top-video-media {
+    filter: blur(1px) brightness(0.78) saturate(0.9);
+    transform: scale(1.12);
+  }
+
+  .app-rural-top-video::after {
+    background: rgba(4, 38, 27, 0.28);
+  }
+
+  .app-rural-brand-logo {
+    width: 118px;
+  }
+
+  .app-rural-profile-photo {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+  }
 }
 
 /* =========================================================
@@ -1175,12 +1391,10 @@ button.app-rural-side-item {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(18, 63, 43, 0.82) 0%,
-    rgba(18, 63, 43, 0.45) 45%,
-    rgba(18, 63, 43, 0.28) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(18, 63, 43, 0.82) 0%,
+      rgba(18, 63, 43, 0.45) 45%,
+      rgba(18, 63, 43, 0.28) 100%);
 }
 
 .dashboard-banner-texto {
@@ -1507,8 +1721,7 @@ button.app-rural-side-item {
 
   .app-rural-top-panel {
     margin: -28px 0 28px calc(50% - 50vw);
-    padding: 22px max(24px, calc((100vw - 760px) / 2 + 24px)) 18px
-      max(24px, calc((100vw - 760px) / 2 + 24px));
+    padding: 22px max(24px, calc((100vw - 760px) / 2 + 24px)) 18px max(24px, calc((100vw - 760px) / 2 + 24px));
   }
 
   .app-rural-top-panel-inner {
@@ -1613,8 +1826,7 @@ button.app-rural-side-item {
 
   .app-rural-top-panel {
     margin: -38px 0 34px calc(50% - 50vw);
-    padding: 26px max(32px, calc((100vw - 1120px) / 2 + 32px)) 22px
-      max(32px, calc((100vw - 1120px) / 2 + 32px));
+    padding: 26px max(32px, calc((100vw - 1120px) / 2 + 32px)) 22px max(32px, calc((100vw - 1120px) / 2 + 32px));
     border-radius: 0 0 34px 34px;
   }
 
@@ -1729,8 +1941,7 @@ button.app-rural-side-item {
 
   .app-rural-top-panel {
     margin: -22px 0 22px calc(50% - 50vw);
-    padding: 16px max(16px, calc((100vw - 430px) / 2 + 16px)) 14px
-      max(16px, calc((100vw - 430px) / 2 + 16px));
+    padding: 16px max(16px, calc((100vw - 430px) / 2 + 16px)) 14px max(16px, calc((100vw - 430px) / 2 + 16px));
   }
 
   .app-rural-top-bar {
@@ -1816,97 +2027,7 @@ button.app-rural-side-item {
 }
 
 
-/* =========================================================
-   AJUSTE FINAL CABECERA CON VIDEO
-   Corrige solapamiento de logo, botones y card de usuario
-   ========================================================= */
 
-/* La lengüeta mantiene tamaño controlado */
-.app-rural-top-panel {
-  padding-top: 14px !important;
-  padding-bottom: 18px !important;
-}
-
-/* Video dentro de la lengüeta */
-.app-rural-top-video-media {
-  filter: blur(1px) brightness(0.72) saturate(0.9) !important;
-  transform: scale(1.08) !important;
-}
-
-/* Capa verde sobre el video */
-.app-rural-top-video::after {
-  /*
-    OPACIDAD VERDE:
-    bajá a 0.25 si querés ver más video
-    subí a 0.45 si querés que se vea más sobrio
-  */
-  background: rgba(4, 38, 27, 0.38) !important;
-}
-
-/* Logo superior más chico para no tapar botones */
-.app-rural-top-logo-tab {
-  padding: 8px 14px 11px 14px !important;
-  border-radius: 0 0 18px 18px !important;
-}
-
-.app-rural-top-logo-tab-img {
-  width: 124px !important;
-  max-width: 124px !important;
-}
-
-/* Barra de botones: baja un poco para no chocar con logo */
-.app-rural-top-bar {
-  min-height: 72px !important;
-  padding-top: 34px !important;
-}
-
-/* Botones siempre en fila */
-.app-rural-header-actions {
-  flex-direction: row !important;
-  gap: 8px !important;
-}
-
-/* Botón menú */
-.app-rural-menu-button {
-  width: 44px !important;
-  height: 44px !important;
-  min-width: 44px !important;
-  border-radius: 16px !important;
-}
-
-/* Botón salir */
-#btnCerrarSesion {
-  height: 44px !important;
-  min-height: 44px !important;
-  padding: 8px 13px !important;
-  border-radius: 16px !important;
-}
-
-/* Card de usuario */
-#usuarioActivo {
-  margin-top: 8px !important;
-}
-
-/* En mobile la card queda simple y estable */
-.app-rural-user-card {
-  grid-template-columns: 1fr 1fr !important;
-  gap: 12px !important;
-  padding: 15px !important;
-}
-
-/* Evita que los datos vivos se salgan o se pisen */
-.app-rural-user-card-live {
-  min-width: 0 !important;
-  overflow: hidden !important;
-}
-
-.app-rural-live-mobile-card {
-  width: 100% !important;
-  min-height: 54px !important;
-  padding: 10px 12px !important;
-  font-size: 0.9rem !important;
-  line-height: 1.25 !important;
-}
 
 /* =========================================================
    CELULAR
@@ -1958,6 +2079,7 @@ button.app-rural-side-item {
    ========================================================= */
 
 @media (min-width: 768px) {
+
   .app-rural-top-bar,
   #usuarioActivo {
     max-width: 760px !important;
@@ -1989,6 +2111,7 @@ button.app-rural-side-item {
 }
 
 @media (min-width: 1100px) {
+
   .app-rural-top-bar,
   #usuarioActivo {
     max-width: 1120px !important;
@@ -2018,67 +2141,7 @@ button.app-rural-side-item {
 }
 
 
-/* =========================================================
-   MOBILE - Menú izquierda y Salir derecha
-   ========================================================= */
 
-@media (max-width: 480px) {
-  .app-rural-top-bar {
-    width: 100% !important;
-    max-width: 430px !important;
-    margin: 0 auto !important;
-
-    display: flex !important;
-    justify-content: center !important;
-  }
-
-  .app-rural-header-actions {
-    width: 100% !important;
-
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-
-    gap: 0 !important;
-  }
-
-  .app-rural-menu-button {
-    margin-left: 0 !important;
-  }
-
-  #btnCerrarSesion {
-    margin-left: auto !important;
-  }
-}
-
-
-/* =========================================================
-   CONTROL FINAL - Pestaña superior del logo RuralData
-   Este bloque manda sobre los anteriores porque está al final.
-   ========================================================= */
-
-.app-rural-top-logo-tab {
-  /*
-    COLOR DE LA PESTAÑA DEL LOGO
-
-    Primer rgba = verde oscuro izquierdo
-    Segundo rgba = verde más claro derecho
-
-    Último número = opacidad:
-    1    = sólido
-    0.85 = un poco transparente
-    0.65 = bastante transparente
-  */
-  background: linear-gradient(
-    135deg,
-    #07271E,
-    #07271E
-  ) !important;
-
-  border: 1px solid rgb(255, 255, 255) !important;
-  border-top: none !important;
-}
 
 
 
@@ -2132,12 +2195,10 @@ button.app-rural-side-item {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(3, 18, 13, 0.28) 0%,
       rgba(5, 32, 22, 0.38) 45%,
-      rgba(3, 18, 13, 0.62) 100%
-    );
+      rgba(3, 18, 13, 0.62) 100%);
 }
 
 /* Texto de la transición */
@@ -2577,98 +2638,124 @@ button.app-rural-side-item {
   }
 }
 
-
-
-
 /* =========================================================
-   Dashboard - Card usuario semi transparente tipo vidrio
+   Corrección botones menú / salir en cabecera
    ========================================================= */
 
-.app-rural-user-card {
-  background: rgba(255, 255, 255, 0.18) !important;
-
-  backdrop-filter: blur(16px) saturate(1.15) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(1.15) !important;
-
-  border: 1px solid rgba(255, 255, 255, 0.42) !important;
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22) !important;
+.app-rural-top-bar {
+  display: flex !important;
+  justify-content: center !important;
 }
 
-.app-rural-user-card-info strong,
-.app-rural-user-card-info span {
-  color: #ffffff !important;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55) !important;
+.app-rural-header-actions {
+  width: 100% !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  gap: 8px !important;
 }
 
-.app-rural-live-mobile-card,
-.app-rural-live-card {
-  background: rgba(255, 255, 255, 0.16) !important;
-
-  backdrop-filter: blur(14px) saturate(1.2) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(1.2) !important;
-
-  border: 1px solid rgba(255, 255, 255, 0.38) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+.app-rural-menu-button {
+  margin-left: 0 !important;
 }
 
-.app-rural-live-mobile-card,
-.app-rural-live-card span,
-.app-rural-live-card strong,
-.app-rural-live-card i {
-  color: #ffffff !important;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55) !important;
+#btnCerrarSesion {
+  margin-left: auto !important;
+}
+
+@media (max-width: 480px) {
+  .app-rural-top-bar {
+    padding-top: 84px !important;
+    min-height: 136px !important;
+  }
+
+  .app-rural-header-actions {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 0 !important;
+  }
 }
 
 
 
 /* =========================================================
-   Dashboard - fundido inferior sin tocar el widget
+   RESCATE CABECERA DASHBOARD
+   Recupera logo, botones, video y widget usuario
    ========================================================= */
 
 .app-rural-top-panel {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 70 !important;
+
+  width: 100vw !important;
+  margin: -22px 0 22px calc(50% - 50vw) !important;
+
+  padding:
+    0 max(16px, calc((100vw - 430px) / 2 + 16px)) 16px max(16px, calc((100vw - 430px) / 2 + 16px)) !important;
+
+  background: #07271e !important;
+
   border-radius: 0 !important;
-  border-bottom: none !important;
+  border: none !important;
   box-shadow: none !important;
+
   overflow: hidden !important;
 }
 
-/* El contenido queda totalmente por encima */
-.app-rural-top-bar,
-#usuarioActivo,
-.app-rural-top-logo-tab {
-  position: relative !important;
-  z-index: 10 !important;
+/* Video de fondo */
+.app-rural-top-video {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }
 
-/* Fundido más bajo y más corto */
+.app-rural-top-video-media {
+  width: 100% !important;
+  height: 100% !important;
+
+  object-fit: cover !important;
+
+  filter: blur(1px) brightness(0.74) saturate(0.95) !important;
+  transform: scale(1.1) !important;
+}
+
+.app-rural-top-video::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+
+  background: rgba(4, 38, 27, 0.26) !important;
+}
+
+/* Fundido inferior */
 .app-rural-top-panel::after {
-  content: "";
-  position: absolute;
+  content: "" !important;
+  position: absolute !important;
 
-  left: 0;
-  right: 0;
-  bottom: -1px;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: -1px !important;
 
-  height: 46px;
+  height: 46px !important;
 
-  pointer-events: none;
-  z-index: 3;
+  pointer-events: none !important;
+  z-index: 3 !important;
 
-  background: linear-gradient(
-    180deg,
-    rgba(244, 241, 225, 0) 0%,
-    rgba(244, 241, 225, 0.35) 45%,
-    rgba(244, 241, 225, 1) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(244, 241, 225, 0) 0%,
+      rgba(244, 241, 225, 0.35) 45%,
+      rgba(244, 241, 225, 1) 100%) !important;
 }
 
-
-
-
-/* =========================================================
-   Dashboard - Corrección franja logo centrada
-   ========================================================= */
-
+/* Franja verde superior con logo centrado */
 .app-rural-top-logo-tab {
   position: absolute !important;
   top: 0 !important;
@@ -2687,13 +2774,13 @@ button.app-rural-side-item {
 
   padding: 13px 16px 14px 16px !important;
 
-  background: rgba(5, 44, 31, 0.975) !important;
+ background: #07271D !important;
 
   backdrop-filter: blur(16px) saturate(1.2) !important;
   -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
 
   border: none !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22) !important;
   border-radius: 0 0 22px 22px !important;
 
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24) !important;
@@ -2703,49 +2790,203 @@ button.app-rural-side-item {
 
 .app-rural-top-logo-tab-img {
   display: block !important;
+
   width: 112px !important;
   max-width: 112px !important;
   height: auto !important;
 
   margin: 0 auto !important;
-  transform: none !important;
+
   object-fit: contain !important;
+  transform: none !important;
 }
 
-
-/* =========================================================
-   Dashboard - Separar botones de la franja superior
-   ========================================================= */
-
-.app-rural-top-logo-tab {
-  z-index: 8 !important;
-}
-
-/* Bajamos la fila de menú/salir para que no quede debajo de la franja */
+/* Fila de botones menú / salir */
 .app-rural-top-bar {
   position: relative !important;
   z-index: 20 !important;
 
-  padding-top: 88px !important;
-  min-height: 140px !important;
+  width: 100% !important;
+  max-width: 430px !important;
+
+  margin: 0 auto !important;
+
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+
+  padding-top: 82px !important;
+  min-height: 112px !important;
 }
 
-/* Botones siempre por encima */
 .app-rural-header-actions {
   position: relative !important;
   z-index: 25 !important;
+
+  width: 100% !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  gap: 8px !important;
 }
 
 .app-rural-menu-button,
 #btnCerrarSesion {
   position: relative !important;
   z-index: 30 !important;
+
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
 }
 
-/* Ajuste celular */
-@media (max-width: 480px) {
+.app-rural-menu-button {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.32) !important;
+
+  background: rgba(255, 255, 255, 0.14) !important;
+
+  color: #ffffff !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  font-size: 1.25rem !important;
+}
+
+.app-rural-menu-button i {
+  color: #ffffff !important;
+}
+
+#btnCerrarSesion {
+  height: 42px !important;
+  min-height: 42px !important;
+
+  padding: 7px 11px !important;
+
+  border-radius: 16px !important;
+
+  background: rgba(255, 255, 255, 0.14) !important;
+
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+
+  font-size: 0.8rem !important;
+}
+
+/* Widget usuario */
+#usuarioActivo {
+  position: relative !important;
+  z-index: 10 !important;
+
+  width: 100% !important;
+  max-width: 430px !important;
+
+  margin: 8px auto 0 auto !important;
+}
+
+.app-rural-user-card {
+  background: rgba(255, 255, 255, 0.18) !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.42) !important;
+  border-radius: 24px !important;
+
+  padding: 14px !important;
+
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22) !important;
+
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  align-items: center !important;
+
+  gap: 10px !important;
+
+  backdrop-filter: blur(16px) saturate(1.15) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.15) !important;
+}
+
+.app-rural-user-card-info strong,
+.app-rural-user-card-info span,
+.app-rural-live-mobile-card,
+.app-rural-live-card span,
+.app-rural-live-card strong {
+  color: #ffffff !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55) !important;
+}
+
+.app-rural-live-mobile-card,
+.app-rural-live-card {
+  background: rgba(255, 255, 255, 0.16) !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.38) !important;
+
+  backdrop-filter: blur(14px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.2) !important;
+}
+
+/* Escritorio */
+@media (min-width: 768px) {
+  .app-rural-top-panel {
+    margin: -28px 0 28px calc(50% - 50vw) !important;
+
+    padding:
+      0 max(24px, calc((100vw - 760px) / 2 + 24px)) 18px max(24px, calc((100vw - 760px) / 2 + 24px)) !important;
+  }
+
+  .app-rural-top-bar,
+  #usuarioActivo {
+    max-width: 760px !important;
+  }
+
   .app-rural-top-bar {
-    padding-top: 84px !important;
-    min-height: 136px !important;
+    padding-top: 86px !important;
+    min-height: 116px !important;
+  }
+
+  .app-rural-user-card {
+    grid-template-columns: 240px 1fr !important;
+    padding: 18px !important;
+  }
+
+  .app-rural-live-desktop {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .app-rural-live-mobile {
+    display: none !important;
+  }
+}
+
+/* PC grande */
+@media (min-width: 1100px) {
+  .app-rural-top-panel {
+    margin: -38px 0 34px calc(50% - 50vw) !important;
+
+    padding:
+      0 max(32px, calc((100vw - 1120px) / 2 + 32px)) 22px max(32px, calc((100vw - 1120px) / 2 + 32px)) !important;
+  }
+
+  .app-rural-top-bar,
+  #usuarioActivo {
+    max-width: 1120px !important;
+  }
+
+  .app-rural-top-bar {
+    padding-top: 88px !important;
+    min-height: 118px !important;
+  }
+
+  .app-rural-user-card {
+    grid-template-columns: 300px 1fr !important;
+    padding: 20px !important;
   }
 }
