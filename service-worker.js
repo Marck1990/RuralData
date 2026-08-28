@@ -1,4 +1,4 @@
-const CACHE_NAME = "ruraldata-cache-v45";
+const CACHE_NAME = "ruraldata-cache-v47";
 
 
 const ARCHIVOS_CACHE = [
@@ -34,6 +34,7 @@ const ARCHIVOS_CACHE = [
   "pages/txt-snig.html",
   "pages/importar-txt.html",
 
+  "assets/img/fondo-acciones-ruraldata.png",
   "assets/img/fondo-login-ruraldata.png",
   "assets/img/logo-ruraldata.png",
   "assets/img/SoloLogo.png"

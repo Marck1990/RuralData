@@ -2990,3 +2990,195 @@ button.app-rural-side-item {
     padding: 20px !important;
   }
 }
+
+
+/* =========================================================
+   Widget compacto para acciones internas
+   ========================================================= */
+
+.widget-accion-ruraldata {
+  width: 100%;
+
+  margin: 0 0 18px 0;
+  padding: 14px;
+
+  border-radius: 24px;
+
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(18, 63, 43, 0.12);
+
+  box-shadow: 0 10px 24px rgba(18, 63, 43, 0.08);
+
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+
+  display: grid;
+  gap: 10px;
+}
+
+.widget-accion-ruraldata-fijos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.widget-accion-ruraldata-dato {
+  min-width: 0;
+}
+
+.widget-accion-ruraldata-dato span,
+.widget-accion-ruraldata-rotativo span {
+  display: block;
+
+  color: var(--verde-principal);
+
+  font-size: 0.68rem;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+
+  margin-bottom: 3px;
+}
+
+.widget-accion-ruraldata-dato strong {
+  display: block;
+
+  color: var(--texto);
+
+  font-size: 0.88rem;
+  line-height: 1.15;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.widget-accion-ruraldata-rotativo {
+  min-height: 56px;
+
+  padding: 12px 14px;
+
+  border-radius: 18px;
+
+  background: rgba(220, 239, 220, 0.7);
+  border: 1px solid rgba(31, 107, 67, 0.16);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.widget-accion-ruraldata-rotativo strong {
+  display: block;
+
+  color: var(--texto);
+
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.animar-widget-accion {
+  animation: widgetAccionDatoFlota 0.35s ease;
+}
+
+@keyframes widgetAccionDatoFlota {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .widget-accion-ruraldata {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+  }
+
+  .widget-accion-ruraldata-rotativo {
+    min-height: 64px;
+  }
+}
+
+
+
+
+/* =========================================================
+   Fondo para pantallas internas / acciones RuralData
+   No afecta login ni dashboard principal
+   ========================================================= */
+
+body:not(.login-rural-body):not(.app-rural-body) {
+  min-height: 100vh;
+
+  background-color: var(--crema);
+background-image:
+  linear-gradient(
+    180deg,
+    rgba(244, 239, 227, 0.36) 0%,
+    rgba(244, 239, 227, 0.24) 45%,
+    rgba(244, 239, 227, 0.58) 100%
+  ),
+  url("../assets/img/fondoPantallaSOLEADO.png");
+
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* Mantiene el contenido por encima del fondo */
+body:not(.login-rural-body):not(.app-rural-body) main {
+  position: relative;
+  z-index: 1;
+}
+
+/* En celular evitamos problemas con background fixed */
+@media (max-width: 768px) {
+  body:not(.login-rural-body):not(.app-rural-body) {
+    background-attachment: scroll;
+    background-position: center top;
+  }
+}
+
+
+
+/* =========================================================
+   Acciones internas - widgets con efecto vidrio
+   Mismo estilo visual que el widget del dashboard
+   ========================================================= */
+
+body:not(.login-rural-body):not(.app-rural-body) .widget-accion-ruraldata,
+body:not(.login-rural-body):not(.app-rural-body) .card,
+body:not(.login-rural-body):not(.app-rural-body) .animal-linea-compacta,
+body:not(.login-rural-body):not(.app-rural-body) .embarque-animal-linea,
+body:not(.login-rural-body):not(.app-rural-body) .pesaje-ultimo-card,
+body:not(.login-rural-body):not(.app-rural-body) .pesaje-form-card,
+body:not(.login-rural-body):not(.app-rural-body) .pesaje-historial-item,
+body:not(.login-rural-body):not(.app-rural-body) .desarrollo-pesaje-card {
+ background: rgba(255, 255, 255, 0.30);
+
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+
+  border: 1px solid rgba(255, 255, 255, 0.42);
+
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
+}
+
+/* Textos sobre vidrio en páginas internas */
+body:not(.login-rural-body):not(.app-rural-body) .widget-accion-ruraldata span {
+  color: var(--verde-principal);
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.45);
+}
+
+body:not(.login-rural-body):not(.app-rural-body) .widget-accion-ruraldata strong {
+  color: var(--texto);
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.55);
+}

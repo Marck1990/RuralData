@@ -260,6 +260,43 @@ function mostrarUsuarioActivo() {
 
   if (!sesion || !contenedor) return;
 
+  const ruta = window.location.pathname;
+  const esPaginaInterna = ruta.includes("/pages/");
+
+ if (esPaginaInterna) {
+  contenedor.innerHTML = `
+    <div class="widget-accion-ruraldata">
+
+      <div class="widget-accion-ruraldata-fijos">
+
+        <div class="widget-accion-ruraldata-dato">
+          <span>Día</span>
+          <strong id="accionInfoDia">Cargando...</strong>
+        </div>
+
+        <div class="widget-accion-ruraldata-dato">
+          <span>Clima</span>
+          <strong id="accionInfoClima">Sin conexión</strong>
+        </div>
+
+      </div>
+
+      <div class="widget-accion-ruraldata-rotativo">
+        <span id="accionRotativoTitulo">Hora</span>
+        <strong id="accionRotativoValor">--:--</strong>
+      </div>
+
+      <span id="accionInfoHora" class="d-none">--:--</span>
+      <span id="accionInfoTemp" class="d-none">--°C</span>
+      <span id="accionInfoLuna" class="d-none">Calculando...</span>
+
+    </div>
+  `;
+
+  inicializarWidgetAccionRuralData();
+  return;
+}
+
   contenedor.innerHTML = `
     <div class="app-rural-user-card">
 
@@ -312,6 +349,153 @@ function mostrarUsuarioActivo() {
     </div>
   `;
 }
+
+
+
+
+// Widget compacto para páginas internas de RuralData.
+// Queda preparado para conectar clima/temperatura con Capacitor más adelante.
+
+let indiceWidgetAccionRotativo = 0;
+
+function inicializarWidgetAccionRuralData() {
+  actualizarWidgetAccionRuralData();
+  actualizarRotativoWidgetAccion();
+
+  setInterval(function () {
+    actualizarWidgetAccionRuralData();
+  }, 1000);
+
+  setInterval(function () {
+    indiceWidgetAccionRotativo++;
+
+    if (indiceWidgetAccionRotativo > 2) {
+      indiceWidgetAccionRotativo = 0;
+    }
+
+    actualizarRotativoWidgetAccion();
+  }, 3500);
+}
+
+function actualizarWidgetAccionRuralData() {
+  const ahora = new Date();
+
+  const dia = obtenerDiaCortoWidgetAccion(ahora);
+  const hora = obtenerHoraWidgetAccion(ahora);
+  const luna = obtenerFaseLunarWidgetAccion(ahora);
+
+  const clima = "Sin conexión";
+  const temperatura = "--°C";
+
+  actualizarTextoWidgetAccion("accionInfoDia", dia);
+  actualizarTextoWidgetAccion("accionInfoClima", clima);
+  actualizarTextoWidgetAccion("accionInfoHora", hora);
+  actualizarTextoWidgetAccion("accionInfoTemp", temperatura);
+  actualizarTextoWidgetAccion("accionInfoLuna", luna);
+}
+
+
+function actualizarRotativoWidgetAccion() {
+  const titulo = document.getElementById("accionRotativoTitulo");
+  const valor = document.getElementById("accionRotativoValor");
+
+  if (!titulo || !valor) return;
+
+  const hora = document.getElementById("accionInfoHora");
+  const temp = document.getElementById("accionInfoTemp");
+  const luna = document.getElementById("accionInfoLuna");
+
+  const datos = [
+    {
+      titulo: "Hora",
+      valor: hora ? hora.textContent : "--:--"
+    },
+    {
+      titulo: "Temp",
+      valor: temp ? temp.textContent : "--°C"
+    },
+    {
+      titulo: "Luna",
+      valor: luna ? luna.textContent : "Calculando..."
+    }
+  ];
+
+  const datoActual = datos[indiceWidgetAccionRotativo];
+
+  titulo.textContent = datoActual.titulo;
+  valor.textContent = datoActual.valor;
+
+  valor.classList.remove("animar-widget-accion");
+
+  setTimeout(function () {
+    valor.classList.add("animar-widget-accion");
+  }, 20);
+}
+
+function actualizarTextoWidgetAccion(idElemento, valor) {
+  const elemento = document.getElementById(idElemento);
+
+  if (!elemento) return;
+
+  elemento.textContent = valor;
+}
+
+function obtenerDiaCortoWidgetAccion(fecha) {
+  const dias = ["D", "L", "M", "M", "J", "V", "S"];
+  const meses = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "setiembre",
+    "octubre",
+    "noviembre",
+    "diciembre"
+  ];
+
+  const diaSemana = dias[fecha.getDay()];
+  const diaMes = fecha.getDate();
+  const mes = meses[fecha.getMonth()];
+
+  return diaSemana + "/" + diaMes + "/" + mes;
+}
+
+function obtenerHoraWidgetAccion(fecha) {
+  return fecha.toLocaleTimeString("es-UY", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function obtenerFaseLunarWidgetAccion(fecha) {
+  const lunaNuevaReferencia = new Date("2000-01-06T18:14:00Z");
+  const cicloLunar = 29.53058867;
+
+  const diferenciaTiempo = fecha.getTime() - lunaNuevaReferencia.getTime();
+  const diasPasados = diferenciaTiempo / (1000 * 60 * 60 * 24);
+
+  let fase = (diasPasados % cicloLunar) / cicloLunar;
+
+  if (fase < 0) {
+    fase = fase + 1;
+  }
+
+  if (fase < 0.03 || fase > 0.97) return "Luna nueva";
+  if (fase < 0.22) return "Luna creciente";
+  if (fase < 0.28) return "Cuarto creciente";
+  if (fase < 0.47) return "Gibosa creciente";
+  if (fase < 0.53) return "Luna llena";
+  if (fase < 0.72) return "Gibosa menguante";
+  if (fase < 0.78) return "Cuarto menguante";
+
+  return "Luna menguante";
+}
+
+
 
 function controlarAccesosPorRol() {
   const sesion = obtenerSesion();
