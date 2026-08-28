@@ -2192,3 +2192,116 @@ button.app-rural-side-item {
     transform: scale(1.04);
   }
 }
+
+
+/* =========================================================
+   Zoom extra del video login + entrada animada del dashboard
+   ========================================================= */
+
+/* 
+  Zoom lento adicional sobre el video de transición.
+  Esto se suma al movimiento propio del video.
+*/
+.login-transicion.activo .login-transicion-video {
+  animation: loginVideoZoomExtra 5.2s ease-out forwards;
+  transform-origin: center center;
+}
+
+@keyframes loginVideoZoomExtra {
+  0% {
+    transform: scale(1.02);
+  }
+
+  100% {
+    transform: scale(1.11);
+  }
+}
+
+/*
+  Entrada del dashboard:
+  aparece desde más chico a tamaño normal,
+  con origen visual en la lengüeta superior.
+*/
+.dashboard-entrada-activa main {
+  animation: dashboardZoomDesdeLengueta 3.05s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top center;
+}
+
+.dashboard-entrada-activa .app-rural-top-panel {
+  animation: lenguetaEntradaSuave 3.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top center;
+}
+
+@keyframes dashboardZoomDesdeLengueta {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(-24px);
+    filter: blur(8px);
+  }
+
+  45% {
+    opacity: 1;
+    filter: blur(2px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes lenguetaEntradaSuave {
+  0% {
+    opacity: 0;
+    transform: scale(0.86) translateY(-36px);
+    filter: blur(8px);
+  }
+
+  55% {
+    opacity: 1;
+    transform: scale(1.015) translateY(0);
+    filter: blur(1px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .login-transicion.activo .login-transicion-video {
+    animation-duration: 5.2s;
+  }
+
+  @keyframes loginVideoZoomExtra {
+    0% {
+      transform: scale(1.04);
+    }
+
+    100% {
+      transform: scale(1.14);
+    }
+  }
+
+  @keyframes dashboardZoomDesdeLengueta {
+    0% {
+      opacity: 0;
+      transform: scale(0.9) translateY(-20px);
+      filter: blur(7px);
+    }
+
+    45% {
+      opacity: 1;
+      filter: blur(2px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      filter: blur(0);
+    }
+  }
+}

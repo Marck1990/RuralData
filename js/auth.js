@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   protegerPagina();
   mostrarUsuarioActivo();
   controlarAccesosPorRol();
+    aplicarAnimacionEntradaDashboard();
 
   const btnCerrarSesion = document.getElementById("btnCerrarSesion");
 
@@ -142,16 +143,22 @@ function mostrarTransicionLogin(callback) {
   let yaRedirigio = false;
 
   function continuar() {
-    if (yaRedirigio) return;
+  if (yaRedirigio) return;
 
-    yaRedirigio = true;
+  yaRedirigio = true;
 
-    /*
-      No apagamos la transición antes de cambiar de página.
-      Así evitamos que se vea otra vez el login antes del dashboard.
-    */
-    callback();
-  }
+  /*
+    Marcamos que el dashboard debe entrar con animación.
+    Esto se lee al cargar index.html.
+  */
+  sessionStorage.setItem("ruraldata_animar_dashboard", "true");
+
+  /*
+    No apagamos la transición antes de cambiar de página.
+    Así evitamos que se vea otra vez el login antes del dashboard.
+  */
+  callback();
+}
 
   if (video) {
     video.currentTime = 0;
@@ -337,4 +344,20 @@ function formatearRol(rol) {
   if (rol === "trabajador") return "Trabajador";
   if (rol === "veterinario") return "Veterinario";
   return rol;
+}
+
+
+// Aplica una entrada suave al dashboard después del video de login.
+function aplicarAnimacionEntradaDashboard() {
+  const debeAnimar = sessionStorage.getItem("ruraldata_animar_dashboard");
+
+  if (debeAnimar !== "true") return;
+
+  sessionStorage.removeItem("ruraldata_animar_dashboard");
+
+  document.body.classList.add("dashboard-entrada-activa");
+
+  setTimeout(function () {
+    document.body.classList.remove("dashboard-entrada-activa");
+  }, 1400);
 }
