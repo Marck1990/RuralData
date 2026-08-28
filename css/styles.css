@@ -2809,3 +2809,173 @@ button.app-rural-side-item {
   text-shadow: 0 3px 12px rgba(0, 0, 0, 0.65) !important;
   margin-top: 14px !important;
 }
+
+/* =========================================================
+   Dashboard - Card usuario semi transparente tipo vidrio
+   ========================================================= */
+
+.app-rural-user-card {
+  background: rgba(255, 255, 255, 0.18) !important;
+
+  backdrop-filter: blur(16px) saturate(1.15) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.15) !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.42) !important;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22) !important;
+}
+
+.app-rural-user-card-info strong,
+.app-rural-user-card-info span {
+  color: #ffffff !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55) !important;
+}
+
+.app-rural-live-mobile-card,
+.app-rural-live-card {
+  background: rgba(255, 255, 255, 0.16) !important;
+
+  backdrop-filter: blur(14px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.2) !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.38) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+}
+
+.app-rural-live-mobile-card,
+.app-rural-live-card span,
+.app-rural-live-card strong,
+.app-rural-live-card i {
+  color: #ffffff !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55) !important;
+}
+
+
+
+/* =========================================================
+   Dashboard - fundido inferior sin tocar el widget
+   ========================================================= */
+
+.app-rural-top-panel {
+  border-radius: 0 !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+/* El contenido queda totalmente por encima */
+.app-rural-top-bar,
+#usuarioActivo,
+.app-rural-top-logo-tab {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Fundido más bajo y más corto */
+.app-rural-top-panel::after {
+  content: "";
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: -1px;
+
+  height: 46px;
+
+  pointer-events: none;
+  z-index: 3;
+
+  background: linear-gradient(
+    180deg,
+    rgba(244, 241, 225, 0) 0%,
+    rgba(244, 241, 225, 0.35) 45%,
+    rgba(244, 241, 225, 1) 100%
+  );
+}
+
+
+
+
+/* =========================================================
+   Dashboard - Corrección franja logo centrada
+   ========================================================= */
+
+.app-rural-top-logo-tab {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+
+  width: 100% !important;
+  max-width: none !important;
+
+  transform: none !important;
+  margin: 0 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 13px 16px 14px 16px !important;
+
+  background: rgba(5, 44, 31, 0.975) !important;
+
+  backdrop-filter: blur(16px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
+
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-radius: 0 0 22px 22px !important;
+
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24) !important;
+
+  z-index: 12 !important;
+}
+
+.app-rural-top-logo-tab-img {
+  display: block !important;
+  width: 112px !important;
+  max-width: 112px !important;
+  height: auto !important;
+
+  margin: 0 auto !important;
+  transform: none !important;
+  object-fit: contain !important;
+}
+
+
+/* =========================================================
+   Dashboard - Separar botones de la franja superior
+   ========================================================= */
+
+.app-rural-top-logo-tab {
+  z-index: 8 !important;
+}
+
+/* Bajamos la fila de menú/salir para que no quede debajo de la franja */
+.app-rural-top-bar {
+  position: relative !important;
+  z-index: 20 !important;
+
+  padding-top: 88px !important;
+  min-height: 140px !important;
+}
+
+/* Botones siempre por encima */
+.app-rural-header-actions {
+  position: relative !important;
+  z-index: 25 !important;
+}
+
+.app-rural-menu-button,
+#btnCerrarSesion {
+  position: relative !important;
+  z-index: 30 !important;
+}
+
+/* Ajuste celular */
+@media (max-width: 480px) {
+  .app-rural-top-bar {
+    padding-top: 84px !important;
+    min-height: 136px !important;
+  }
+}
