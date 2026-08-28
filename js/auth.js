@@ -127,6 +127,7 @@ function iniciarSesion(event) {
 }
 
 // Muestra la transición visual entre login y dashboard.
+// Muestra la transición visual entre login y dashboard.
 function mostrarTransicionLogin(callback) {
   const transicion = document.getElementById("transicionLogin");
   const video = document.getElementById("videoTransicionLogin");
@@ -144,11 +145,12 @@ function mostrarTransicionLogin(callback) {
     if (yaRedirigio) return;
 
     yaRedirigio = true;
-    transicion.classList.add("saliendo");
 
-    setTimeout(function () {
-      callback();
-    }, 450);
+    /*
+      No apagamos la transición antes de cambiar de página.
+      Así evitamos que se vea otra vez el login antes del dashboard.
+    */
+    callback();
   }
 
   if (video) {
@@ -175,6 +177,9 @@ function mostrarTransicionLogin(callback) {
 
   setTimeout(continuar, 2800);
 }
+
+
+
 
 function registrarUsuario(event) {
   event.preventDefault();
