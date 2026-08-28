@@ -57,21 +57,21 @@
         required
       />
 
-      <select id="categoria" class="form-select" required>
-        <option value="">Categoría</option>
-        <option value="Ternero">Ternero</option>
-        <option value="Ternera">Ternera</option>
-        <option value="Novillo">Novillo</option>
-        <option value="Vaquillona">Vaquillona</option>
-        <option value="Vaca">Vaca</option>
-        <option value="Toro">Toro</option>
-      </select>
+      <div>
+        <select id="categoria" class="form-select" required>
+          <option value="">Categoría</option>
+          <option value="Ternero">Ternero</option>
+          <option value="Ternera">Ternera</option>
+          <option value="Novillo">Novillo</option>
+          <option value="Vaquillona">Vaquillona</option>
+          <option value="Vaca">Vaca</option>
+          <option value="Toro">Toro</option>
+        </select>
 
-      <select id="sexo" class="form-select" required>
-        <option value="">Sexo</option>
-        <option value="Hembra">Hembra</option>
-        <option value="Macho">Macho</option>
-      </select>
+        <small id="ayudaSexoAutomatico" class="text-muted">
+          
+        </small>
+      </div>
 
       <input
         type="text"
@@ -96,6 +96,8 @@
       <button type="submit" class="btn btn-success btn-lg">
         Guardar animal
       </button>
+
+      <div id="mensajeRegistroAnimal"></div>
 
     </form>
 

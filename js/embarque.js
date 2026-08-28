@@ -82,16 +82,16 @@ function verificarAptitudPorBusqueda() {
 
   if (!animal) {
     resultado.innerHTML = `
-      <div class="alert alert-warning mb-0">
-        <h3 class="h5 mb-2">
-          Animal no encontrado
-        </h3>
+      <article class="embarque-resultado-compacto no-encontrado">
+        <div class="embarque-resultado-icono">
+          <i class="bi bi-question-circle"></i>
+        </div>
 
-        <p class="mb-0">
-          No existe un animal registrado con la caravana o RFID:
-          <strong>${identificacion}</strong>
-        </p>
-      </div>
+        <div class="embarque-resultado-info">
+          <strong>Animal no encontrado</strong>
+          <span>No existe registro para: ${limpiarTextoEmbarque(identificacion)}</span>
+        </div>
+      </article>
     `;
 
     seleccionarInputBusquedaEmbarque();
@@ -103,98 +103,47 @@ function verificarAptitudPorBusqueda() {
   const carencia = carenciasActivas[claveAnimal];
 
   if (carencia) {
-    const diasRestantes = calcularDiasRestantesEmbarque(carencia.fechaLiberacion);
-
-    resultado.innerHTML = `
-      <div class="alert alert-danger mb-0 resultado-embarque-alerta">
-        <div class="d-flex align-items-start gap-3">
-          <div class="resultado-embarque-icono">
-            <i class="bi bi-x-octagon"></i>
-          </div>
-
-          <div>
-            <h3 class="h4 mb-2">
-              NO APTO PARA EMBARQUE
-            </h3>
-
-            <p class="mb-1">
-              Animal: <strong>${animal.caravanaVisual || identificacion}</strong>
-            </p>
-
-            <p class="mb-1">
-              RFID: ${animal.codigoRFID || "Sin dato"}
-            </p>
-
-            <p class="mb-1">
-              Producto: ${carencia.producto || "Sin dato"}
-            </p>
-
-            <p class="mb-1">
-              Liberación sanitaria: <strong>${formatearFechaEmbarque(carencia.fechaLiberacion)}</strong>
-            </p>
-
-            <p class="mb-0">
-              Restan: <strong>${diasRestantes}</strong> día(s)
-            </p>
-          </div>
-        </div>
-      </div>
-    `;
+    resultado.innerHTML = crearHtmlAnimalEmbarqueCompacto(
+      animal,
+      "noApto",
+      carencia,
+      true
+    );
 
     cambiarTabEmbarque("noAptos");
     seleccionarInputBusquedaEmbarque();
     return;
   }
 
-  resultado.innerHTML = `
-    <div class="alert alert-success mb-0 resultado-embarque-apto">
-      <div class="d-flex align-items-start gap-3">
-        <div class="resultado-embarque-icono">
-          <i class="bi bi-check-circle"></i>
-        </div>
-
-        <div>
-          <h3 class="h4 mb-2">
-            APTO PARA EMBARQUE
-          </h3>
-
-          <p class="mb-1">
-            Animal: <strong>${animal.caravanaVisual || identificacion}</strong>
-          </p>
-
-          <p class="mb-1">
-            RFID: ${animal.codigoRFID || "Sin dato"}
-          </p>
-
-          <p class="mb-1">
-            Categoría: ${animal.categoria || "Sin dato"}
-          </p>
-
-          <p class="mb-0">
-            No tiene carencia sanitaria vigente registrada en RuralData.
-          </p>
-        </div>
-      </div>
-    </div>
-  `;
+  resultado.innerHTML = crearHtmlAnimalEmbarqueCompacto(
+    animal,
+    "apto",
+    null,
+    true
+  );
 
   cambiarTabEmbarque("aptos");
   seleccionarInputBusquedaEmbarque();
 }
 
-// Busca animal por caravana visual o RFID.
+// Busca animal por caravana visual, RFID completo o últimos 8 dígitos.
 function buscarAnimalPorIdentificacionEmbarque(identificacion) {
   const animales = obtenerAnimales();
+  const valorBuscado = normalizarTextoEmbarque(identificacion);
 
   for (let i = 0; i < animales.length; i++) {
     const animal = animales[i];
 
-    const caravanaVisual = animal.caravanaVisual ? animal.caravanaVisual.trim() : "";
-    const codigoRFID = animal.codigoRFID ? animal.codigoRFID.trim() : "";
+    const caravanaVisual = normalizarTextoEmbarque(animal.caravanaVisual || "");
+    const codigoRFID = normalizarTextoEmbarque(animal.codigoRFID || "");
+    const ultimosOchoRFID = codigoRFID.length >= 8
+      ? codigoRFID.slice(-8)
+      : "";
 
     if (
-      caravanaVisual === identificacion ||
-      codigoRFID === identificacion
+      caravanaVisual === valorBuscado ||
+      codigoRFID === valorBuscado ||
+      ultimosOchoRFID === valorBuscado
     ) {
       return animal;
     }
@@ -232,7 +181,7 @@ function mostrarResultadoBusquedaEmbarque(texto, tipo) {
 
   resultado.innerHTML = `
     <div class="alert alert-${tipo} mb-0">
-      ${texto}
+      ${limpiarTextoEmbarque(texto)}
     </div>
   `;
 }
@@ -366,48 +315,16 @@ function mostrarAnimalesNoAptos(lista) {
     const itemLista = lista[i];
     const animal = itemLista.animal;
     const carencia = itemLista.carencia;
-    const diasRestantes = calcularDiasRestantesEmbarque(carencia.fechaLiberacion);
 
     const item = document.createElement("article");
-    item.className = "card";
+    item.innerHTML = crearHtmlAnimalEmbarqueCompacto(
+      animal,
+      "noApto",
+      carencia,
+      false
+    );
 
-    item.innerHTML = `
-      <div class="card-body">
-        <span class="estado-pill badge-soft-red mb-3">
-          No apto para embarque
-        </span>
-
-        <h3 class="h5 mb-2">
-          ${animal.caravanaVisual || "Animal sin caravana"}
-        </h3>
-
-        <p class="mb-1">
-          RFID: ${animal.codigoRFID || "Sin dato"}
-        </p>
-
-        <p class="mb-1">
-          Categoría: ${animal.categoria || "Sin dato"}
-        </p>
-
-        <p class="mb-1">
-          Producto: ${carencia.producto || "Sin dato"}
-        </p>
-
-        <p class="mb-1">
-          Aplicación: ${formatearFechaEmbarque(carencia.fechaAplicacion)}
-        </p>
-
-        <p class="mb-1">
-          Liberación sanitaria: ${formatearFechaEmbarque(carencia.fechaLiberacion)}
-        </p>
-
-        <p class="mb-0">
-          Restan: <strong>${diasRestantes}</strong> día(s)
-        </p>
-      </div>
-    `;
-
-    contenedor.appendChild(item);
+    contenedor.appendChild(item.firstElementChild);
   }
 }
 
@@ -432,38 +349,129 @@ function mostrarAnimalesAptos(lista) {
     const animal = lista[i];
 
     const item = document.createElement("article");
-    item.className = "card";
+    item.innerHTML = crearHtmlAnimalEmbarqueCompacto(
+      animal,
+      "apto",
+      null,
+      false
+    );
 
-    item.innerHTML = `
-      <div class="card-body">
-        <span class="estado-pill badge-soft-green mb-3">
-          Apto según registros locales
+    contenedor.appendChild(item.firstElementChild);
+  }
+}
+
+// Crea una línea compacta de animal para embarque.
+function crearHtmlAnimalEmbarqueCompacto(animal, estado, carencia, esResultadoBusqueda) {
+  const esApto = estado === "apto";
+
+  const claseEstado = esApto ? "apto" : "no-apto";
+  const textoEstado = esApto ? "APTO" : "NO APTO";
+  const iconoEstado = esApto ? "bi-check-circle" : "bi-x-octagon";
+
+  const caravana = animal.caravanaVisual || "Sin caravana";
+  const rfid = animal.codigoRFID || "Sin RFID";
+  const categoria = animal.categoria || "Sin categoría";
+  const sexo = animal.sexo || "Sin sexo";
+  const raza = animal.raza || "";
+  const campo = animal.campo || "Sin campo";
+  const ultimoPeso = obtenerUltimoPesoAnimalEmbarque(animal.id);
+
+  const textoPeso = ultimoPeso
+    ? ultimoPeso.pesoKg + " kg"
+    : "Sin kg";
+
+  let detalleEstado = "";
+
+  if (esApto) {
+    detalleEstado = "Sin carencia sanitaria vigente registrada.";
+  } else {
+    const diasRestantes = calcularDiasRestantesEmbarque(carencia.fechaLiberacion);
+
+    detalleEstado = `
+      Producto: ${limpiarTextoEmbarque(carencia.producto || "Sin dato")} · 
+      libera ${formatearFechaEmbarque(carencia.fechaLiberacion)} · 
+      restan ${diasRestantes} día(s)
+    `;
+  }
+
+  const claseResultado = esResultadoBusqueda ? " resultado" : "";
+
+  return `
+    <div class="embarque-animal-linea ${claseEstado}${claseResultado}">
+      
+      <div class="embarque-animal-principal">
+
+        <div class="embarque-animal-identidad">
+          <strong>${limpiarTextoEmbarque(caravana)}</strong>
+          <span>${limpiarTextoEmbarque(rfid)}</span>
+        </div>
+
+        <div class="embarque-animal-estado ${claseEstado}">
+          <i class="bi ${iconoEstado}"></i>
+          ${textoEstado}
+        </div>
+
+      </div>
+
+      <div class="embarque-animal-detalle">
+        <span>
+          ${limpiarTextoEmbarque(categoria)}
+          ·
+          ${limpiarTextoEmbarque(sexo)}
+          ${raza ? "· " + limpiarTextoEmbarque(raza) : ""}
         </span>
 
-        <h3 class="h5 mb-2">
-          ${animal.caravanaVisual || "Animal sin caravana"}
-        </h3>
-
-        <p class="mb-1">
-          RFID: ${animal.codigoRFID || "Sin dato"}
-        </p>
-
-        <p class="mb-1">
-          Categoría: ${animal.categoria || "Sin dato"}
-        </p>
-
-        <p class="mb-1">
-          Sexo: ${animal.sexo || "Sin dato"}
-        </p>
-
-        <p class="mb-0">
-          Campo: ${animal.campo || "Sin dato"}
-        </p>
+        <span>
+          ${limpiarTextoEmbarque(campo)}
+        </span>
       </div>
-    `;
 
-    contenedor.appendChild(item);
+      <div class="embarque-animal-extra">
+
+        <span class="embarque-animal-peso">
+          <i class="bi bi-speedometer2"></i>
+          ${limpiarTextoEmbarque(textoPeso)}
+        </span>
+
+        <span class="embarque-animal-motivo ${claseEstado}">
+          ${detalleEstado}
+        </span>
+
+      </div>
+
+    </div>
+  `;
+}
+
+// Obtiene último peso del animal si existe función de pesajes.
+function obtenerUltimoPesoAnimalEmbarque(animalId) {
+  if (!animalId) return null;
+
+  if (typeof obtenerPesajes !== "function") {
+    return null;
   }
+
+  const pesajes = obtenerPesajes();
+  const pesajesAnimal = [];
+
+  for (let i = 0; i < pesajes.length; i++) {
+    if (pesajes[i].animalId === animalId) {
+      pesajesAnimal.push(pesajes[i]);
+    }
+  }
+
+  if (pesajesAnimal.length === 0) {
+    return null;
+  }
+
+  pesajesAnimal.sort(function (a, b) {
+    const fechaA = new Date(a.fecha || a.fechaRegistro || "");
+    const fechaB = new Date(b.fecha || b.fechaRegistro || "");
+
+    return fechaB - fechaA;
+  });
+
+  return pesajesAnimal[0];
 }
 
 // Devuelve una clave única para un animal.
@@ -552,6 +560,24 @@ function actualizarTextoEmbarque(idElemento, valor) {
   if (!elemento) return;
 
   elemento.textContent = valor;
+}
+
+// Normaliza texto para comparar.
+function normalizarTextoEmbarque(texto) {
+  return String(texto)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "");
+}
+
+// Limpia texto para imprimir en HTML.
+function limpiarTextoEmbarque(texto) {
+  return String(texto)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 // Actualiza los datos vivos de la card del usuario en esta pantalla.
