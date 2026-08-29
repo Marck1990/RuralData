@@ -7,12 +7,15 @@ const STORAGE_KEYS = {
   usuarios: "ruraldata_usuarios",
   sesion: "ruraldata_sesion",
   reproduccion: "ruraldata_reproduccion",
-  pesajes: "ruraldata_pesajes"
+  pesajes: "ruraldata_pesajes",
+  lotesEmbarque: "ruraldata_lotes_embarque",
+  animalesLotesEmbarque: "ruraldata_animales_lotes_embarque"
 };
 
 // Obtiene datos desde localStorage.
 function obtenerDatos(clave) {
   const datos = localStorage.getItem(clave);
+
   return datos ? JSON.parse(datos) : [];
 }
 
@@ -24,6 +27,7 @@ function guardarDatos(clave, datos) {
 // Obtiene la sesión activa.
 function obtenerSesion() {
   const sesion = localStorage.getItem(STORAGE_KEYS.sesion);
+
   return sesion ? JSON.parse(sesion) : null;
 }
 
@@ -114,6 +118,32 @@ function guardarPesajes(pesajes) {
   const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.pesajes);
 
   guardarDatos(clave, pesajes);
+}
+
+// Lotes de embarque separados por establecimiento.
+function obtenerLotesEmbarque() {
+  const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.lotesEmbarque);
+
+  return obtenerDatos(clave);
+}
+
+function guardarLotesEmbarque(lotes) {
+  const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.lotesEmbarque);
+
+  guardarDatos(clave, lotes);
+}
+
+// Animales asignados a lotes de embarque separados por establecimiento.
+function obtenerAnimalesLotesEmbarque() {
+  const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.animalesLotesEmbarque);
+
+  return obtenerDatos(clave);
+}
+
+function guardarAnimalesLotesEmbarque(animalesLotes) {
+  const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.animalesLotesEmbarque);
+
+  guardarDatos(clave, animalesLotes);
 }
 
 // Usuarios generales del sistema local.

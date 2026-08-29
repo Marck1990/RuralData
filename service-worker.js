@@ -1,4 +1,4 @@
-const CACHE_NAME = "ruraldata-cache-v49";
+const CACHE_NAME = "ruraldata-cache-v51";
 
 const ARCHIVOS_CACHE = [
   "./",
@@ -21,6 +21,7 @@ const ARCHIVOS_CACHE = [
   "js/embarque.js",
   "js/txt-snig.js",
   "js/importar-txt.js",
+  "js/lotes-embarque.js",
 
   "pages/registrar-animal.html",
   "pages/buscar-animal.html",
@@ -32,13 +33,23 @@ const ARCHIVOS_CACHE = [
   "pages/embarque.html",
   "pages/txt-snig.html",
   "pages/importar-txt.html",
+  "pages/lotes-embarque.html",
 
-  "assets/img/fondo-acciones-ruraldata.png",
+  "assets/img/campo-dashboard.webp",
   "assets/img/fondo-login-ruraldata.webp",
+  "assets/img/fondoPantallaSOLEADO.webp",
+  "assets/img/fondoPantallasRuralData.webp",
   "assets/img/logo-ruraldata.webp",
-  "assets/img/SoloLogo.webp"
+  "assets/img/SoloLogo.webp",
 
-  
+  "assets/video/fondo-campo.webm",
+  "assets/video/fondo-campo.mp4",
+  "assets/video/herefordPastando.webm",
+  "assets/video/herefordPastando.mp4",
+  "assets/video/transicion-login.webm",
+  "assets/video/transicion-login.mp4",
+  "assets/video/videoHereford.webm",
+  "assets/video/videoHereford.mp4"
 ];
 
 self.addEventListener("install", event => {
