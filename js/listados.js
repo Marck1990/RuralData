@@ -729,6 +729,7 @@ function crearPanelPesajesAnimalListado(animal) {
 }
 
 // Crea historial de pesajes.
+// Crea historial de pesajes compacto.
 function crearBloqueHistorialPesajesListado(idAnimal, pesajes) {
   if (pesajes.length === 0) {
     return `
@@ -749,33 +750,34 @@ function crearBloqueHistorialPesajesListado(idAnimal, pesajes) {
 
   for (let i = 0; i < pesajes.length; i++) {
     const pesaje = pesajes[i];
+    const observacionCorta = recortarObservacionPesajeListado(
+      pesaje.observaciones || "Sin observación",
+      48
+    );
 
     html += `
-      <div class="pesaje-historial-item">
-        <div>
-          <strong>${formatearPesoListado(pesaje.pesoKg)}</strong>
-          <span>${formatearFechaListado(pesaje.fecha)}</span>
-          <small>${escaparHTMLListado(pesaje.observaciones || "Sin observación")}</small>
-        </div>
+      <article class="pesaje-historial-item-compacto">
+        <button
+          type="button"
+          class="pesaje-historial-delete-btn"
+          onclick="eliminarPesajeAnimalListado('${idAnimal}', '${pesaje.id}')"
+          title="Eliminar pesaje"
+          aria-label="Eliminar pesaje"
+        >
+          <i class="bi bi-trash"></i>
+        </button>
 
-        <div class="pesaje-historial-actions">
-          <button
-            type="button"
-            class="btn btn-outline-success btn-sm"
-            onclick="editarPesajeAnimalListado('${idAnimal}', '${pesaje.id}')"
-          >
-            Editar
-          </button>
+        <div class="pesaje-historial-contenido">
+          <div class="pesaje-historial-linea-principal">
+            <strong>${formatearPesoListado(pesaje.pesoKg)}</strong>
+            <span>${formatearFechaListado(pesaje.fecha)}</span>
+          </div>
 
-          <button
-            type="button"
-            class="btn btn-outline-danger btn-sm"
-            onclick="eliminarPesajeAnimalListado('${idAnimal}', '${pesaje.id}')"
-          >
-            Eliminar
-          </button>
+          <div class="pesaje-historial-observacion" title="${escaparAttrListado(pesaje.observaciones || "Sin observación")}">
+            ${escaparHTMLListado(observacionCorta)}
+          </div>
         </div>
-      </div>
+      </article>
     `;
   }
 
@@ -786,7 +788,6 @@ function crearBloqueHistorialPesajesListado(idAnimal, pesajes) {
 
   return html;
 }
-
 // Crea bloque de desarrollo.
 function crearBloqueDesarrolloPesajesListado(pesajesOrdenadosDesc) {
   if (pesajesOrdenadosDesc.length < 2) {
@@ -1145,6 +1146,23 @@ function formatearPesoListado(peso) {
 
   return numero.toFixed(1) + " kg";
 }
+
+
+// recorta observaciones largas del historial de pesajes
+function recortarObservacionPesajeListado(texto, limite) {
+  const valor = String(texto || "").trim();
+
+  if (valor === "") {
+    return "Sin observación";
+  }
+
+  if (valor.length <= limite) {
+    return valor;
+  }
+
+  return valor.slice(0, limite).trim() + "...";
+}
+
 
 // Obtiene animal por id.
 function obtenerAnimalPorIdListado(idAnimal) {

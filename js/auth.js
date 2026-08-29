@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   protegerPagina();
   mostrarUsuarioActivo();
   controlarAccesosPorRol();
-    aplicarAnimacionEntradaDashboard();
+  aplicarAnimacionEntradaDashboard();
 
   const btnCerrarSesion = document.getElementById("btnCerrarSesion");
 
@@ -143,22 +143,22 @@ function mostrarTransicionLogin(callback) {
   let yaRedirigio = false;
 
   function continuar() {
-  if (yaRedirigio) return;
+    if (yaRedirigio) return;
 
-  yaRedirigio = true;
+    yaRedirigio = true;
 
-  /*
-    Marcamos que el dashboard debe entrar con animación.
-    Esto se lee al cargar index.html.
-  */
-  sessionStorage.setItem("ruraldata_animar_dashboard", "true");
+    /*
+      Marcamos que el dashboard debe entrar con animación.
+      Esto se lee al cargar index.html.
+    */
+    sessionStorage.setItem("ruraldata_animar_dashboard", "true");
 
-  /*
-    No apagamos la transición antes de cambiar de página.
-    Así evitamos que se vea otra vez el login antes del dashboard.
-  */
-  callback();
-}
+    /*
+      No apagamos la transición antes de cambiar de página.
+      Así evitamos que se vea otra vez el login antes del dashboard.
+    */
+    callback();
+  }
 
   if (video) {
     video.currentTime = 0;
@@ -263,8 +263,8 @@ function mostrarUsuarioActivo() {
   const ruta = window.location.pathname;
   const esPaginaInterna = ruta.includes("/pages/");
 
- if (esPaginaInterna) {
-  contenedor.innerHTML = `
+  if (esPaginaInterna) {
+    contenedor.innerHTML = `
     <div class="widget-accion-ruraldata">
 
       <div class="widget-accion-ruraldata-fijos">
@@ -293,9 +293,9 @@ function mostrarUsuarioActivo() {
     </div>
   `;
 
-  inicializarWidgetAccionRuralData();
-  return;
-}
+    inicializarWidgetAccionRuralData();
+    return;
+  }
 
   contenedor.innerHTML = `
     <div class="app-rural-user-card">
@@ -545,3 +545,162 @@ function aplicarAnimacionEntradaDashboard() {
     document.body.classList.remove("dashboard-entrada-activa");
   }, 1400);
 }
+
+
+// Inserta la lengüeta superior de RuralData en pantallas internas.
+function insertarLenguetaInternaRuralData() {
+  const body = document.body;
+
+  if (!body) return;
+
+  const esLogin = body.classList.contains("login-rural-body");
+  const esDashboard = body.classList.contains("app-rural-body");
+
+  if (esLogin || esDashboard) return;
+
+  const yaExiste = document.getElementById("lenguetaInternaRuralData");
+
+  if (yaExiste) return;
+
+  const lengueta = document.createElement("header");
+  lengueta.id = "lenguetaInternaRuralData";
+  lengueta.className = "lengueta-interna-ruraldata";
+
+  lengueta.innerHTML = `
+    <div class="lengueta-interna-ruraldata-acciones">
+      <a
+        href="../index.html"
+        class="lengueta-interna-ruraldata-btn"
+        aria-label="Volver al inicio"
+      >
+        <i class="bi bi-house-door"></i>
+      </a>
+    </div>
+
+    <div class="lengueta-interna-ruraldata-logo-wrap">
+      <img
+        src="../assets/img/logo-ruraldata.png"
+        alt="RuralData"
+        class="lengueta-interna-ruraldata-logo"
+      />
+    </div>
+
+    <div class="lengueta-interna-ruraldata-espacio"></div>
+  `;
+
+  body.insertBefore(lengueta, body.firstChild);
+}
+
+
+
+// Inicializa transiciones laterales entre dashboard y pantallas internas.
+let transicionRuralDataEnCurso = false;
+
+function inicializarTransicionesRuralData() {
+  const body = document.body;
+
+  if (!body) return;
+
+  if (body.classList.contains("login-rural-body")) {
+    return;
+  }
+
+  aplicarEntradaTransicionRuralData();
+
+  document.addEventListener("click", function (event) {
+    const enlace = event.target.closest("a");
+
+    if (!enlace) return;
+
+    if (!enlaceEsNavegacionInternaRuralData(enlace)) {
+      return;
+    }
+
+    if (transicionRuralDataEnCurso) {
+      return;
+    }
+
+    event.preventDefault();
+
+    transicionRuralDataEnCurso = true;
+
+    sessionStorage.setItem("ruraldata_transicion_slide", "true");
+
+    animarAccionMenuLateralRuralData(enlace);
+
+    document.body.classList.add("transicion-salida-ruraldata");
+
+    setTimeout(function () {
+      window.location.href = enlace.href;
+    }, 260);
+  });
+}
+
+// Aplica animación al entrar a una nueva pantalla.
+function aplicarEntradaTransicionRuralData() {
+  const debeAnimar = sessionStorage.getItem("ruraldata_transicion_slide");
+
+  if (debeAnimar !== "true") {
+    return;
+  }
+
+  sessionStorage.removeItem("ruraldata_transicion_slide");
+
+  document.body.classList.add("transicion-entrada-ruraldata");
+
+  setTimeout(function () {
+    document.body.classList.remove("transicion-entrada-ruraldata");
+  }, 420);
+}
+
+// Revisa si el link pertenece a la app y puede tener transición.
+function enlaceEsNavegacionInternaRuralData(enlace) {
+  const href = enlace.getAttribute("href");
+
+  if (!href) return false;
+  if (href === "#") return false;
+  if (href.startsWith("#")) return false;
+  if (href.startsWith("mailto:")) return false;
+  if (href.startsWith("tel:")) return false;
+  if (href.startsWith("javascript:")) return false;
+
+  if (enlace.target && enlace.target !== "_self") return false;
+  if (enlace.hasAttribute("download")) return false;
+  if (enlace.classList.contains("sin-transicion")) return false;
+
+  const urlDestino = new URL(enlace.href, window.location.href);
+
+  if (urlDestino.origin !== window.location.origin) {
+    return false;
+  }
+
+  if (
+    urlDestino.pathname === window.location.pathname &&
+    urlDestino.hash !== ""
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+
+
+// Anima la acción seleccionada del menú lateral antes de cambiar de pantalla.
+function animarAccionMenuLateralRuralData(enlace) {
+  if (!enlace) return;
+
+  const menuLateral = enlace.closest("aside");
+
+  if (!menuLateral) return;
+
+  enlace.classList.add("accion-menu-lateral-saliendo");
+  menuLateral.classList.add("menu-lateral-en-transicion");
+}
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  insertarLenguetaInternaRuralData();
+  inicializarTransicionesRuralData();
+});

@@ -1593,6 +1593,337 @@ button.app-rural-side-item {
    Pesajes y desarrollo
    ========================================================= */
 
+/* =========================================================
+   PESAJES - Historial compacto
+   Usado al desplegar el botón de kg en listado de animales.
+   Deja cada pesaje en una sola línea con botón Eliminar.
+   ========================================================= */
+
+.pesaje-historial-compacto {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.pesaje-historial-titulo {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.pesaje-historial-lista {
+  display: grid;
+  gap: 6px;
+}
+
+.pesaje-historial-linea {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding: 8px 10px;
+
+  border-radius: 14px;
+  border: 1px solid rgba(18, 63, 43, 0.12);
+
+  background: rgba(255, 255, 255, 0.62);
+
+  backdrop-filter: blur(10px) saturate(1.08);
+  -webkit-backdrop-filter: blur(10px) saturate(1.08);
+}
+
+.pesaje-historial-texto {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.pesaje-historial-texto strong {
+  flex: 0 0 auto;
+
+  color: var(--verde-oscuro);
+
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.pesaje-historial-texto span,
+.pesaje-historial-texto small {
+  color: var(--texto-suave);
+
+  font-size: 0.82rem;
+  line-height: 1.1;
+}
+
+.pesaje-historial-texto small {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pesaje-historial-eliminar {
+  flex: 0 0 auto;
+
+  min-height: 30px;
+
+  padding: 4px 9px;
+
+  border-radius: 999px;
+  border: 1px solid #dc3545;
+
+  background: rgba(255, 255, 255, 0.64);
+  color: #dc3545;
+
+  font-size: 0.74rem;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.pesaje-historial-eliminar:hover {
+  background: #dc3545;
+  color: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .pesaje-historial-linea {
+    gap: 7px;
+    padding: 7px 8px;
+  }
+
+  .pesaje-historial-texto {
+    gap: 4px;
+  }
+
+  .pesaje-historial-texto strong {
+    font-size: 0.82rem;
+  }
+
+  .pesaje-historial-texto span,
+  .pesaje-historial-texto small {
+    font-size: 0.74rem;
+  }
+
+  .pesaje-historial-eliminar {
+    min-height: 28px;
+    padding: 3px 8px;
+    font-size: 0.68rem;
+  }
+}
+
+
+/* =========================================================
+   PESAJES - Historial super compacto
+   peso + fecha en una línea
+   observación corta abajo
+   papelera roja a la izquierda
+   ========================================================= */
+
+.pesaje-historial-item-compacto {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: start;
+  width: 100%;
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  background-color: rgba(255, 255, 255, 0.88);
+  overflow: hidden;
+}
+
+.pesaje-historial-delete-btn {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  color: #c93a35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.pesaje-historial-delete-btn i {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.pesaje-historial-delete-btn:hover {
+  background-color: rgba(201, 58, 53, 0.08);
+}
+
+.pesaje-historial-contenido {
+  min-width: 0;
+  width: 100%;
+}
+
+.pesaje-historial-linea-principal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.pesaje-historial-linea-principal strong {
+  color: var(--verde-oscuro);
+  font-size: 0.98rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pesaje-historial-linea-principal span {
+  color: var(--gris);
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.pesaje-historial-observacion {
+  margin-top: 3px;
+  color: var(--gris);
+  font-size: 0.82rem;
+  line-height: 1.15;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 576px) {
+  .pesaje-historial-item-compacto {
+    grid-template-columns: 30px 1fr;
+    gap: 8px;
+    padding: 9px 10px;
+  }
+
+  .pesaje-historial-delete-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .pesaje-historial-linea-principal {
+    gap: 6px;
+  }
+
+  .pesaje-historial-linea-principal strong {
+    font-size: 0.95rem;
+  }
+
+  .pesaje-historial-linea-principal span {
+    font-size: 0.82rem;
+  }
+
+  .pesaje-historial-observacion {
+    font-size: 0.78rem;
+  }
+}
+
+/* =========================================================
+   PESAJES - Responsive del panel desplegable
+   Corrige el ancho cuando se abre el botón de kg en celular.
+   ========================================================= */
+
+.animal-linea-compacta,
+.animal-linea-main,
+.animal-linea-icons,
+.animal-ficha-listado {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.animal-ficha-listado {
+  width: 100%;
+  grid-column: 1 / -1;
+  overflow: hidden;
+}
+
+.animal-ficha-listado > .card {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.animal-ficha-listado .card-body {
+  min-width: 0;
+}
+
+.pesaje-form-card {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.pesaje-form-card .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.pesaje-form-card [class*="col-"] {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.pesaje-form-card .form-control,
+.pesaje-form-card .form-select {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 576px) {
+  .animal-linea-compacta {
+    overflow: hidden;
+  }
+
+  .animal-linea-icons {
+    flex-wrap: wrap;
+  }
+
+  .animal-ficha-listado {
+    margin-top: 12px;
+  }
+
+  .animal-ficha-listado > .card {
+    border-radius: 22px;
+  }
+
+  .animal-ficha-listado .card-body {
+    padding: 18px;
+  }
+
+  .pesaje-form-card .card-body {
+    padding: 18px;
+  }
+
+  .pesaje-form-card .row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .pesaje-form-card [class*="col-"] {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+
+
+
+
+
+
+
 .pesaje-ultimo-card {
   border: 1px solid rgba(25, 135, 84, 0.2);
   background-color: #f3fbf6;
@@ -1621,39 +1952,6 @@ button.app-rural-side-item {
   border-radius: 18px;
   border: 1px solid var(--borde);
   box-shadow: none;
-}
-
-.pesaje-historial-item {
-  border: 1px solid var(--borde);
-  border-radius: 16px;
-  padding: 12px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  background-color: #ffffff;
-}
-
-.pesaje-historial-item strong {
-  display: block;
-  color: var(--verde-oscuro);
-  font-size: 1.05rem;
-}
-
-.pesaje-historial-item span {
-  display: block;
-  color: var(--texto-suave);
-  font-size: 0.9rem;
-}
-
-.pesaje-historial-item small {
-  display: block;
-  color: var(--texto-suave);
-}
-
-.pesaje-historial-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 
 .desarrollo-pesaje-card {
@@ -1794,14 +2092,8 @@ button.app-rural-side-item {
     justify-content: flex-end;
   }
 
-  .pesaje-historial-item {
-    grid-template-columns: 1fr auto;
-    align-items: center;
-  }
+ 
 
-  .pesaje-historial-actions {
-    justify-content: flex-end;
-  }
 }
 
 /* =========================================================
@@ -3181,4 +3473,259 @@ body:not(.login-rural-body):not(.app-rural-body) .widget-accion-ruraldata span {
 body:not(.login-rural-body):not(.app-rural-body) .widget-accion-ruraldata strong {
   color: var(--texto);
   text-shadow: 0 1px 4px rgba(255, 255, 255, 0.55);
+}
+
+/* =========================================================
+   RESCATE - Logo superior recto y logo más grande
+   Fuerza tamaño del logo RuralData dentro de la lengüeta.
+   ========================================================= */
+
+body.app-rural-body .app-rural-top-panel .app-rural-top-logo-tab {
+  padding: 2px 8px 4px 8px !important;
+  border-radius: 0 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+body.app-rural-body .app-rural-top-panel .app-rural-top-logo-tab-img {
+  height: 72px !important;
+  max-height: none !important;
+
+  width: auto !important;
+  max-width: min(86vw, 320px) !important;
+
+  border-radius: 0 !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+@media (max-width: 576px) {
+  body.app-rural-body .app-rural-top-panel .app-rural-top-logo-tab-img {
+    height: 66px !important;
+    max-width: 88vw !important;
+  }
+}
+
+
+
+/* =========================================================
+   LENGÜETA INTERNA - Logo RuralData en pantallas de acciones
+   Se inserta desde auth.js y no afecta login ni dashboard.
+   El botón de inicio queda sobre la franja verde, pero nunca sobre el logo.
+   ========================================================= */
+
+.lengueta-interna-ruraldata {
+  width: 100%;
+  min-height: 76px;
+
+  padding: 4px 12px 6px 12px;
+
+  background: #07271d;
+
+  display: grid;
+  grid-template-columns: 54px 1fr 54px;
+  align-items: center;
+  gap: 8px;
+
+  position: relative;
+  z-index: 20;
+
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.lengueta-interna-ruraldata-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.lengueta-interna-ruraldata-btn {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-decoration: none;
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.lengueta-interna-ruraldata-btn i {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.lengueta-interna-ruraldata-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.lengueta-interna-ruraldata-logo-wrap {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lengueta-interna-ruraldata-logo {
+  height: 66px;
+  width: auto;
+  max-width: min(70vw, 320px);
+
+  object-fit: contain;
+  display: block;
+}
+
+.lengueta-interna-ruraldata-espacio {
+  width: 54px;
+  height: 1px;
+}
+
+@media (max-width: 576px) {
+  .lengueta-interna-ruraldata {
+    min-height: 68px;
+
+    grid-template-columns: 46px 1fr 46px;
+
+    padding: 3px 8px 5px 8px;
+  }
+
+  .lengueta-interna-ruraldata-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .lengueta-interna-ruraldata-logo {
+    height: 58px;
+    max-width: 68vw;
+  }
+
+  .lengueta-interna-ruraldata-espacio {
+    width: 46px;
+  }
+}
+
+
+
+/* =========================================================
+   TRANSICIONES - Slide lateral entre pantallas RuralData
+   Aplica del dashboard a acciones, de acciones al dashboard
+   y entre pantallas internas.
+   Movimiento principal: izquierda hacia derecha.
+   ========================================================= */
+
+body.transicion-entrada-ruraldata main,
+body.transicion-entrada-ruraldata .app-rural-top-panel,
+body.transicion-entrada-ruraldata .lengueta-interna-ruraldata,
+body.transicion-entrada-ruraldata .app-rural-bottom-nav {
+  animation: ruralDataSlideEntrada 0.38s ease-out both;
+}
+
+body.transicion-salida-ruraldata main,
+body.transicion-salida-ruraldata .app-rural-top-panel,
+body.transicion-salida-ruraldata .lengueta-interna-ruraldata,
+body.transicion-salida-ruraldata .app-rural-bottom-nav {
+  animation: ruralDataSlideSalida 0.26s ease-in both;
+  pointer-events: none;
+}
+
+@keyframes ruralDataSlideEntrada {
+  0% {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes ruralDataSlideSalida {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(34px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.transicion-entrada-ruraldata main,
+  body.transicion-entrada-ruraldata .app-rural-top-panel,
+  body.transicion-entrada-ruraldata .lengueta-interna-ruraldata,
+  body.transicion-entrada-ruraldata .app-rural-bottom-nav,
+  body.transicion-salida-ruraldata main,
+  body.transicion-salida-ruraldata .app-rural-top-panel,
+  body.transicion-salida-ruraldata .lengueta-interna-ruraldata,
+  body.transicion-salida-ruraldata .app-rural-bottom-nav {
+    animation: none;
+    transform: none;
+    opacity: 1;
+  }
+}
+
+
+
+/* =========================================================
+   MENÚ LATERAL - Acción seleccionada con salida animada
+   Al hacer click, la acción se levanta, hace zoom suave
+   y se desplaza hacia la izquierda junto con la transición.
+   ========================================================= */
+
+aside.menu-lateral-en-transicion a {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    filter 0.18s ease;
+}
+
+aside.menu-lateral-en-transicion a:not(.accion-menu-lateral-saliendo) {
+  opacity: 0.45;
+  transform: scale(0.98);
+  filter: blur(0.3px);
+}
+
+aside a.accion-menu-lateral-saliendo {
+  position: relative;
+  z-index: 50;
+
+  animation: accionMenuLateralSale 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
+}
+
+@keyframes accionMenuLateralSale {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  35% {
+    opacity: 1;
+    transform: translateX(-4px) scale(1.06);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-72px) scale(0.96);
+  }
 }
