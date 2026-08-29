@@ -188,7 +188,7 @@ label {
       rgba(3, 18, 13, 0.18) 0%,
       rgba(5, 32, 22, 0.10) 45%,
       rgba(3, 18, 13, 0.32) 100%),
-    url("../assets/img/fondo-login-ruraldata.png");
+    url("../assets/img/fondo-login-ruraldata.webp");
 
   background-size: cover;
   background-position: center;
@@ -3417,7 +3417,7 @@ background-image:
     rgba(244, 239, 227, 0.24) 45%,
     rgba(244, 239, 227, 0.58) 100%
   ),
-  url("../assets/img/fondoPantallaSOLEADO.png");
+  url("../assets/img/fondoPantallaSOLEADO.webp");
 
   background-size: cover;
   background-position: center center;

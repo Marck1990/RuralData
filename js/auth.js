@@ -579,7 +579,7 @@ function insertarLenguetaInternaRuralData() {
 
     <div class="lengueta-interna-ruraldata-logo-wrap">
       <img
-        src="../assets/img/logo-ruraldata.png"
+        src="../assets/img/logo-ruraldata.webp"
         alt="RuralData"
         class="lengueta-interna-ruraldata-logo"
       />
