@@ -19,11 +19,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-function registrarAnimal(event) {
+async function registrarAnimal(event) {
   event.preventDefault();
 
   const formAnimal = document.getElementById("formAnimal");
-  const mensaje = document.getElementById("mensajeRegistroAnimal");
 
   const caravanaVisual = document.getElementById("caravanaVisual").value.trim();
   const codigoRFID = document.getElementById("codigoRFID").value.trim();
@@ -56,7 +55,6 @@ function registrarAnimal(event) {
   }
 
   const sexoAutomatico = determinarSexoPorCategoria(categoria);
-
   const animales = obtenerAnimales();
 
   const existeAnimal = existeAnimalRegistrado(
@@ -92,12 +90,73 @@ function registrarAnimal(event) {
   guardarAnimales(animales);
 
   mostrarMensajeRegistroAnimal(
-    "Animal registrado correctamente. Sexo asignado: " + sexoAutomatico + ".",
+    "Animal registrado localmente. Guardando en base remota...",
     "success"
   );
 
   formAnimal.reset();
   mostrarSexoAutomatico();
+
+  const respuestaRemota = await guardarAnimalEnApi(animal);
+
+  if (respuestaRemota.ok) {
+    mostrarMensajeRegistroAnimal(
+      "Animal registrado correctamente en RuralData y Turso. Sexo asignado: " + sexoAutomatico + ".",
+      "success"
+    );
+  } else {
+    mostrarMensajeRegistroAnimal(
+      "Animal guardado localmente, pero no se pudo guardar en Turso.",
+      "warning"
+    );
+  }
+}
+
+// Guarda animal en la API segura de Vercel/Turso.
+async function guardarAnimalEnApi(animal) {
+  try {
+    const respuesta = await fetch("/api/animales", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: animal.id,
+        establecimiento_id: obtenerEstablecimientoApiAnimal(),
+        caravana_visual: animal.caravanaVisual || "",
+        codigo_rfid: animal.codigoRFID || "",
+        categoria: animal.categoria || "",
+        sexo: animal.sexo || "",
+        raza: animal.raza || "",
+        fecha_nacimiento: animal.fechaNacimiento || "",
+        propietario: animal.propietario || "",
+        campo: animal.campo || "",
+        observaciones: animal.observaciones || "",
+        origen: "ruraldata_app"
+      })
+    });
+
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok || !datos.ok) {
+      return {
+        ok: false
+      };
+    }
+
+    return {
+      ok: true
+    };
+  } catch (error) {
+    return {
+      ok: false
+    };
+  }
+}
+
+// Por ahora usamos el establecimiento demo creado en Turso.
+function obtenerEstablecimientoApiAnimal() {
+  return "demo_ruraldata";
 }
 
 // Crea la identificación del animal sin depender de otro archivo.
