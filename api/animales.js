@@ -24,6 +24,10 @@ export default async function handler(req, res) {
       return await crearAnimal(req, res);
     }
 
+    if (req.method === "PUT") {
+      return await actualizarAnimal(req, res);
+    }
+
     return res.status(405).json({
       ok: false,
       error: "Método no permitido."
@@ -76,7 +80,8 @@ async function crearAnimal(req, res) {
     db,
     establecimientoId,
     caravanaVisual,
-    codigoRfid
+    codigoRfid,
+    ""
   );
 
   if (duplicado) {
@@ -136,9 +141,133 @@ async function crearAnimal(req, res) {
   });
 }
 
-async function buscarAnimalDuplicado(db, establecimientoId, caravanaVisual, codigoRfid) {
+async function actualizarAnimal(req, res) {
+  const db = crearConexion();
+  const body = req.body || {};
+
+  const id = limpiarTextoApi(body.id);
+  const establecimientoId = body.establecimiento_id || "demo_ruraldata";
+  const caravanaVisual = limpiarTextoApi(body.caravana_visual);
+  const codigoRfid = limpiarTextoApi(body.codigo_rfid);
+
+  if (id === "") {
+    return res.status(400).json({
+      ok: false,
+      error: "Falta el id del animal."
+    });
+  }
+
+  if (caravanaVisual === "" && codigoRfid === "") {
+    return res.status(400).json({
+      ok: false,
+      error: "Debe ingresar caravana visual o RFID."
+    });
+  }
+
+  const existente = await buscarAnimalPorId(db, establecimientoId, id);
+
+  if (!existente) {
+    return res.status(404).json({
+      ok: false,
+      error: "El animal no existe en Turso."
+    });
+  }
+
+  const duplicado = await buscarAnimalDuplicado(
+    db,
+    establecimientoId,
+    caravanaVisual,
+    codigoRfid,
+    id
+  );
+
+  if (duplicado) {
+    return res.status(409).json({
+      ok: false,
+      duplicado: true,
+      id: duplicado.id,
+      error: "Ya existe otro animal con esa caravana o RFID."
+    });
+  }
+
+  const ahora = new Date().toISOString();
+
+  await db.execute({
+    sql: `
+      UPDATE animales
+      SET
+        caravana_visual = ?,
+        codigo_rfid = ?,
+        categoria = ?,
+        sexo = ?,
+        raza = ?,
+        fecha_nacimiento = ?,
+        propietario = ?,
+        campo = ?,
+        observaciones = ?,
+        origen = ?,
+        fecha_actualizacion = ?
+      WHERE id = ?
+      AND establecimiento_id = ?;
+    `,
+    args: [
+      caravanaVisual,
+      codigoRfid,
+      limpiarTextoApi(body.categoria),
+      limpiarTextoApi(body.sexo),
+      limpiarTextoApi(body.raza),
+      limpiarTextoApi(body.fecha_nacimiento),
+      limpiarTextoApi(body.propietario),
+      limpiarTextoApi(body.campo),
+      limpiarTextoApi(body.observaciones),
+      limpiarTextoApi(body.origen || "ruraldata_app"),
+      ahora,
+      id,
+      establecimientoId
+    ]
+  });
+
+  return res.status(200).json({
+    ok: true,
+    id: id
+  });
+}
+
+async function buscarAnimalPorId(db, establecimientoId, id) {
+  const resultado = await db.execute({
+    sql: `
+      SELECT id
+      FROM animales
+      WHERE establecimiento_id = ?
+      AND id = ?
+      LIMIT 1;
+    `,
+    args: [establecimientoId, id]
+  });
+
+  if (resultado.rows.length > 0) {
+    return resultado.rows[0];
+  }
+
+  return null;
+}
+
+async function buscarAnimalDuplicado(db, establecimientoId, caravanaVisual, codigoRfid, idExcluir) {
   const condiciones = [];
   const args = [establecimientoId];
+
+  let sql = `
+    SELECT id
+    FROM animales
+    WHERE establecimiento_id = ?
+  `;
+
+  if (idExcluir !== "") {
+    sql += `
+      AND id <> ?
+    `;
+    args.push(idExcluir);
+  }
 
   if (caravanaVisual !== "") {
     condiciones.push("LOWER(TRIM(caravana_visual)) = LOWER(TRIM(?))");
@@ -154,14 +283,13 @@ async function buscarAnimalDuplicado(db, establecimientoId, caravanaVisual, codi
     return null;
   }
 
+  sql += `
+    AND (${condiciones.join(" OR ")})
+    LIMIT 1;
+  `;
+
   const resultado = await db.execute({
-    sql: `
-      SELECT id
-      FROM animales
-      WHERE establecimiento_id = ?
-      AND (${condiciones.join(" OR ")})
-      LIMIT 1;
-    `,
+    sql: sql,
     args: args
   });
 

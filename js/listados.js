@@ -614,22 +614,33 @@ function desplegarFichaAnimalListado(idAnimal) {
 }
 
 // Guarda cambios de un animal.
-function guardarCambiosAnimalListado(idAnimal) {
+async function guardarCambiosAnimalListado(idAnimal) {
   const animales = obtenerAnimales();
 
   for (let i = 0; i < animales.length; i++) {
     if (animales[i].id === idAnimal) {
-      animales[i].caravanaVisual = document.getElementById("editarCaravanaVisual_" + idAnimal).value.trim();
-      animales[i].codigoRFID = document.getElementById("editarCodigoRFID_" + idAnimal).value.trim();
-      animales[i].categoria = document.getElementById("editarCategoriaAnimal_" + idAnimal).value;
-      animales[i].sexo = document.getElementById("editarSexoAnimal_" + idAnimal).value;
-      animales[i].raza = document.getElementById("editarRazaAnimal_" + idAnimal).value.trim();
-      animales[i].fechaNacimiento = document.getElementById("editarFechaNacimientoAnimal_" + idAnimal).value;
-      animales[i].propietario = document.getElementById("editarPropietarioAnimal_" + idAnimal).value.trim();
-      animales[i].campo = document.getElementById("editarCampoAnimal_" + idAnimal).value.trim();
-      animales[i].observaciones = document.getElementById("editarObservacionesAnimal_" + idAnimal).value.trim();
-      animales[i].fechaActualizacion = new Date().toISOString();
+      const animalActualizado = {
+        ...animales[i],
+        caravanaVisual: document.getElementById("editarCaravanaVisual_" + idAnimal).value.trim(),
+        codigoRFID: document.getElementById("editarCodigoRFID_" + idAnimal).value.trim(),
+        categoria: document.getElementById("editarCategoriaAnimal_" + idAnimal).value,
+        sexo: document.getElementById("editarSexoAnimal_" + idAnimal).value,
+        raza: document.getElementById("editarRazaAnimal_" + idAnimal).value.trim(),
+        fechaNacimiento: document.getElementById("editarFechaNacimientoAnimal_" + idAnimal).value,
+        propietario: document.getElementById("editarPropietarioAnimal_" + idAnimal).value.trim(),
+        campo: document.getElementById("editarCampoAnimal_" + idAnimal).value.trim(),
+        observaciones: document.getElementById("editarObservacionesAnimal_" + idAnimal).value.trim(),
+        fechaActualizacion: new Date().toISOString()
+      };
 
+      const respuestaRemota = await actualizarAnimalEnApiListado(animalActualizado);
+
+      if (!respuestaRemota.ok && respuestaRemota.duplicado) {
+        alert("No se guardó el cambio. Ya existe otro animal con esa caravana o RFID.");
+        return;
+      }
+
+      animales[i] = animalActualizado;
       guardarAnimales(animales);
 
       mostrarListadoAnimales();
@@ -638,10 +649,111 @@ function guardarCambiosAnimalListado(idAnimal) {
         desplegarFichaAnimalListado(idAnimal);
       }, 100);
 
+      if (!respuestaRemota.ok) {
+        alert("Cambios guardados localmente, pero no se pudieron actualizar en Turso.");
+      }
+
       return;
     }
   }
 }
+
+
+
+
+// Actualiza un animal en la API segura de Vercel/Turso.
+async function actualizarAnimalEnApiListado(animal) {
+  try {
+    const respuesta = await fetch("/api/animales", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(crearPayloadAnimalApiListado(animal))
+    });
+
+    const datos = await respuesta.json();
+
+    if (respuesta.status === 409 || datos.duplicado) {
+      return {
+        ok: false,
+        duplicado: true
+      };
+    }
+
+    if (respuesta.status === 404) {
+      return await crearAnimalEnApiListado(animal);
+    }
+
+    if (!respuesta.ok || !datos.ok) {
+      return {
+        ok: false
+      };
+    }
+
+    return {
+      ok: true
+    };
+  } catch (error) {
+    return {
+      ok: false
+    };
+  }
+}
+
+// Si el animal solo existía localmente, lo crea en Turso.
+async function crearAnimalEnApiListado(animal) {
+  try {
+    const respuesta = await fetch("/api/animales", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(crearPayloadAnimalApiListado(animal))
+    });
+
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok || !datos.ok) {
+      return {
+        ok: false
+      };
+    }
+
+    return {
+      ok: true
+    };
+  } catch (error) {
+    return {
+      ok: false
+    };
+  }
+}
+
+// Convierte el animal local al formato que espera la API.
+function crearPayloadAnimalApiListado(animal) {
+  return {
+    id: animal.id,
+    establecimiento_id: "demo_ruraldata",
+    caravana_visual: animal.caravanaVisual || "",
+    codigo_rfid: animal.codigoRFID || "",
+    categoria: animal.categoria || "",
+    sexo: animal.sexo || "",
+    raza: animal.raza || "",
+    fecha_nacimiento: animal.fechaNacimiento || "",
+    propietario: animal.propietario || "",
+    campo: animal.campo || "",
+    observaciones: animal.observaciones || "",
+    origen: animal.origen || "ruraldata_app"
+  };
+}
+
+
+
+
+
+
+
 
 // Repliega ficha.
 function replegarFichaAnimalListado(idAnimal) {
