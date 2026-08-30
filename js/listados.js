@@ -10,11 +10,23 @@ document.addEventListener("DOMContentLoaded", function () {
   inicializarDatosCabeceraListados();
 });
 
-function inicializarListadoAnimales() {
+
+
+
+
+async function inicializarListadoAnimales() {
   const contenedorAnimales = document.getElementById("listaAnimales");
   const filtroListado = document.getElementById("filtroListadoAnimales");
 
   if (!contenedorAnimales) return;
+
+  contenedorAnimales.innerHTML = `
+    <div class="alert alert-info mb-0">
+      Sincronizando animales...
+    </div>
+  `;
+
+  await sincronizarAnimalesDesdeApiListado();
 
   inicializarFiltrosEstadoAnimales();
 
@@ -26,6 +38,97 @@ function inicializarListadoAnimales() {
 
   mostrarListadoAnimales();
 }
+
+
+
+
+// Trae animales desde Turso y los mezcla con localStorage.
+async function sincronizarAnimalesDesdeApiListado() {
+  try {
+    const respuesta = await fetch("/api/animales?establecimiento_id=demo_ruraldata");
+
+    if (!respuesta.ok) {
+      return;
+    }
+
+    const datos = await respuesta.json();
+
+    if (!datos.ok || !Array.isArray(datos.animales)) {
+      return;
+    }
+
+    const animalesLocales = obtenerAnimales();
+    const animalesMezclados = animalesLocales.slice();
+
+    for (let i = 0; i < datos.animales.length; i++) {
+      const animalApi = convertirAnimalApiAAnimalLocal(datos.animales[i]);
+
+      if (!animalExisteEnListaListado(animalesMezclados, animalApi)) {
+        animalesMezclados.push(animalApi);
+      }
+    }
+
+    guardarAnimales(animalesMezclados);
+  } catch (error) {
+    console.log("No se pudo sincronizar con Turso:", error);
+  }
+}
+
+// Convierte columnas de Turso al formato local de RuralData.
+function convertirAnimalApiAAnimalLocal(animalApi) {
+  return {
+    id: animalApi.id,
+    caravanaVisual: animalApi.caravana_visual || "",
+    codigoRFID: animalApi.codigo_rfid || "",
+    categoria: animalApi.categoria || "",
+    sexo: animalApi.sexo || "",
+    raza: animalApi.raza || "",
+    fechaNacimiento: animalApi.fecha_nacimiento || "",
+    propietario: animalApi.propietario || "",
+    campo: animalApi.campo || "",
+    observaciones: animalApi.observaciones || "",
+    origen: animalApi.origen || "turso",
+    fechaRegistro: animalApi.fecha_registro || new Date().toISOString(),
+    fechaActualizacion: animalApi.fecha_actualizacion || ""
+  };
+}
+
+// Evita duplicar animales al mezclar Turso con localStorage.
+function animalExisteEnListaListado(animales, animalNuevo) {
+  const idNuevo = animalNuevo.id || "";
+  const caravanaNueva = normalizarTextoListado(animalNuevo.caravanaVisual || "");
+  const rfidNuevo = normalizarTextoListado(animalNuevo.codigoRFID || "");
+
+  for (let i = 0; i < animales.length; i++) {
+    const animal = animales[i];
+
+    const idExistente = animal.id || "";
+    const caravanaExistente = normalizarTextoListado(animal.caravanaVisual || "");
+    const rfidExistente = normalizarTextoListado(animal.codigoRFID || "");
+
+    if (idNuevo !== "" && idNuevo === idExistente) return true;
+    if (caravanaNueva !== "" && caravanaNueva === caravanaExistente) return true;
+    if (rfidNuevo !== "" && rfidNuevo === rfidExistente) return true;
+  }
+
+  return false;
+}
+
+function normalizarTextoListado(texto) {
+  return String(texto || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "");
+}
+
+
+
+
+
+
+
+
+
 
 // Inicializa botones de filtro por estado.
 function inicializarFiltrosEstadoAnimales() {
