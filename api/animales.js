@@ -62,7 +62,34 @@ async function crearAnimal(req, res) {
   const body = req.body || {};
 
   const establecimientoId = body.establecimiento_id || "demo_ruraldata";
+  const caravanaVisual = limpiarTextoApi(body.caravana_visual);
+  const codigoRfid = limpiarTextoApi(body.codigo_rfid);
+
+  if (caravanaVisual === "" && codigoRfid === "") {
+    return res.status(400).json({
+      ok: false,
+      error: "Debe ingresar caravana visual o RFID."
+    });
+  }
+
+  const duplicado = await buscarAnimalDuplicado(
+    db,
+    establecimientoId,
+    caravanaVisual,
+    codigoRfid
+  );
+
+  if (duplicado) {
+    return res.status(200).json({
+      ok: true,
+      duplicado: true,
+      id: duplicado.id,
+      mensaje: "El animal ya existía en Turso."
+    });
+  }
+
   const id = body.id || crearIdSimple();
+  const ahora = new Date().toISOString();
 
   await db.execute({
     sql: `
@@ -87,25 +114,66 @@ async function crearAnimal(req, res) {
     args: [
       id,
       establecimientoId,
-      body.caravana_visual || "",
-      body.codigo_rfid || "",
-      body.categoria || "",
-      body.sexo || "",
-      body.raza || "",
-      body.fecha_nacimiento || "",
-      body.propietario || "",
-      body.campo || "",
-      body.observaciones || "",
-      body.origen || "api",
-      new Date().toISOString(),
-      new Date().toISOString()
+      caravanaVisual,
+      codigoRfid,
+      limpiarTextoApi(body.categoria),
+      limpiarTextoApi(body.sexo),
+      limpiarTextoApi(body.raza),
+      limpiarTextoApi(body.fecha_nacimiento),
+      limpiarTextoApi(body.propietario),
+      limpiarTextoApi(body.campo),
+      limpiarTextoApi(body.observaciones),
+      limpiarTextoApi(body.origen || "api"),
+      ahora,
+      ahora
     ]
   });
 
   return res.status(201).json({
     ok: true,
+    duplicado: false,
     id: id
   });
+}
+
+async function buscarAnimalDuplicado(db, establecimientoId, caravanaVisual, codigoRfid) {
+  const condiciones = [];
+  const args = [establecimientoId];
+
+  if (caravanaVisual !== "") {
+    condiciones.push("LOWER(TRIM(caravana_visual)) = LOWER(TRIM(?))");
+    args.push(caravanaVisual);
+  }
+
+  if (codigoRfid !== "") {
+    condiciones.push("LOWER(TRIM(codigo_rfid)) = LOWER(TRIM(?))");
+    args.push(codigoRfid);
+  }
+
+  if (condiciones.length === 0) {
+    return null;
+  }
+
+  const resultado = await db.execute({
+    sql: `
+      SELECT id
+      FROM animales
+      WHERE establecimiento_id = ?
+      AND (${condiciones.join(" OR ")})
+      LIMIT 1;
+    `,
+    args: args
+  });
+
+  if (resultado.rows.length > 0) {
+    return resultado.rows[0];
+  }
+
+  return null;
+}
+
+function limpiarTextoApi(valor) {
+  return String(valor || "").trim();
 }
 
 function crearIdSimple() {
