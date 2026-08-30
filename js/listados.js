@@ -27,6 +27,7 @@ async function inicializarListadoAnimales() {
   `;
 
   await sincronizarAnimalesDesdeApiListado();
+  await sincronizarPesajesDesdeApiListado();
 
   inicializarFiltrosEstadoAnimales();
 
@@ -84,6 +85,128 @@ async function sincronizarAnimalesDesdeApiListado() {
     console.log("No se pudo sincronizar con Turso:", error);
   }
 }
+
+
+
+
+
+// Trae pesajes desde Turso y los mezcla con localStorage.
+async function sincronizarPesajesDesdeApiListado() {
+  try {
+    const respuesta = await fetch("/api/pesajes?establecimiento_id=demo_ruraldata&t=" + Date.now());
+
+    if (!respuesta.ok) {
+      return;
+    }
+
+    const datos = await respuesta.json();
+
+    if (!datos.ok || !Array.isArray(datos.pesajes)) {
+      return;
+    }
+
+    const pesajesLocales = obtenerPesajes();
+    const pesajesMezclados = pesajesLocales.slice();
+
+    for (let i = 0; i < datos.pesajes.length; i++) {
+      const pesajeApi = convertirPesajeApiALocalListado(datos.pesajes[i]);
+      const indiceExistente = buscarIndicePesajeExistenteListado(
+        pesajesMezclados,
+        pesajeApi
+      );
+
+      if (indiceExistente === -1) {
+        pesajesMezclados.push(pesajeApi);
+      } else {
+        pesajesMezclados[indiceExistente] = pesajeApi;
+      }
+    }
+
+    guardarPesajes(pesajesMezclados);
+  } catch (error) {
+    console.log("No se pudo sincronizar pesajes con Turso:", error);
+  }
+}
+
+function convertirPesajeApiALocalListado(pesajeApi) {
+  return {
+    id: pesajeApi.id,
+    animalId: pesajeApi.animal_id || "",
+    fecha: pesajeApi.fecha || "",
+    pesoKg: Number(pesajeApi.peso_kg),
+    observaciones: pesajeApi.observaciones || "",
+    origen: pesajeApi.origen || "turso",
+    fechaRegistro: pesajeApi.fecha_registro || new Date().toISOString(),
+    fechaActualizacion: pesajeApi.fecha_actualizacion || ""
+  };
+}
+
+function buscarIndicePesajeExistenteListado(pesajes, pesajeNuevo) {
+  for (let i = 0; i < pesajes.length; i++) {
+    if (pesajes[i].id === pesajeNuevo.id) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+async function guardarPesajeEnApiListado(pesaje) {
+  try {
+    const respuesta = await fetch("/api/pesajes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: pesaje.id,
+        establecimiento_id: "demo_ruraldata",
+        animal_id: pesaje.animalId,
+        fecha: pesaje.fecha,
+        peso_kg: pesaje.pesoKg,
+        observaciones: pesaje.observaciones || "",
+        origen: pesaje.origen || "ruraldata_app"
+      })
+    });
+
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok || !datos.ok) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+async function eliminarPesajeEnApiListado(idPesaje) {
+  try {
+    const respuesta = await fetch(
+      "/api/pesajes?id=" + encodeURIComponent(idPesaje) + "&establecimiento_id=demo_ruraldata",
+      {
+        method: "DELETE"
+      }
+    );
+
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok || !datos.ok) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+
+
+
+
+
 
 
 
@@ -1178,7 +1301,7 @@ function crearGraficaPesajesListado(pesajesAsc) {
 }
 
 // Guarda un pesaje nuevo o editado.
-function guardarPesajeAnimalListado(idAnimal) {
+async function guardarPesajeAnimalListado(idAnimal) {
   const inputFecha = document.getElementById("fechaPesaje_" + idAnimal);
   const inputPeso = document.getElementById("pesoKg_" + idAnimal);
   const inputObservacion = document.getElementById("observacionPesaje_" + idAnimal);
@@ -1227,6 +1350,20 @@ function guardarPesajeAnimalListado(idAnimal) {
   }
 
   guardarPesajes(pesajes);
+
+  let nuevoPesaje = null;
+
+  if (idEditando) {
+    for (let i = 0; i < pesajes.length; i++) {
+      if (pesajes[i].id === idEditando) {
+        await guardarPesajeEnApiListado(pesajes[i]);
+        break;
+      }
+    }
+  } else {
+    await guardarPesajeEnApiListado(nuevoPesaje);
+  }
+
 
   mostrarListadoAnimales();
 
@@ -1286,7 +1423,7 @@ function cancelarEdicionPesajeListado(idAnimal) {
 }
 
 // Elimina un pesaje.
-function eliminarPesajeAnimalListado(idAnimal, idPesaje) {
+async function eliminarPesajeAnimalListado(idAnimal, idPesaje) {
   const confirmar = confirm("¿Eliminar este pesaje?");
 
   if (!confirmar) return;
@@ -1301,6 +1438,9 @@ function eliminarPesajeAnimalListado(idAnimal, idPesaje) {
   }
 
   guardarPesajes(nuevosPesajes);
+await eliminarPesajeEnApiListado(idPesaje);
+
+
 
   mostrarListadoAnimales();
 
