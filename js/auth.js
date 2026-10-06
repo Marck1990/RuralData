@@ -128,7 +128,7 @@ function iniciarSesion(event) {
 }
 
 // Muestra la transición visual entre login y dashboard.
-// Muestra la transición visual entre login y dashboard.
+
 function mostrarTransicionLogin(callback) {
   const transicion = document.getElementById("transicionLogin");
   const video = document.getElementById("videoTransicionLogin");
