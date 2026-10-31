@@ -22,8 +22,8 @@ function registrarReproduccion(event) {
   const animales = obtenerAnimales();
 
   const animal = animales.find(animal =>
-    animal.caravanaVisual.toLowerCase() === identificador ||
-    animal.codigoRFID.toLowerCase() === identificador
+    String(animal.caravanaVisual || "").toLowerCase() === identificador ||
+    String(animal.codigoRFID || "").toLowerCase() === identificador
   );
 
   if (!animal) {
@@ -73,13 +73,13 @@ function cargarRegistrosReproduccion() {
   contenedor.innerHTML = registros.map(registro => `
     <div class="card shadow-sm">
       <div class="card-body">
-        <h2 class="h5 fw-bold">${registro.caravanaVisual || registro.codigoRFID}</h2>
-        <p><strong>Estado:</strong> ${registro.estadoReproductivo}</p>
-        <p><strong>Categoría:</strong> ${registro.categoria}</p>
-        <p><strong>Fecha estimada de parto:</strong> ${registro.fechaEstimadaParto || "Sin dato"}</p>
-        <p><strong>Aviso previo:</strong> ${registro.diasAviso} días</p>
+        <h2 class="h5 fw-bold">${escaparTextoMvp(registro.caravanaVisual || registro.codigoRFID)}</h2>
+        <p><strong>Estado:</strong> ${escaparTextoMvp(registro.estadoReproductivo)}</p>
+        <p><strong>Categoría:</strong> ${escaparTextoMvp(registro.categoria)}</p>
+        <p><strong>Fecha estimada de parto:</strong> ${escaparTextoMvp(registro.fechaEstimadaParto || "Sin dato")}</p>
+        <p><strong>Aviso previo:</strong> ${escaparTextoMvp(registro.diasAviso)} días</p>
         ${generarAlertaParto(registro)}
-        <p><strong>Observaciones:</strong> ${registro.observaciones || "Sin observaciones"}</p>
+        <p><strong>Observaciones:</strong> ${escaparTextoMvp(registro.observaciones || "Sin observaciones")}</p>
       </div>
     </div>
   `).join("");

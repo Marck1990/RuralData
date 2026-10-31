@@ -656,34 +656,34 @@ function mostrarListaEncontradosImportarTxt() {
         </span>
 
         <h3 class="h5 mb-2">
-          ${animal.caravanaVisual || registro.caravanaOchoDigitos || "Animal sin caravana"}
+          ${escaparTextoMvp(animal.caravanaVisual || registro.caravanaOchoDigitos || "Animal sin caravana")}
         </h3>
 
         <p class="mb-1">
-          RFID TXT: ${registro.codigoCompleto || "Sin dato"}
+          RFID TXT: ${escaparTextoMvp(registro.codigoCompleto || "Sin dato")}
         </p>
 
         <p class="mb-1">
-          Caravana 8 dígitos: <strong>${registro.caravanaOchoDigitos || "Sin dato"}</strong>
+          Caravana 8 dígitos: <strong>${escaparTextoMvp(registro.caravanaOchoDigitos || "Sin dato")}</strong>
         </p>
 
         <p class="mb-1">
-          Fecha lectura: ${registro.fechaFormateada || "Sin dato"}
+          Fecha lectura: ${escaparTextoMvp(registro.fechaFormateada || "Sin dato")}
         </p>
 
         <p class="mb-1">
-          Hora lectura: ${registro.horaFormateada || "Sin dato"}
+          Hora lectura: ${escaparTextoMvp(registro.horaFormateada || "Sin dato")}
         </p>
 
         <p class="mb-1">
-          Guía: ${registro.numeroGuia || "Sin dato"}
+          Guía: ${escaparTextoMvp(registro.numeroGuia || "Sin dato")}
         </p>
 
         ${
           tieneCarencia
             ? `
               <p class="mb-1">
-                Producto: ${registro.carencia.producto || "Sin dato"}
+                Producto: ${escaparTextoMvp(registro.carencia.producto || "Sin dato")}
               </p>
 
               <p class="mb-0">
@@ -733,34 +733,34 @@ function mostrarListaNoRegistradosImportarTxt() {
         </span>
 
         <h3 class="h5 mb-2">
-          ${registro.caravanaOchoDigitos || "Sin caravana"}
+          ${escaparTextoMvp(registro.caravanaOchoDigitos || "Sin caravana")}
         </h3>
 
         <p class="mb-1">
-          RFID TXT: ${registro.codigoCompleto || "Sin dato"}
+          RFID TXT: ${escaparTextoMvp(registro.codigoCompleto || "Sin dato")}
         </p>
 
         <p class="mb-1">
-          Línea: ${registro.numeroLinea}
+          Línea: ${escaparTextoMvp(registro.numeroLinea)}
         </p>
 
         <p class="mb-1">
-          Fecha lectura: ${registro.fechaFormateada || "Sin dato"}
+          Fecha lectura: ${escaparTextoMvp(registro.fechaFormateada || "Sin dato")}
         </p>
 
         <p class="mb-1">
-          Hora lectura: ${registro.horaFormateada || "Sin dato"}
+          Hora lectura: ${escaparTextoMvp(registro.horaFormateada || "Sin dato")}
         </p>
 
         <p class="mb-3">
-          Guía: ${registro.numeroGuia || "Sin dato"}
+          Guía: ${escaparTextoMvp(registro.numeroGuia || "Sin dato")}
         </p>
 
         <div class="d-grid gap-2 d-md-flex">
           <button
             type="button"
             class="btn btn-success"
-            onclick="agregarAnimalIndividualTxt('${registro.id}')"
+            onclick="agregarAnimalIndividualTxt(${argumentoEventoMvp(registro.id)})"
           >
             Agregar
           </button>
@@ -768,7 +768,7 @@ function mostrarListaNoRegistradosImportarTxt() {
           <button
             type="button"
             class="btn btn-outline-danger"
-            onclick="eliminarRegistroImportacionTxt('${registro.id}')"
+            onclick="eliminarRegistroImportacionTxt(${argumentoEventoMvp(registro.id)})"
           >
             Eliminar
           </button>
@@ -854,6 +854,7 @@ function obtenerArchivosProcesadosTxt() {
 
 // Guarda historial simple de archivos procesados.
 function guardarArchivosProcesadosTxt(historial) {
+  asegurarEscrituraLocalMvp();
   localStorage.setItem(obtenerClaveArchivosProcesadosTxt(), JSON.stringify(historial));
 }
 
@@ -1047,7 +1048,7 @@ function mostrarMensajeImportarTxt(texto, tipo) {
 
   mensaje.innerHTML = `
     <div class="alert alert-${tipo} mb-0">
-      ${texto}
+      ${escaparTextoMvp(texto)}
     </div>
   `;
 }

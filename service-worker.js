@@ -1,4 +1,4 @@
-const CACHE_NAME = "ruraldata-cache-v57";
+const CACHE_NAME = "ruraldata-cache-v60";
 
 const ARCHIVOS_CACHE = [
   "./",
@@ -11,6 +11,11 @@ const ARCHIVOS_CACHE = [
 
   "js/app.js",
   "js/storage.js",
+  "js/persistencia-mvp.js",
+  "js/modelos-mvp.js",
+  "js/identidad-mvp.js",
+  "js/sincronizador-mvp.js",
+  "js/integracion-mvp.js",
   "js/auth.js",
   "js/identificacion.js",
   "js/animales.js",
@@ -79,7 +84,7 @@ self.addEventListener("activate", event => {
     caches.keys().then(claves => {
       return Promise.all(
         claves.map(clave => {
-          if (clave !== CACHE_NAME) {
+          if (clave.startsWith('ruraldata-cache-') && clave !== CACHE_NAME) {
             return caches.delete(clave);
           }
         })
@@ -101,15 +106,19 @@ self.addEventListener("fetch", event => {
     return;
   }
 
+  // Las sesiones y los datos API nunca pasan por la caché.
+  if (url.pathname === "/api" || url.pathname.startsWith("/api/")) return;
+
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request)
         .then(respuesta => {
+          if (!respuesta.ok) throw new Error('Página temporalmente no disponible');
           const copiaRespuesta = respuesta.clone();
 
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, copiaRespuesta);
-            cache.put("index.html", respuesta.clone());
+
           });
 
           return respuesta;
@@ -133,6 +142,7 @@ self.addEventListener("fetch", event => {
     event.respondWith(
       fetch(event.request)
         .then(respuesta => {
+          if (!respuesta.ok) throw new Error('Recurso temporalmente no disponible');
           const copiaRespuesta = respuesta.clone();
 
           caches.open(CACHE_NAME).then(cache => {
@@ -152,6 +162,7 @@ self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request).then(respuestaCache => {
       return respuestaCache || fetch(event.request).then(respuesta => {
+        if (!respuesta.ok) return respuesta;
         const copiaRespuesta = respuesta.clone();
 
         caches.open(CACHE_NAME).then(cache => {

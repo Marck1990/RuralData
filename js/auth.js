@@ -1,7 +1,7 @@
-// Manejo de usuarios, roles, registro e inicio de sesión.
+// Cuentas independientes de productores y acceso local de la sesión activa.
 
 document.addEventListener("DOMContentLoaded", () => {
-  inicializarUsuarios();
+
 
   const formLogin = document.getElementById("formLogin");
   const formRegistroUsuario = document.getElementById("formRegistroUsuario");
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   protegerPagina();
   mostrarUsuarioActivo();
-  controlarAccesosPorRol();
+
   aplicarAnimacionEntradaDashboard();
 
   const btnCerrarSesion = document.getElementById("btnCerrarSesion");
@@ -26,108 +26,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-function inicializarUsuarios() {
-  const usuarios = obtenerUsuarios();
-
-  if (usuarios.length > 0) {
-    normalizarUsuariosExistentes(usuarios);
-    return;
-  }
-
-  const usuariosIniciales = [
-    {
-      id: crypto.randomUUID(),
-      nombre: "Propietario Demo",
-      usuario: "propietario",
-      password: "1234",
-      rol: "propietario",
-      establecimientoId: crypto.randomUUID()
-    },
-    {
-      id: crypto.randomUUID(),
-      nombre: "Trabajador Demo",
-      usuario: "trabajador",
-      password: "1234",
-      rol: "trabajador",
-      establecimientoId: crypto.randomUUID()
-    },
-    {
-      id: crypto.randomUUID(),
-      nombre: "Veterinario Demo",
-      usuario: "veterinario",
-      password: "1234",
-      rol: "veterinario",
-      establecimientoId: crypto.randomUUID()
-    }
-  ];
-
-  guardarUsuarios(usuariosIniciales);
-}
-
-// Agrega establecimientoId a usuarios viejos que no lo tenían.
-function normalizarUsuariosExistentes(usuarios) {
-  let huboCambios = false;
-
-  for (let i = 0; i < usuarios.length; i++) {
-    if (!usuarios[i].establecimientoId) {
-      usuarios[i].establecimientoId = "establecimiento_usuario_" + usuarios[i].id;
-      huboCambios = true;
-    }
-  }
-
-  if (huboCambios) {
-    guardarUsuarios(usuarios);
-  }
-}
-
-function iniciarSesion(event) {
+// La cookie valida la API; sessionStorage identifica solo la caché de esta pestaña.
+async function iniciarSesion(event) {
   event.preventDefault();
-
-  const usuarioIngresado = document.getElementById("usuario").value.trim();
-  const passwordIngresado = document.getElementById("password").value.trim();
-  const mensaje = document.getElementById("mensajeLogin");
-  const btnIngresar = document.getElementById("btnIngresarLogin");
-
-  const usuarios = obtenerUsuarios();
-
-  const usuarioEncontrado = usuarios.find(usuario =>
-    usuario.usuario === usuarioIngresado &&
-    usuario.password === passwordIngresado
-  );
-
-  if (!usuarioEncontrado) {
-    mensaje.innerHTML = `
-      <div class="alert alert-danger">
-        Usuario o contraseña incorrectos.
-      </div>
-    `;
-    return;
-  }
-
-  if (btnIngresar) {
-    btnIngresar.disabled = true;
-    btnIngresar.textContent = "Ingresando...";
-  }
-
-  if (!usuarioEncontrado.establecimientoId) {
-    usuarioEncontrado.establecimientoId = "establecimiento_usuario_" + usuarioEncontrado.id;
-    guardarUsuarios(usuarios);
-  }
-
-  guardarSesion({
-    id: usuarioEncontrado.id,
-    nombre: usuarioEncontrado.nombre,
-    usuario: usuarioEncontrado.usuario,
-    rol: usuarioEncontrado.rol,
-    establecimientoId: usuarioEncontrado.establecimientoId
-  });
-
-  mostrarTransicionLogin(function () {
-    window.location.href = "index.html";
-  });
+  const mensaje=document.getElementById('mensajeLogin');
+  const boton=document.getElementById('btnIngresarLogin');
+  boton.disabled=true;
+  try {
+    const response=await fetch('/api/sesion',{method:'POST',credentials:'same-origin',cache:'no-store',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:document.getElementById('usuario').value.trim(),password:document.getElementById('password').value}),
+      signal:AbortSignal.timeout(15000)});
+    const datos=await response.json();
+    if(!response.ok || !datos.ok)throw new Error(datos.error || 'No se pudo iniciar sesión');
+    guardarSesion(datos.perfil);
+    document.getElementById('password').value='';
+    mostrarTransicionLogin(()=>{window.location.href='index.html';});
+  } catch(error) {
+    mensaje.textContent=error.message;
+  } finally {boton.disabled=false;}
 }
-
-// Muestra la transición visual entre login y dashboard.
 
 function mostrarTransicionLogin(callback) {
   const transicion = document.getElementById("transicionLogin");
@@ -188,53 +106,22 @@ function mostrarTransicionLogin(callback) {
 
 
 
-function registrarUsuario(event) {
+async function registrarUsuario(event) {
   event.preventDefault();
-
-  const nombre = document.getElementById("nombreRegistro").value.trim();
-  const usuario = document.getElementById("usuarioRegistro").value.trim();
-  const password = document.getElementById("passwordRegistro").value.trim();
-  const rol = document.getElementById("rolRegistro").value;
-  const mensaje = document.getElementById("mensajeRegistroUsuario");
-
-  const usuarios = obtenerUsuarios();
-
-  const existeUsuario = usuarios.some(u => u.usuario === usuario);
-
-  if (existeUsuario) {
-    mensaje.innerHTML = `
-      <div class="alert alert-danger">
-        Ese usuario ya existe.
-      </div>
-    `;
-    return;
-  }
-
-  const nuevoUsuarioId = crypto.randomUUID();
-
-  const nuevoUsuario = {
-    id: nuevoUsuarioId,
-    nombre,
-    usuario,
-    password,
-    rol,
-    establecimientoId: "establecimiento_usuario_" + nuevoUsuarioId
-  };
-
-  usuarios.push(nuevoUsuario);
-  guardarUsuarios(usuarios);
-
-  mensaje.innerHTML = `
-    <div class="alert alert-success">
-      Usuario creado correctamente.
-    </div>
-  `;
-
-  event.target.reset();
-
-  setTimeout(() => {
-    window.location.href = "login.html";
-  }, 1200);
+  const mensaje=document.getElementById('mensajeRegistroUsuario');
+  const boton=document.getElementById('btnRegistrarProductor');boton.disabled=true;
+  try {
+    const respuesta=await fetch('/api/registro',{method:'POST',credentials:'same-origin',cache:'no-store',
+      headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(15000),
+      body:JSON.stringify({nombre:document.getElementById('nombreRegistro').value.trim(),
+        email:document.getElementById('usuarioRegistro').value.trim(),
+        nombreEstablecimiento:document.getElementById('establecimientoRegistro').value.trim(),
+        password:document.getElementById('passwordRegistro').value})});
+    const datos=await respuesta.json();if(!respuesta.ok || !datos.ok)throw new Error(datos.error || 'No se pudo registrar');
+    document.getElementById('passwordRegistro').value='';
+    mensaje.textContent='Productor registrado. Ya podés iniciar sesión.';
+  }catch(error){mensaje.textContent=error.message;}
+  finally{boton.disabled=false;}
 }
 
 function protegerPagina() {
@@ -245,13 +132,11 @@ function protegerPagina() {
 
   const sesion = obtenerSesion();
 
-  if (!sesion && !esPaginaPublica) {
+  if (!sesion?.autenticacionMvp && !esPaginaPublica) {
     window.location.href = obtenerRutaLogin();
   }
 
-  if (sesion && esPaginaPublica) {
-    window.location.href = "index.html";
-  }
+
 }
 
 function mostrarUsuarioActivo() {
@@ -301,8 +186,8 @@ function mostrarUsuarioActivo() {
     <div class="app-rural-user-card">
 
       <div class="app-rural-user-card-info">
-        <strong>${sesion.nombre}</strong>
-        <span>Rol: ${formatearRol(sesion.rol)}</span>
+        <strong>Productor</strong>
+        <span>Cuenta del productor</span>
       </div>
 
       <div class="app-rural-user-card-live">
@@ -497,25 +382,16 @@ function obtenerFaseLunarWidgetAccion(fecha) {
 
 
 
-function controlarAccesosPorRol() {
-  const sesion = obtenerSesion();
-
-  if (!sesion) return;
-
-  const elementos = document.querySelectorAll("[data-roles]");
-
-  elementos.forEach(elemento => {
-    const rolesPermitidos = elemento.dataset.roles.split(",");
-
-    if (!rolesPermitidos.includes(sesion.rol)) {
-      elemento.remove();
-    }
-  });
-}
-
-function cerrarSesion() {
-  cerrarSesionLocal();
-  window.location.href = obtenerRutaLogin();
+async function cerrarSesion() {
+  try {
+    const perfil=obtenerSesion();
+    const headers=perfil ? {'X-RuralData-Usuario':perfil.id,'X-RuralData-Establecimiento':perfil.establecimientoId} : {};
+    const response=await fetch('/api/sesion',{method:'DELETE',headers,credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)});
+    if(!response.ok && response.status!==401)throw new Error();
+    cerrarSesionLocal();window.location.href=obtenerRutaLogin();
+  } catch {
+    alert('No se pudo cerrar la sesión del servidor. Volvé a intentar cuando haya conexión; los datos locales se conservan.');
+  }
 }
 
 function obtenerRutaLogin() {
@@ -523,15 +399,6 @@ function obtenerRutaLogin() {
   return estaEnPages ? "../login.html" : "login.html";
 }
 
-function formatearRol(rol) {
-  if (rol === "propietario") return "Propietario";
-  if (rol === "trabajador") return "Trabajador";
-  if (rol === "veterinario") return "Veterinario";
-  return rol;
-}
-
-
-// Aplica una entrada suave al dashboard después del video de login.
 function aplicarAnimacionEntradaDashboard() {
   const debeAnimar = sessionStorage.getItem("ruraldata_animar_dashboard");
 
@@ -703,4 +570,12 @@ function animarAccionMenuLateralRuralData(enlace) {
 document.addEventListener("DOMContentLoaded", function () {
   insertarLenguetaInternaRuralData();
   inicializarTransicionesRuralData();
+});
+// Solo reanuda la sesión local de esta pestaña, nunca una cuenta ajena guardada.
+document.addEventListener('DOMContentLoaded',()=>{
+  const form=document.getElementById('formLogin');
+  if(!form || !obtenerSesion()?.autenticacionMvp)return;
+  const boton=document.createElement('button');boton.type='button';boton.className='btn btn-outline-secondary';boton.textContent='Continuar con datos de esta sesión';
+  boton.onclick=()=>{window.location.href='index.html';};
+  form.append(boton);
 });

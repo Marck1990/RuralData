@@ -5,7 +5,7 @@ const STORAGE_KEYS = {
   animales: "ruraldata_animales",
   sanidad: "ruraldata_sanidad",
   usuarios: "ruraldata_usuarios",
-  sesion: "ruraldata_sesion",
+  sesion: "ruraldata_sesion_productor_v2",
   reproduccion: "ruraldata_reproduccion",
   pesajes: "ruraldata_pesajes",
   lotesEmbarque: "ruraldata_lotes_embarque",
@@ -21,44 +21,69 @@ function obtenerDatos(clave) {
 
 // Guarda datos en localStorage.
 function guardarDatos(clave, datos) {
+  asegurarEscrituraLocalMvp();
   localStorage.setItem(clave, JSON.stringify(datos));
+}
+
+// Los módulos originales que aún usan localStorage respetan el mismo lock.
+function asegurarEscrituraLocalMvp() {
+  if (typeof window !== 'undefined' && window.RuralDataMvp?.escritor === false) {
+    throw new Error('Edición bloqueada: otra pestaña tiene la edición de esta cuenta');
+  }
+}
+
+function escaparTextoMvp(valor) {
+  return String(valor ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// JSON aporta el literal JavaScript; el escape exterior protege el atributo HTML.
+function argumentoEventoMvp(valor) {
+  return escaparTextoMvp(JSON.stringify(String(valor ?? '')));
 }
 
 // Obtiene la sesión activa.
 function obtenerSesion() {
-  const sesion = localStorage.getItem(STORAGE_KEYS.sesion);
-
-  return sesion ? JSON.parse(sesion) : null;
+  const sesion = sessionStorage.getItem(STORAGE_KEYS.sesion);
+  if (sesion !== null) return JSON.parse(sesion);
+  // Reabrir offline conserva solo la última cuenta confirmada en este navegador.
+  // Al copiarla a sessionStorage, otra pestaña que inicia sesión no la sustituye.
+  const anterior = localStorage.getItem('ruraldata_contexto_offline_v2');
+  if (!anterior) return null;
+  const perfil = JSON.parse(anterior);
+  if (!perfil?.autenticacionMvp || !perfil.id || !perfil.establecimientoId) return null;
+  sessionStorage.setItem(STORAGE_KEYS.sesion, JSON.stringify(perfil));
+  return perfil;
 }
 
 // Guarda la sesión activa.
 function guardarSesion(usuario) {
-  localStorage.setItem(STORAGE_KEYS.sesion, JSON.stringify(usuario));
+  localStorage.setItem('ruraldata_contexto_offline_v2', JSON.stringify(usuario));
+  sessionStorage.setItem(STORAGE_KEYS.sesion, JSON.stringify(usuario));
 }
 
 // Cierra la sesión activa.
 function cerrarSesionLocal() {
-  localStorage.removeItem(STORAGE_KEYS.sesion);
+  const actual = obtenerSesion();
+  const ultimo = JSON.parse(localStorage.getItem('ruraldata_contexto_offline_v2') || 'null');
+  if (actual?.id === ultimo?.id && actual?.establecimientoId === ultimo?.establecimientoId) {
+    localStorage.removeItem('ruraldata_contexto_offline_v2');
+  }
+  // Un null explícito evita que esta pestaña adopte otra cuenta al salir.
+  sessionStorage.setItem(STORAGE_KEYS.sesion, 'null');
+  if (actual) localStorage.setItem('ruraldata_cierre_sesion_v2', JSON.stringify({
+    id:actual.id,establecimientoId:actual.establecimientoId,fecha:Date.now()
+  }));
 }
 
-// Devuelve el establecimiento activo.
-// Si el usuario todavía no tiene establecimientoId, usa su id como respaldo.
+// Espacio local de la cuenta y establecimiento, sin alias elegidos por cliente.
 function obtenerEstablecimientoActivo() {
   const sesion = obtenerSesion();
 
-  if (!sesion) {
-    return "sin_establecimiento";
+  if (!sesion?.autenticacionMvp || !sesion.id || !sesion.establecimientoId) {
+    throw new Error('Iniciá sesión para acceder al establecimiento');
   }
-
-  if (sesion.establecimientoId) {
-    return sesion.establecimientoId;
-  }
-
-  if (sesion.id) {
-    return "establecimiento_usuario_" + sesion.id;
-  }
-
-  return "sin_establecimiento";
+  return 'productor_'+encodeURIComponent(sesion.id)+'_establecimiento_'+encodeURIComponent(sesion.establecimientoId);
 }
 
 // Arma una clave separada para cada establecimiento.
@@ -70,15 +95,25 @@ function obtenerClavePorEstablecimiento(claveBase) {
 
 // Animales separados por establecimiento.
 function obtenerAnimales() {
-  const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.animales);
-
-  return obtenerDatos(clave);
+  if (obtenerSesion()?.autenticacionMvp) return window.RuralDataMvp.listar('animales');
+  return obtenerDatos(obtenerClavePorEstablecimiento(STORAGE_KEYS.animales));
 }
 
 function guardarAnimales(animales) {
-  const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.animales);
-
-  guardarDatos(clave, animales);
+  if (!obtenerSesion()?.autenticacionMvp) throw new Error('Iniciá sesión para habilitar el almacenamiento offline');
+  const caravanas=new Set(),rfids=new Set();
+  for (const animal of animales) {
+    const caravana=String(animal.caravanaVisual || '').trim().toLowerCase();
+    const rfid=String(animal.codigoRFID || '').trim().toLowerCase();
+    if (('caravanaVisual' in animal || 'codigoRFID' in animal) && !caravana && !rfid) {
+      throw new Error('Datos inválidos: el animal debe conservar caravana o RFID');
+    }
+    if ((caravana && caravanas.has(caravana)) || (rfid && rfids.has(rfid))) {
+      throw new Error('Datos inválidos: ya existe un animal con esa caravana o RFID');
+    }
+    if(caravana)caravanas.add(caravana);if(rfid)rfids.add(rfid);
+  }
+  window.RuralDataMvp.guardar('animales', animales);
 }
 
 // Sanidad separada por establecimiento.
@@ -109,15 +144,18 @@ function guardarReproduccion(registros) {
 
 // Pesajes separados por establecimiento.
 function obtenerPesajes() {
-  const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.pesajes);
-
-  return obtenerDatos(clave);
+  if (obtenerSesion()?.autenticacionMvp) return window.RuralDataMvp.listar('pesajes');
+  return obtenerDatos(obtenerClavePorEstablecimiento(STORAGE_KEYS.pesajes));
 }
 
 function guardarPesajes(pesajes) {
-  const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.pesajes);
-
-  guardarDatos(clave, pesajes);
+  if (!obtenerSesion()?.autenticacionMvp) throw new Error('Iniciá sesión para habilitar el almacenamiento offline');
+  const propios=new Set(obtenerAnimales().map(a=>a.id));
+  for (const pesaje of pesajes) {
+    if ('animalId' in pesaje && !propios.has(pesaje.animalId)) throw new Error('Datos inválidos: el pesaje requiere un animal de este establecimiento');
+    if ('pesoKg' in pesaje && (!Number.isFinite(Number(pesaje.pesoKg)) || Number(pesaje.pesoKg)<=0)) throw new Error('Datos inválidos: peso no válido');
+  }
+  window.RuralDataMvp.guardar('pesajes', pesajes);
 }
 
 // Lotes de embarque separados por establecimiento.

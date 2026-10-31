@@ -1,0 +1,12 @@
+ALTER TABLE animales ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE animales ADD COLUMN eliminado_en TEXT;
+ALTER TABLE pesajes ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE pesajes ADD COLUMN eliminado_en TEXT;
+ALTER TABLE sanidad ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE sanidad ADD COLUMN eliminado_en TEXT;
+ALTER TABLE reproduccion ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE reproduccion ADD COLUMN eliminado_en TEXT;
+ALTER TABLE lotes_embarque ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE lotes_embarque ADD COLUMN eliminado_en TEXT;
+ALTER TABLE animales_lotes_embarque ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE animales_lotes_embarque ADD COLUMN eliminado_en TEXT;

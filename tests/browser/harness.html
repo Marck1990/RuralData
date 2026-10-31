@@ -1,0 +1,13 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>QA local RuralData 1.0</title>
+<style>body{font:16px system-ui;margin:20px}iframe{width:100%;height:680px;border:1px solid #999}li{margin:8px 0}button{padding:12px}pre{white-space:pre-wrap}</style></head><body>
+<h1>Verificación local RuralData 1.0</h1><p>Base sintética en memoria. No usa Turso ni credenciales reales. Las páginas originales se cargan en el marco inferior.</p>
+<button id="iniciar">Ejecutar recorrido integral</button> <button id="offline">Comprobar recarga con servidor detenido</button>
+<section aria-label="Controles para prueba manual">
+<h2>Prueba personal</h2><p>Dejá este panel abierto y probá la aplicación en otra pestaña. No hace falta ejecutar el recorrido automático.</p>
+<p><a href="/registro-usuario.html" target="_blank" rel="noopener">Abrir registro de productores</a> · <a href="/login.html" target="_blank" rel="noopener">Abrir login</a></p>
+<button id="pausar-api">Simular pérdida de conexión con la API</button>
+<button id="restablecer-api">Restablecer conexión con la API</button>
+<p id="estado-manual" role="status">API disponible. No detengas el servidor: la base sintética está en memoria.</p>
+</section>
+<ol id="resultados"></ol><iframe id="app" title="Aplicación RuralData original en prueba"></iframe>
+<script type="module" src="/tests/browser/harness.js"></script></body></html>
