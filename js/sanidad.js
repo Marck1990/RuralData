@@ -259,9 +259,9 @@ function mostrarAnimalSeleccionadoSanidad() {
   resultado.innerHTML = `
     <div class="alert alert-success mb-0">
       <strong>Animal encontrado</strong><br>
-      Caravana: ${animal.caravanaVisual || "Sin dato"}<br>
-      RFID: ${animal.codigoRFID || "Sin dato"}<br>
-      Categoría: ${animal.categoria || "Sin dato"}
+      Caravana: ${escaparTextoMvp(animal.caravanaVisual || "Sin dato")}<br>
+      RFID: ${escaparTextoMvp(animal.codigoRFID || "Sin dato")}<br>
+      Categoría: ${escaparTextoMvp(animal.categoria || "Sin dato")}
     </div>
   `;
 }
@@ -378,15 +378,15 @@ function mostrarSanidadReciente() {
         <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
           <div>
             <p class="list-card-title mb-1">
-              ${registro.tipoControl || "Control sanitario"}
+              ${escaparTextoMvp(registro.tipoControl || "Control sanitario")}
             </p>
 
             <h3 class="h5 mb-1">
-              ${registro.producto || "Producto sin nombre"}
+              ${escaparTextoMvp(registro.producto || "Producto sin nombre")}
             </h3>
 
             <p class="mb-0">
-              Caravana: ${registro.caravanaVisual || registro.identificacion || "Sin dato"}
+              Caravana: ${escaparTextoMvp(registro.caravanaVisual || registro.identificacion || "Sin dato")}
             </p>
           </div>
 
@@ -400,15 +400,15 @@ function mostrarSanidadReciente() {
         </p>
 
         <p class="mb-1">
-          Próxima aplicación: ${registro.fechaProxima ? formatearFecha(registro.fechaProxima) : "No indicada"}
+          Próxima aplicación: ${escaparTextoMvp(registro.fechaProxima ? formatearFecha(registro.fechaProxima) : "No indicada")}
         </p>
 
         <p class="mb-1">
-          Liberación sanitaria: ${registro.fechaLiberacion ? formatearFecha(registro.fechaLiberacion) : "No aplica"}
+          Liberación sanitaria: ${escaparTextoMvp(registro.fechaLiberacion ? formatearFecha(registro.fechaLiberacion) : "No aplica")}
         </p>
 
         <p class="mb-0">
-          Carencia: ${registro.diasCarencia || 0} días
+          Carencia: ${escaparTextoMvp(registro.diasCarencia || 0)} días
         </p>
       </div>
     `;
@@ -450,15 +450,15 @@ function mostrarAnimalesEnCarencia() {
         </span>
 
         <h3 class="h5 mb-2">
-          ${registro.caravanaVisual || registro.identificacion || "Animal sin caravana"}
+          ${escaparTextoMvp(registro.caravanaVisual || registro.identificacion || "Animal sin caravana")}
         </h3>
 
         <p class="mb-1">
-          Producto: ${registro.producto || "Sin dato"}
+          Producto: ${escaparTextoMvp(registro.producto || "Sin dato")}
         </p>
 
         <p class="mb-1">
-          Tipo: ${registro.tipoControl || "Sin dato"}
+          Tipo: ${escaparTextoMvp(registro.tipoControl || "Sin dato")}
         </p>
 
         <p class="mb-1">
@@ -547,7 +547,7 @@ function mostrarMensajeSanidad(texto, esError) {
 
   mensaje.innerHTML = `
     <div class="alert ${clase}">
-      ${texto}
+      ${escaparTextoMvp(texto)}
     </div>
   `;
 }

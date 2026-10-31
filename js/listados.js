@@ -20,15 +20,6 @@ async function inicializarListadoAnimales() {
 
   if (!contenedorAnimales) return;
 
-  contenedorAnimales.innerHTML = `
-    <div class="alert alert-info mb-0">
-      Sincronizando animales...
-    </div>
-  `;
-
-  await sincronizarAnimalesDesdeApiListado();
-  await sincronizarPesajesDesdeApiListado();
-
   inicializarFiltrosEstadoAnimales();
 
   if (filtroListado) {
@@ -38,269 +29,19 @@ async function inicializarListadoAnimales() {
   }
 
   mostrarListadoAnimales();
-}
-
-
-
-
-// Trae animales desde Turso y los mezcla con localStorage.
-// Trae animales desde Turso y los mezcla con localStorage.
-// Si el animal ya existe, actualiza los datos locales con los de Turso.
-async function sincronizarAnimalesDesdeApiListado() {
-  try {
-    const respuesta = await fetch("/api/animales?establecimiento_id=demo_ruraldata&t=" + Date.now());
-
-    if (!respuesta.ok) {
-      return;
-    }
-
-    const datos = await respuesta.json();
-
-    if (!datos.ok || !Array.isArray(datos.animales)) {
-      return;
-    }
-
-    const animalesLocales = obtenerAnimales();
-    const animalesMezclados = animalesLocales.slice();
-
-    for (let i = 0; i < datos.animales.length; i++) {
-      const animalApi = convertirAnimalApiAAnimalLocal(datos.animales[i]);
-      const indiceExistente = buscarIndiceAnimalExistenteListado(
-        animalesMezclados,
-        animalApi
-      );
-
-      if (indiceExistente === -1) {
-        animalesMezclados.push(animalApi);
-      } else {
-        animalesMezclados[indiceExistente] = mezclarAnimalLocalConApiListado(
-          animalesMezclados[indiceExistente],
-          animalApi
-        );
-      }
-    }
-
-    guardarAnimales(animalesMezclados);
-  } catch (error) {
-    console.log("No se pudo sincronizar con Turso:", error);
+  // La consulta local es inmediata aunque la API tarde o no haya conexión.
+  await sincronizarAnimalesDesdeApiListado();
+  // No destruir un formulario abierto mientras llegaba una respuesta de red.
+  if (!document.querySelector('form[id^="formEditarAnimalListado_"], [id^="pesajesAnimalListado_"]:not(.d-none)')) {
+    mostrarListadoAnimales();
   }
 }
 
 
 
 
-
-// Trae pesajes desde Turso y los mezcla con localStorage.
-async function sincronizarPesajesDesdeApiListado() {
-  try {
-    const respuesta = await fetch("/api/pesajes?establecimiento_id=demo_ruraldata&t=" + Date.now());
-
-    if (!respuesta.ok) {
-      return;
-    }
-
-    const datos = await respuesta.json();
-
-    if (!datos.ok || !Array.isArray(datos.pesajes)) {
-      return;
-    }
-
-    const pesajesLocales = obtenerPesajes();
-    const pesajesMezclados = pesajesLocales.slice();
-
-    for (let i = 0; i < datos.pesajes.length; i++) {
-      const pesajeApi = convertirPesajeApiALocalListado(datos.pesajes[i]);
-      const indiceExistente = buscarIndicePesajeExistenteListado(
-        pesajesMezclados,
-        pesajeApi
-      );
-
-      if (indiceExistente === -1) {
-        pesajesMezclados.push(pesajeApi);
-      } else {
-        pesajesMezclados[indiceExistente] = pesajeApi;
-      }
-    }
-
-    guardarPesajes(pesajesMezclados);
-  } catch (error) {
-    console.log("No se pudo sincronizar pesajes con Turso:", error);
-  }
-}
-
-function convertirPesajeApiALocalListado(pesajeApi) {
-  return {
-    id: pesajeApi.id,
-    animalId: pesajeApi.animal_id || "",
-    fecha: pesajeApi.fecha || "",
-    pesoKg: Number(pesajeApi.peso_kg),
-    observaciones: pesajeApi.observaciones || "",
-    origen: pesajeApi.origen || "turso",
-    fechaRegistro: pesajeApi.fecha_registro || new Date().toISOString(),
-    fechaActualizacion: pesajeApi.fecha_actualizacion || ""
-  };
-}
-
-function buscarIndicePesajeExistenteListado(pesajes, pesajeNuevo) {
-  for (let i = 0; i < pesajes.length; i++) {
-    if (pesajes[i].id === pesajeNuevo.id) {
-      return i;
-    }
-  }
-
-  return -1;
-}
-
-async function guardarPesajeEnApiListado(pesaje) {
-  try {
-    const respuesta = await fetch("/api/pesajes", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id: pesaje.id,
-        establecimiento_id: "demo_ruraldata",
-        animal_id: pesaje.animalId,
-        fecha: pesaje.fecha,
-        peso_kg: pesaje.pesoKg,
-        observaciones: pesaje.observaciones || "",
-        origen: pesaje.origen || "ruraldata_app"
-      })
-    });
-
-    const datos = await respuesta.json();
-
-    if (!respuesta.ok || !datos.ok) {
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
-async function eliminarPesajeEnApiListado(idPesaje) {
-  try {
-    const respuesta = await fetch(
-      "/api/pesajes?id=" + encodeURIComponent(idPesaje) + "&establecimiento_id=demo_ruraldata",
-      {
-        method: "DELETE"
-      }
-    );
-
-    const datos = await respuesta.json();
-
-    if (!respuesta.ok || !datos.ok) {
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
-
-
-
-
-
-
-
-
-// Busca si el animal de Turso ya existe en localStorage.
-function buscarIndiceAnimalExistenteListado(animales, animalNuevo) {
-  const idNuevo = animalNuevo.id || "";
-  const caravanaNueva = normalizarTextoListado(animalNuevo.caravanaVisual || "");
-  const rfidNuevo = normalizarTextoListado(animalNuevo.codigoRFID || "");
-
-  for (let i = 0; i < animales.length; i++) {
-    const animal = animales[i];
-
-    const idExistente = animal.id || "";
-    const caravanaExistente = normalizarTextoListado(animal.caravanaVisual || "");
-    const rfidExistente = normalizarTextoListado(animal.codigoRFID || "");
-
-    if (idNuevo !== "" && idNuevo === idExistente) {
-      return i;
-    }
-
-    if (caravanaNueva !== "" && caravanaNueva === caravanaExistente) {
-      return i;
-    }
-
-    if (rfidNuevo !== "" && rfidNuevo === rfidExistente) {
-      return i;
-    }
-  }
-
-  return -1;
-}
-
-// Mezcla datos, dando prioridad a Turso.
-function mezclarAnimalLocalConApiListado(animalLocal, animalApi) {
-  return {
-    ...animalLocal,
-    ...animalApi,
-    id: animalApi.id || animalLocal.id,
-    caravanaVisual: animalApi.caravanaVisual || animalLocal.caravanaVisual || "",
-    codigoRFID: animalApi.codigoRFID || animalLocal.codigoRFID || "",
-    categoria: animalApi.categoria || animalLocal.categoria || "",
-    sexo: animalApi.sexo || animalLocal.sexo || "",
-    raza: animalApi.raza || animalLocal.raza || "",
-    fechaNacimiento: animalApi.fechaNacimiento || animalLocal.fechaNacimiento || "",
-    propietario: animalApi.propietario || animalLocal.propietario || "",
-    campo: animalApi.campo || animalLocal.campo || "",
-    observaciones: animalApi.observaciones || animalLocal.observaciones || "",
-    origen: animalApi.origen || animalLocal.origen || "turso",
-    fechaRegistro: animalApi.fechaRegistro || animalLocal.fechaRegistro || "",
-    fechaActualizacion: animalApi.fechaActualizacion || animalLocal.fechaActualizacion || ""
-  };
-}
-
-
-
-// Convierte columnas de Turso al formato local de RuralData.
-function convertirAnimalApiAAnimalLocal(animalApi) {
-  return {
-    id: animalApi.id,
-    caravanaVisual: animalApi.caravana_visual || "",
-    codigoRFID: animalApi.codigo_rfid || "",
-    categoria: animalApi.categoria || "",
-    sexo: animalApi.sexo || "",
-    raza: animalApi.raza || "",
-    fechaNacimiento: animalApi.fecha_nacimiento || "",
-    propietario: animalApi.propietario || "",
-    campo: animalApi.campo || "",
-    observaciones: animalApi.observaciones || "",
-    origen: animalApi.origen || "turso",
-    fechaRegistro: animalApi.fecha_registro || new Date().toISOString(),
-    fechaActualizacion: animalApi.fecha_actualizacion || ""
-  };
-}
-
-// Evita duplicar animales al mezclar Turso con localStorage.
-function animalExisteEnListaListado(animales, animalNuevo) {
-  const idNuevo = animalNuevo.id || "";
-  const caravanaNueva = normalizarTextoListado(animalNuevo.caravanaVisual || "");
-  const rfidNuevo = normalizarTextoListado(animalNuevo.codigoRFID || "");
-
-  for (let i = 0; i < animales.length; i++) {
-    const animal = animales[i];
-
-    const idExistente = animal.id || "";
-    const caravanaExistente = normalizarTextoListado(animal.caravanaVisual || "");
-    const rfidExistente = normalizarTextoListado(animal.codigoRFID || "");
-
-    if (idNuevo !== "" && idNuevo === idExistente) return true;
-    if (caravanaNueva !== "" && caravanaNueva === caravanaExistente) return true;
-    if (rfidNuevo !== "" && rfidNuevo === rfidExistente) return true;
-  }
-
-  return false;
-}
+// La misma cola atiende listado y búsqueda, sin mezclar IDs por caravana.
+async function sincronizarAnimalesDesdeApiListado() { await window.RuralDataMvp.sincronizar(); }
 
 function normalizarTextoListado(texto) {
   return String(texto || "")
@@ -821,13 +562,6 @@ async function guardarCambiosAnimalListado(idAnimal) {
         fechaActualizacion: new Date().toISOString()
       };
 
-      const respuestaRemota = await actualizarAnimalEnApiListado(animalActualizado);
-
-      if (!respuestaRemota.ok && respuestaRemota.duplicado) {
-        alert("No se guardó el cambio. Ya existe otro animal con esa caravana o RFID.");
-        return;
-      }
-
       animales[i] = animalActualizado;
       guardarAnimales(animales);
 
@@ -837,9 +571,7 @@ async function guardarCambiosAnimalListado(idAnimal) {
         desplegarFichaAnimalListado(idAnimal);
       }, 100);
 
-      if (!respuestaRemota.ok) {
-        alert("Cambios guardados localmente, pero no se pudieron actualizar en Turso.");
-      }
+
 
       return;
     }
@@ -849,92 +581,7 @@ async function guardarCambiosAnimalListado(idAnimal) {
 
 
 
-// Actualiza un animal en la API segura de Vercel/Turso.
-async function actualizarAnimalEnApiListado(animal) {
-  try {
-    const respuesta = await fetch("/api/animales", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(crearPayloadAnimalApiListado(animal))
-    });
 
-    const datos = await respuesta.json();
-
-    if (respuesta.status === 409 || datos.duplicado) {
-      return {
-        ok: false,
-        duplicado: true
-      };
-    }
-
-    if (respuesta.status === 404) {
-      return await crearAnimalEnApiListado(animal);
-    }
-
-    if (!respuesta.ok || !datos.ok) {
-      return {
-        ok: false
-      };
-    }
-
-    return {
-      ok: true
-    };
-  } catch (error) {
-    return {
-      ok: false
-    };
-  }
-}
-
-// Si el animal solo existía localmente, lo crea en Turso.
-async function crearAnimalEnApiListado(animal) {
-  try {
-    const respuesta = await fetch("/api/animales", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(crearPayloadAnimalApiListado(animal))
-    });
-
-    const datos = await respuesta.json();
-
-    if (!respuesta.ok || !datos.ok) {
-      return {
-        ok: false
-      };
-    }
-
-    return {
-      ok: true
-    };
-  } catch (error) {
-    return {
-      ok: false
-    };
-  }
-}
-
-// Convierte el animal local al formato que espera la API.
-function crearPayloadAnimalApiListado(animal) {
-  return {
-    id: animal.id,
-    establecimiento_id: "demo_ruraldata",
-    caravana_visual: animal.caravanaVisual || "",
-    codigo_rfid: animal.codigoRFID || "",
-    categoria: animal.categoria || "",
-    sexo: animal.sexo || "",
-    raza: animal.raza || "",
-    fecha_nacimiento: animal.fechaNacimiento || "",
-    propietario: animal.propietario || "",
-    campo: animal.campo || "",
-    observaciones: animal.observaciones || "",
-    origen: animal.origen || "ruraldata_app"
-  };
-}
 
 
 
@@ -1351,20 +998,7 @@ async function guardarPesajeAnimalListado(idAnimal) {
 
   guardarPesajes(pesajes);
 
-  let nuevoPesaje = null;
-
-  if (idEditando) {
-    for (let i = 0; i < pesajes.length; i++) {
-      if (pesajes[i].id === idEditando) {
-        await guardarPesajeEnApiListado(pesajes[i]);
-        break;
-      }
-    }
-  } else {
-    await guardarPesajeEnApiListado(nuevoPesaje);
-  }
-
-
+  // La cola común conserva el evento completo, incluido animalId.
   mostrarListadoAnimales();
 
   setTimeout(function () {
@@ -1438,7 +1072,7 @@ async function eliminarPesajeAnimalListado(idAnimal, idPesaje) {
   }
 
   guardarPesajes(nuevosPesajes);
-await eliminarPesajeEnApiListado(idPesaje);
+
 
 
 

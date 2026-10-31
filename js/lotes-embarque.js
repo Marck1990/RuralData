@@ -739,14 +739,26 @@ function obtenerLoteEmbarquePorId(idLote) {
     return null;
 }
 
-// Obtiene animales del lote activo.
+// Revalida sin reescribir la lectura histórica ni cambiar IDs, camión u orden.
+function revalidarAnimalLoteEmbarque(registro) {
+    const animal = registro.animalId
+        ? obtenerAnimales().find(a => a.id === registro.animalId)
+        : buscarAnimalParaLoteEmbarque(registro.codigoRFID || registro.caravanaVisual || "");
+    if (!animal) return {...registro, estado: "no_apto", motivoBloqueo: "Animal no registrado en RuralData."};
+    const carencia = obtenerCarenciaActivaLoteEmbarque(animal);
+    return {...registro, caravanaVisual: animal.caravanaVisual || "", codigoRFID: animal.codigoRFID || "",
+        estado: carencia ? "no_apto" : "apto",
+        motivoBloqueo: carencia ? "Carencia sanitaria vigente hasta " + formatearFechaLoteEmbarque(carencia.fechaLiberacion) : ""};
+}
+
+// Obtiene animales del lote activo con aptitud vigente, también al exportar.
 function obtenerAnimalesDelLoteActivo() {
     const animalesLote = obtenerAnimalesLotesEmbarque();
     const resultado = [];
 
     for (let i = 0; i < animalesLote.length; i++) {
         if (animalesLote[i].loteId === loteEmbarqueActivoId) {
-            resultado.push(animalesLote[i]);
+            resultado.push(revalidarAnimalLoteEmbarque(animalesLote[i]));
         }
     }
 
@@ -770,7 +782,7 @@ function obtenerResumenLoteEmbarque(idLote) {
 
         total++;
 
-        if (animalesLote[i].estado === "apto") {
+        if (revalidarAnimalLoteEmbarque(animalesLote[i]).estado === "apto") {
             aptos++;
         } else {
             noAptos++;

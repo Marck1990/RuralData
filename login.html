@@ -68,12 +68,13 @@
       <form id="formLogin" class="d-grid gap-3">
 
         <div>
-          <label for="usuario" class="form-label">Usuario</label>
+          <label for="usuario" class="form-label">Correo electrónico</label>
           <input
-            type="text"
+            type="email"
             id="usuario"
             class="form-control"
-            placeholder="Ingrese su usuario"
+            placeholder="Ingrese su correo"
+            autocomplete="username"
             required
           />
         </div>
@@ -83,6 +84,7 @@
           <input
             type="password"
             id="password"
+            autocomplete="current-password"
             class="form-control"
             placeholder="Ingrese su contraseña"
             required
@@ -93,25 +95,20 @@
           Ingresar
         </button>
 
-        <a href="registro-usuario.html" class="btn btn-outline-secondary">
-          Crear nuevo usuario
-        </a>
 
-        <div id="mensajeLogin"></div>
+
+        <a href="registro-usuario.html" class="btn btn-outline-secondary">Registrar productor</a>
+        <div id="mensajeLogin" role="status"></div>
 
       </form>
 
-      <section class="login-rural-demo">
-        <p><strong>Usuarios demo</strong></p>
-        <span>propietario / 1234</span>
-        <span>trabajador / 1234</span>
-        <span>veterinario / 1234</span>
-      </section>
+      <p>Cada productor accede únicamente a su establecimiento. Los cambios offline se conservan por cuenta.</p>
 
     </section>
 
   </main>
 
+  <script type="module" src="js/integracion-mvp.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/auth.js"></script>
 </body>

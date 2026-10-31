@@ -204,7 +204,7 @@ function mostrarResultadoAptoTxt(animal, caravanaOchoDigitos) {
       </h3>
 
       <p class="mb-1">
-        Caravana: <strong>${animal.caravanaVisual || caravanaOchoDigitos}</strong>
+        Caravana: <strong>${escaparTextoMvp(animal.caravanaVisual || caravanaOchoDigitos)}</strong>
       </p>
 
       <p class="mb-1">
@@ -212,7 +212,7 @@ function mostrarResultadoAptoTxt(animal, caravanaOchoDigitos) {
       </p>
 
       <p class="mb-1">
-        RFID: ${animal.codigoRFID || "Sin dato"}
+        RFID: ${escaparTextoMvp(animal.codigoRFID || "Sin dato")}
       </p>
 
       <p class="mb-0">
@@ -237,15 +237,15 @@ function mostrarResultadoBloqueadoTxt(animal, carencia) {
       </h3>
 
       <p class="mb-1">
-        Caravana: <strong>${animal.caravanaVisual || "Sin dato"}</strong>
+        Caravana: <strong>${escaparTextoMvp(animal.caravanaVisual || "Sin dato")}</strong>
       </p>
 
       <p class="mb-1">
-        RFID: ${animal.codigoRFID || "Sin dato"}
+        RFID: ${escaparTextoMvp(animal.codigoRFID || "Sin dato")}
       </p>
 
       <p class="mb-1">
-        Producto: ${carencia.producto || "Sin dato"}
+        Producto: ${escaparTextoMvp(carencia.producto || "Sin dato")}
       </p>
 
       <p class="mb-1">
@@ -267,7 +267,7 @@ function mostrarResultadoTxt(texto, tipo) {
 
   resultado.innerHTML = `
     <div class="alert alert-${tipo} mb-0">
-      ${texto}
+      ${escaparTextoMvp(texto)}
     </div>
   `;
 }
@@ -307,6 +307,7 @@ function mostrarListaTxt() {
 
   for (let i = 0; i < lista.length; i++) {
     const itemLista = lista[i];
+    const apto = obtenerListaTxtAptaActual([itemLista]).length === 1;
 
     const item = document.createElement("article");
     item.className = "card";
@@ -315,12 +316,12 @@ function mostrarListaTxt() {
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-start gap-3">
           <div>
-            <span class="estado-pill badge-soft-green mb-3">
-              Agregado
+            <span class="estado-pill ${apto ? 'badge-soft-green' : 'badge-soft-yellow'} mb-3">
+              ${apto ? 'Agregado' : 'Bloqueado al exportar'}
             </span>
 
             <h3 class="h5 mb-2">
-              ${itemLista.caravanaVisual || itemLista.caravanaOchoDigitos || "Animal sin caravana"}
+              ${escaparTextoMvp(itemLista.caravanaVisual || itemLista.caravanaOchoDigitos || "Animal sin caravana")}
             </h3>
 
             <p class="mb-1">
@@ -328,22 +329,22 @@ function mostrarListaTxt() {
             </p>
 
             <p class="mb-1">
-              RFID: ${itemLista.codigoRFID || "Sin dato"}
+              RFID: ${escaparTextoMvp(itemLista.codigoRFID || "Sin dato")}
             </p>
 
             <p class="mb-1">
-              Categoría: ${itemLista.categoria || "Sin dato"}
+              Categoría: ${escaparTextoMvp(itemLista.categoria || "Sin dato")}
             </p>
 
             <p class="mb-0">
-              Lectura: ${itemLista.fechaLectura} ${itemLista.horaLectura}
+              Lectura: ${escaparTextoMvp(itemLista.fechaLectura)} ${escaparTextoMvp(itemLista.horaLectura)}
             </p>
           </div>
 
           <button
             type="button"
             class="btn btn-outline-danger btn-sm"
-            onclick="quitarAnimalListaTxt('${itemLista.id}')"
+            onclick="quitarAnimalListaTxt(${argumentoEventoMvp(itemLista.id)})"
           >
             Quitar
           </button>
@@ -406,8 +407,23 @@ function actualizarVistaPreviaTxt() {
 }
 
 // Genera contenido TXT según el formato del ejemplo recibido.
+function obtenerListaTxtAptaActual(lista = obtenerListaTxt()) {
+  const animales = obtenerAnimales();
+  const carencias = obtenerCarenciasActivasPorAnimalTxt();
+  const aptos = [];
+  for (const item of lista) {
+    const animal = item.animalId ? animales.find(a => a.id === item.animalId)
+      : buscarAnimalPorIdentificacionTxt(item.codigoRFID || item.caravanaVisual || "");
+    if (!animal || carencias[obtenerClaveAnimalTxt(animal)]) continue;
+    const caravana = obtenerCaravanaOchoDigitosAnimal(animal, animal.caravanaVisual || animal.codigoRFID);
+    if (!caravana) continue;
+    aptos.push({...item, caravanaVisual: animal.caravanaVisual || "", codigoRFID: animal.codigoRFID || "", caravanaOchoDigitos: caravana});
+  }
+  return aptos;
+}
+
 function generarContenidoTxtPreventivo() {
-  const lista = obtenerListaTxt();
+  const lista = obtenerListaTxtAptaActual();
   const numeroGuia = obtenerNumeroGuiaTxt();
 
   const lineas = [];
@@ -439,10 +455,10 @@ function generarContenidoTxtPreventivo() {
 // Descarga TXT preventivo y guarda historial.
 function descargarTxtPreventivo() {
   const contenido = generarContenidoTxtPreventivo();
-  const lista = obtenerListaTxt();
+  const lista = obtenerListaTxtAptaActual();
 
   if (contenido.trim() === "") {
-    mostrarResultadoTxt("No hay animales agregados para descargar.", "warning");
+    mostrarResultadoTxt("No hay animales aptos para descargar. Revisá el registro y las carencias actuales.", "warning");
     prepararInputTxt();
     return;
   }
@@ -545,18 +561,18 @@ function mostrarHistorialTxt() {
             </p>
 
             <p class="mb-1">
-              Animales: ${registro.cantidadAnimales}
+              Animales: ${escaparTextoMvp(registro.cantidadAnimales)}
             </p>
 
             <p class="mb-0">
-              Generado: ${formatearFechaTxt(registro.fechaGeneracion)} ${registro.horaGeneracion}
+              Generado: ${formatearFechaTxt(registro.fechaGeneracion)} ${escaparTextoMvp(registro.horaGeneracion)}
             </p>
           </div>
 
           <button
             type="button"
             class="btn btn-outline-danger btn-sm"
-            onclick="eliminarRegistroHistorialTxt('${registro.id}')"
+            onclick="eliminarRegistroHistorialTxt(${argumentoEventoMvp(registro.id)})"
           >
             Eliminar
           </button>
@@ -571,7 +587,7 @@ function mostrarHistorialTxt() {
         <button
           type="button"
           class="btn btn-success w-100"
-          onclick="descargarTxtDesdeHistorial('${registro.id}')"
+          onclick="descargarTxtDesdeHistorial(${argumentoEventoMvp(registro.id)})"
         >
           Descargar nuevamente
         </button>
@@ -637,6 +653,7 @@ function obtenerHistorialTxt() {
 
 // Guarda historial.
 function guardarHistorialTxt(historial) {
+  asegurarEscrituraLocalMvp();
   localStorage.setItem(obtenerClaveHistorialTxt(), JSON.stringify(historial));
 }
 
@@ -740,6 +757,7 @@ function obtenerListaTxt() {
 
 // Guarda lista en localStorage.
 function guardarListaTxt(lista) {
+  asegurarEscrituraLocalMvp();
   localStorage.setItem(obtenerClaveListaTxt(), JSON.stringify(lista));
 }
 
