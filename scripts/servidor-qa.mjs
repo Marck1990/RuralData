@@ -12,7 +12,9 @@ import { crearRegistrosHandler } from '../server/registros-handler.js';
 import { crearDiagnosticoHandler } from '../server/diagnostico-handler.js';
 
 const raiz=fileURLToPath(new URL('../',import.meta.url));
-const puerto=43187,origen=`http://localhost:${puerto}`;
+const puerto=Number(process.env.RURALDATA_QA_PORT || 43187);
+if(!Number.isInteger(puerto) || puerto<1024 || puerto>65535)throw new Error('Puerto de QA local inválido');
+const origen=`http://localhost:${puerto}`;
 const env={RURALDATA_SESSION_SECRET:randomBytes(48).toString('hex'),RURALDATA_ALLOWED_ORIGIN:'https://qa.ruraldata.test'};
 const db=new DatabaseSync(':memory:');
 db.exec(readFileSync(new URL('../tests/fixtures/esquema-original.sql',import.meta.url),'utf8'));
@@ -64,6 +66,10 @@ const servidor=http.createServer(async(req,res)=>{
     if(!/^\/(?:index\.html|login\.html|registro-usuario\.html|manifest\.json|service-worker\.js|(?:pages|js|css|assets|tests\/browser)\/)/.test(ruta)){res.writeHead(404);res.end();return;}
     const archivo=resolve(raiz,'.'+ruta);if(!archivo.startsWith(raiz.endsWith(sep)?raiz:raiz+sep)){res.writeHead(403);res.end();return;}
     const tipo=tipos[extname(archivo)]||'application/octet-stream';res.setHeader('Content-Type',tipo);res.setHeader('Cache-Control','no-store');
+    if(ruta==='/tests/browser/harness.html'){
+      const html=readFileSync(archivo,'utf8').replace('content="__RURALDATA_QA_ORIGEN__"',`content="${origen}"`);
+      res.end(html);return;
+    }
     if(archivo.endsWith('.html') && !ruta.startsWith('/tests/browser/')){
       const html=readFileSync(archivo,'utf8').replace('<head>','<head><script src="/tests/browser/instrumentar.js"></script>');res.end(html);return;
     }

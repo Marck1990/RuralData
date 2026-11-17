@@ -55,6 +55,11 @@ async function registrarAnimal(event) {
   }
 
   const sexoAutomatico = determinarSexoPorCategoria(categoria);
+  await window.RuralDataMvp?.listo;
+  if (window.RuralDataMvp?.escritor === false) {
+    mostrarMensajeRegistroAnimal("Edición bloqueada. Cerrá la otra pestaña de esta cuenta o verificá que el navegador permita Web Locks.", "warning");
+    return;
+  }
   const animales = obtenerAnimales();
 
   const existeAnimal = existeAnimalRegistrado(

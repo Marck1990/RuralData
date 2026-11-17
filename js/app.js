@@ -4,11 +4,37 @@ let datosRotativosCabecera = [];
 let indiceDatoRotativo = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
-  actualizarDashboard();
-  inicializarFotoPerfil();
   inicializarMenuLateral();
+  inicializarFotoPerfil();
   inicializarDatosVivosCabecera();
+  inicializarResumenDashboard();
 });
+
+// El menú no depende del lock ni de la disponibilidad de los datos productivos.
+function inicializarResumenDashboard() {
+  document.addEventListener('ruraldata:datos', refrescarResumenDashboard);
+  document.addEventListener('ruraldata:lista', refrescarResumenDashboard);
+  window.addEventListener('pageshow', refrescarResumenDashboard);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refrescarResumenDashboard();
+  });
+  window.addEventListener('storage', event => {
+    if (!obtenerSesion()?.autenticacionMvp) return;
+    const espacio = obtenerEstablecimientoActivo();
+    const claves = [
+      obtenerClavePorEstablecimiento(STORAGE_KEYS.sanidad),
+      obtenerClavePorEstablecimiento(STORAGE_KEYS.reproduccion),
+      'ruraldata_mvp_v1_' + espacio
+    ];
+    if (claves.includes(event.key)) refrescarResumenDashboard();
+  });
+  refrescarResumenDashboard();
+}
+
+function refrescarResumenDashboard() {
+  if (!window.RuralDataMvp || !obtenerSesion()?.autenticacionMvp) return;
+  actualizarDashboard();
+}
 
 // Actualiza los números, bienvenida y gráficas del inicio.
 function actualizarDashboard() {

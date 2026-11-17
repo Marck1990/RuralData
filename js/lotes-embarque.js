@@ -60,7 +60,8 @@ function inicializarLotesEmbarque() {
         });
     }
 
-    mostrarLotesEmbarque();
+    document.addEventListener("ruraldata:lista", mostrarLotesEmbarque, { once: true });
+    if (window.RuralDataMvp) mostrarLotesEmbarque();
 }
 
 // Crea un lote nuevo.
@@ -285,36 +286,27 @@ function agregarAnimalAlLoteEmbarque() {
 
     const animalesLote = obtenerAnimalesLotesEmbarque();
 
-    if (animalYaExisteEnLote(lote.id, identificador, animalesLote)) {
-        mostrarResultadoLecturaLoteEmbarque(
-            "Animal repetido en este lote.",
-            "No se agregó para evitar duplicados.",
-            "warning"
-        );
+    const coincidencias = buscarCoincidenciasLoteEmbarque(identificador);
+    const animal = coincidencias.length === 1 ? coincidencias[0] : null;
+    const nuevoRegistro = crearRegistroAnimalLoteEmbarque(lote, animal, coincidencias.length > 1);
 
+    if (nuevoRegistro.estado !== "apto") {
+        mostrarResultadoLecturaLoteEmbarque("Animal no apto. No se agregó al lote.", nuevoRegistro.motivoBloqueo, "danger");
+        return;
+    }
+    if (animalYaExisteEnLote(lote.id, animal, animalesLote)) {
+        mostrarResultadoLecturaLoteEmbarque("Animal repetido en este lote.", "No se agregó para evitar duplicados.", "warning");
         limpiarInputLecturaLoteEmbarque();
         return;
     }
-
-    const animal = buscarAnimalParaLoteEmbarque(identificador);
-    const nuevoRegistro = crearRegistroAnimalLoteEmbarque(lote, identificador, animal);
-
     animalesLote.push(nuevoRegistro);
     guardarAnimalesLotesEmbarque(animalesLote);
 
-    if (nuevoRegistro.estado === "apto") {
-        mostrarResultadoLecturaLoteEmbarque(
-            "Animal apto agregado.",
-            nuevoRegistro.caravanaVisual || nuevoRegistro.codigoRFID || identificador,
-            "success"
-        );
-    } else {
-        mostrarResultadoLecturaLoteEmbarque(
-            "Animal no apto agregado.",
-            nuevoRegistro.motivoBloqueo,
-            "danger"
-        );
-    }
+    mostrarResultadoLecturaLoteEmbarque(
+        "Animal apto agregado.",
+        nuevoRegistro.caravanaVisual || nuevoRegistro.codigoRFID || identificador,
+        "success"
+    );
 
     limpiarInputLecturaLoteEmbarque();
     mostrarLotesEmbarque();
@@ -322,43 +314,20 @@ function agregarAnimalAlLoteEmbarque() {
 }
 
 // Crea registro de animal dentro del lote.
-function crearRegistroAnimalLoteEmbarque(lote, identificador, animal) {
+function crearRegistroAnimalLoteEmbarque(lote, animal, ambiguo, bloqueos) {
     if (!animal) {
-        return {
-            id: crearIdLoteEmbarque(),
-            loteId: lote.id,
-            animalId: "",
-            caravanaVisual: obtenerUltimosOchoDigitosLoteEmbarque(identificador) || identificador,
-            codigoRFID: identificador,
-            estado: "no_apto",
-            motivoBloqueo: "Animal no registrado en RuralData.",
-            camion: "",
-            ordenCarga: obtenerSiguienteOrdenCargaLote(lote.id),
-            fechaLectura: new Date().toISOString()
-        };
+        return {estado: "no_apto", motivoBloqueo: ambiguo ? MOTIVO_IDENTIDAD_SANITARIA : "Animal no registrado en RuralData."};
     }
 
-    const carencia = obtenerCarenciaActivaLoteEmbarque(animal);
-
+    const carencia = obtenerCarenciaActivaLoteEmbarque(animal, bloqueos);
     if (carencia) {
-        return {
-            id: crearIdLoteEmbarque(),
-            loteId: lote.id,
-            animalId: animal.id || "",
-            caravanaVisual: animal.caravanaVisual || obtenerUltimosOchoDigitosLoteEmbarque(animal.codigoRFID),
-            codigoRFID: animal.codigoRFID || "",
-            estado: "no_apto",
-            motivoBloqueo: "Carencia sanitaria vigente hasta " + formatearFechaLoteEmbarque(carencia.fechaLiberacion),
-            camion: "",
-            ordenCarga: obtenerSiguienteOrdenCargaLote(lote.id),
-            fechaLectura: new Date().toISOString()
-        };
+        return {estado: "no_apto", motivoBloqueo: describirBloqueoLoteEmbarque(carencia)};
     }
 
     return {
         id: crearIdLoteEmbarque(),
         loteId: lote.id,
-        animalId: animal.id || "",
+        animalId: animal.id,
         caravanaVisual: animal.caravanaVisual || obtenerUltimosOchoDigitosLoteEmbarque(animal.codigoRFID),
         codigoRFID: animal.codigoRFID || "",
         estado: "apto",
@@ -493,18 +462,23 @@ function exportarTxtLoteEmbarque() {
     if (!lote) return;
 
     const animalesLote = obtenerAnimalesDelLoteActivo();
-    const aptos = [];
-
-    for (let i = 0; i < animalesLote.length; i++) {
-        if (animalesLote[i].estado === "apto") {
-            aptos.push(animalesLote[i]);
-        }
+    const aptos = animalesLote.filter(registro => registro.estado === "apto");
+    const cantidadesPorCaravana = new Map();
+    for (const animal of obtenerAnimales()) {
+        const caravana = obtenerCaravanaParaTxtLote(animal);
+        cantidadesPorCaravana.set(caravana, (cantidadesPorCaravana.get(caravana) || 0) + 1);
     }
+    const exportables = aptos.filter(registro => {
+        const caravana = obtenerCaravanaParaTxtLote(registro);
+        return caravana && cantidadesPorCaravana.get(caravana) === 1;
+    });
+    const omitidos = aptos.length - exportables.length;
+    const motivoOmitidos = "Hay caravanas TXT de ocho dígitos ambiguas o inválidas.";
 
-    if (aptos.length === 0) {
+    if (exportables.length === 0) {
         mostrarResultadoLecturaLoteEmbarque(
             "No hay animales aptos para exportar.",
-            "El TXT preventivo se genera solo con animales aptos.",
+            omitidos ? motivoOmitidos : "El TXT preventivo se genera solo con animales aptos.",
             "warning"
         );
         return;
@@ -516,8 +490,8 @@ function exportarTxtLoteEmbarque() {
 
     let contenido = "";
 
-    for (let i = 0; i < aptos.length; i++) {
-        contenido += crearLineaTxtLoteEmbarque(aptos[i], numeroGuia) + "\n";
+    for (const registro of exportables) {
+        contenido += crearLineaTxtLoteEmbarque(registro, numeroGuia) + "\n";
     }
 
     const nombreArchivo = crearNombreArchivoTxtLoteEmbarque(lote);
@@ -525,16 +499,18 @@ function exportarTxtLoteEmbarque() {
 
     mostrarResultadoLecturaLoteEmbarque(
         "TXT generado correctamente.",
-        "Se exportaron " + aptos.length + " animales aptos.",
-        "success"
+        "Se exportaron " + exportables.length + " animales aptos." + (omitidos ? " " + motivoOmitidos : ""),
+        omitidos ? "warning" : "success"
     );
+}
+
+function obtenerCaravanaParaTxtLote(registro) {
+    return obtenerUltimosOchoDigitosLoteEmbarque(registro.codigoRFID || registro.caravanaVisual);
 }
 
 // Crea línea TXT preventiva.
 function crearLineaTxtLoteEmbarque(registro, numeroGuia) {
-    const caravana = obtenerUltimosOchoDigitosLoteEmbarque(
-        registro.codigoRFID || registro.caravanaVisual
-    );
+    const caravana = obtenerCaravanaParaTxtLote(registro);
 
     const codigoCompleto = "A00000008580000" + caravana;
     const ahora = new Date();
@@ -633,97 +609,26 @@ function eliminarLoteEmbarqueActivo() {
 }
 
 // Busca animal por caravana, RFID o últimos 8 dígitos.
-function buscarAnimalParaLoteEmbarque(identificador) {
-    const animales = obtenerAnimales();
-    const claveBusqueda = normalizarIdentificadorLoteEmbarque(identificador);
-    const ultimosOchoBusqueda = obtenerUltimosOchoDigitosLoteEmbarque(identificador);
-
-    for (let i = 0; i < animales.length; i++) {
-        const animal = animales[i];
-
-        const caravana = normalizarIdentificadorLoteEmbarque(animal.caravanaVisual || "");
-        const rfid = normalizarIdentificadorLoteEmbarque(animal.codigoRFID || "");
-        const rfidOcho = obtenerUltimosOchoDigitosLoteEmbarque(animal.codigoRFID || "");
-
-        if (caravana !== "" && caravana === claveBusqueda) {
-            return animal;
-        }
-
-        if (rfid !== "" && rfid === claveBusqueda) {
-            return animal;
-        }
-
-        if (ultimosOchoBusqueda !== "" && rfidOcho !== "" && ultimosOchoBusqueda === rfidOcho) {
-            return animal;
-        }
-
-        if (ultimosOchoBusqueda !== "" && caravana !== "" && ultimosOchoBusqueda === caravana) {
-            return animal;
-        }
-    }
-
-    return null;
+function buscarCoincidenciasLoteEmbarque(identificador, animales = obtenerAnimales()) {
+    const sufijo = obtenerUltimosOchoDigitosLoteEmbarque(identificador);
+    return buscarCoincidenciasIdentificacionSanitaria(identificador, animales, animal =>
+        sufijo && (obtenerUltimosOchoDigitosLoteEmbarque(animal.codigoRFID) === sufijo ||
+            normalizarIdentificadorSanitario(animal.caravanaVisual) === sufijo)
+    );
 }
 
 // Detecta duplicado dentro del lote.
-function animalYaExisteEnLote(idLote, identificador, animalesLote) {
-    const claveBusqueda = normalizarIdentificadorLoteEmbarque(identificador);
-    const ultimosOchoBusqueda = obtenerUltimosOchoDigitosLoteEmbarque(identificador);
-
-    for (let i = 0; i < animalesLote.length; i++) {
-        const registro = animalesLote[i];
-
-        if (registro.loteId !== idLote) continue;
-
-        const caravana = normalizarIdentificadorLoteEmbarque(registro.caravanaVisual || "");
-        const rfid = normalizarIdentificadorLoteEmbarque(registro.codigoRFID || "");
-        const rfidOcho = obtenerUltimosOchoDigitosLoteEmbarque(registro.codigoRFID || "");
-
-        if (caravana !== "" && caravana === claveBusqueda) return true;
-        if (rfid !== "" && rfid === claveBusqueda) return true;
-        if (ultimosOchoBusqueda !== "" && rfidOcho !== "" && ultimosOchoBusqueda === rfidOcho) return true;
-        if (ultimosOchoBusqueda !== "" && caravana !== "" && ultimosOchoBusqueda === caravana) return true;
-    }
-
-    return false;
+function animalYaExisteEnLote(idLote, animal, animalesLote, animales = obtenerAnimales()) {
+    return animalesLote.some(registro => {
+        if (registro.loteId !== idLote) return false;
+        if (registro.animalId) return registro.animalId === animal.id;
+        return resolverAsociacionSanitaria(registro, animales).animal?.id === animal.id;
+    });
 }
 
 // Revisa carencia sanitaria vigente.
-function obtenerCarenciaActivaLoteEmbarque(animal) {
-    const registros = obtenerSanidad();
-    const claveAnimal = obtenerClaveAnimalLoteEmbarque(animal);
-
-    let carenciaActiva = null;
-
-    for (let i = 0; i < registros.length; i++) {
-        const registro = registros[i];
-
-        const tieneCarencia = registro.tieneCarencia === true || Number(registro.diasCarencia) > 0;
-
-        if (!tieneCarencia || !registro.fechaLiberacion) continue;
-
-        const claveRegistro = obtenerClaveSanidadLoteEmbarque(registro);
-
-        if (claveRegistro !== claveAnimal) continue;
-
-        const estado = obtenerEstadoCarenciaLoteEmbarque(registro.fechaLiberacion);
-
-        if (estado !== "En carencia") continue;
-
-        if (!carenciaActiva) {
-            carenciaActiva = registro;
-            continue;
-        }
-
-        const fechaActual = obtenerFechaDesdeISOLoteEmbarque(carenciaActiva.fechaLiberacion);
-        const fechaNueva = obtenerFechaDesdeISOLoteEmbarque(registro.fechaLiberacion);
-
-        if (fechaNueva > fechaActual) {
-            carenciaActiva = registro;
-        }
-    }
-
-    return carenciaActiva;
+function obtenerCarenciaActivaLoteEmbarque(animal, bloqueos = obtenerBloqueosSanitariosMvp()) {
+    return bloqueos[animal.id] || null;
 }
 
 // Obtiene lote por id.
@@ -740,25 +645,34 @@ function obtenerLoteEmbarquePorId(idLote) {
 }
 
 // Revalida sin reescribir la lectura histórica ni cambiar IDs, camión u orden.
-function revalidarAnimalLoteEmbarque(registro) {
-    const animal = registro.animalId
-        ? obtenerAnimales().find(a => a.id === registro.animalId)
-        : buscarAnimalParaLoteEmbarque(registro.codigoRFID || registro.caravanaVisual || "");
-    if (!animal) return {...registro, estado: "no_apto", motivoBloqueo: "Animal no registrado en RuralData."};
-    const carencia = obtenerCarenciaActivaLoteEmbarque(animal);
+function revalidarAnimalLoteEmbarque(registro, animales, bloqueos) {
+    const referencia = registro.animalId ? { animalId: registro.animalId } : registro;
+    const { animal, candidatos } = resolverAsociacionSanitaria(referencia, animales);
+    if (!animal) {
+        return {...registro, estado: "no_apto",
+            motivoBloqueo: candidatos.length ? MOTIVO_IDENTIDAD_SANITARIA : "Animal no registrado en RuralData."};
+    }
+    const carencia = bloqueos[animal.id];
     return {...registro, caravanaVisual: animal.caravanaVisual || "", codigoRFID: animal.codigoRFID || "",
         estado: carencia ? "no_apto" : "apto",
-        motivoBloqueo: carencia ? "Carencia sanitaria vigente hasta " + formatearFechaLoteEmbarque(carencia.fechaLiberacion) : ""};
+        motivoBloqueo: carencia ? describirBloqueoLoteEmbarque(carencia) : ""};
+}
+
+function describirBloqueoLoteEmbarque(carencia) {
+    return carencia.motivoPreventivo ||
+        "Carencia sanitaria vigente hasta " + formatearFechaLoteEmbarque(carencia.fechaLiberacion);
 }
 
 // Obtiene animales del lote activo con aptitud vigente, también al exportar.
 function obtenerAnimalesDelLoteActivo() {
     const animalesLote = obtenerAnimalesLotesEmbarque();
+    const animales = obtenerAnimales();
+    const bloqueos = obtenerBloqueosSanitariosMvp(animales);
     const resultado = [];
 
     for (let i = 0; i < animalesLote.length; i++) {
         if (animalesLote[i].loteId === loteEmbarqueActivoId) {
-            resultado.push(revalidarAnimalLoteEmbarque(animalesLote[i]));
+            resultado.push(revalidarAnimalLoteEmbarque(animalesLote[i], animales, bloqueos));
         }
     }
 
@@ -772,6 +686,8 @@ function obtenerAnimalesDelLoteActivo() {
 // Resumen por lote.
 function obtenerResumenLoteEmbarque(idLote) {
     const animalesLote = obtenerAnimalesLotesEmbarque();
+    const animales = obtenerAnimales();
+    const bloqueos = obtenerBloqueosSanitariosMvp(animales);
 
     let total = 0;
     let aptos = 0;
@@ -782,7 +698,7 @@ function obtenerResumenLoteEmbarque(idLote) {
 
         total++;
 
-        if (revalidarAnimalLoteEmbarque(animalesLote[i]).estado === "apto") {
+        if (revalidarAnimalLoteEmbarque(animalesLote[i], animales, bloqueos).estado === "apto") {
             aptos++;
         } else {
             noAptos++;
@@ -813,25 +729,6 @@ function obtenerSiguienteOrdenCargaLote(idLote) {
     }
 
     return mayor + 1;
-}
-
-// Clave animal.
-function obtenerClaveAnimalLoteEmbarque(animal) {
-    if (animal.id) return animal.id;
-    if (animal.caravanaVisual) return animal.caravanaVisual;
-    if (animal.codigoRFID) return animal.codigoRFID;
-
-    return "animal_sin_id";
-}
-
-// Clave sanidad.
-function obtenerClaveSanidadLoteEmbarque(registro) {
-    if (registro.animalId) return registro.animalId;
-    if (registro.caravanaVisual) return registro.caravanaVisual;
-    if (registro.codigoRFID) return registro.codigoRFID;
-    if (registro.identificacion) return registro.identificacion;
-
-    return registro.id;
 }
 
 // Estado de carencia.
@@ -1007,14 +904,6 @@ function obtenerUltimosOchoDigitosLoteEmbarque(valor) {
     return soloNumeros.slice(-8);
 }
 
-// Normaliza identificador.
-function normalizarIdentificadorLoteEmbarque(valor) {
-    return String(valor || "")
-        .trim()
-        .toLowerCase()
-        .replace(/\s/g, "");
-}
-
 // Actualiza texto.
 function actualizarTextoLoteEmbarque(idElemento, valor) {
     const elemento = document.getElementById(idElemento);
@@ -1102,9 +991,11 @@ function procesarContenidoTxtLoteEmbarque(contenido) {
 
   const lineas = contenido.split(/\r?\n/);
   const animalesLote = obtenerAnimalesLotesEmbarque();
+  const animales = obtenerAnimales();
+  const bloqueos = obtenerBloqueosSanitariosMvp(animales);
 
   let agregados = 0;
-  let aptos = 0;
+  const motivosRechazo = new Set();
   let noAptos = 0;
   let duplicados = 0;
   let invalidos = 0;
@@ -1117,26 +1008,25 @@ function procesarContenidoTxtLoteEmbarque(contenido) {
       continue;
     }
 
-    if (animalYaExisteEnLote(lote.id, identificador, animalesLote)) {
+    const coincidencias = buscarCoincidenciasLoteEmbarque(identificador, animales);
+    const animal = coincidencias.length === 1 ? coincidencias[0] : null;
+    const nuevoRegistro = crearRegistroAnimalLoteEmbarque(lote, animal, coincidencias.length > 1, bloqueos);
+
+    if (nuevoRegistro.estado !== "apto") {
+      noAptos++;
+      motivosRechazo.add(nuevoRegistro.motivoBloqueo);
+      continue;
+    }
+    if (animalYaExisteEnLote(lote.id, animal, animalesLote, animales)) {
       duplicados++;
       continue;
     }
-
-    const animal = buscarAnimalParaLoteEmbarque(identificador);
-    const nuevoRegistro = crearRegistroAnimalLoteEmbarque(lote, identificador, animal);
-
     animalesLote.push(nuevoRegistro);
 
     agregados++;
-
-    if (nuevoRegistro.estado === "apto") {
-      aptos++;
-    } else {
-      noAptos++;
-    }
   }
 
-  guardarAnimalesLotesEmbarque(animalesLote);
+  if (agregados) guardarAnimalesLotesEmbarque(animalesLote);
 
   mostrarLotesEmbarque();
   mostrarPanelLoteEmbarqueActivo();
@@ -1144,11 +1034,11 @@ function procesarContenidoTxtLoteEmbarque(contenido) {
   mostrarResultadoLecturaLoteEmbarque(
     "TXT cargado.",
     "Agregados: " + agregados +
-      " · Aptos: " + aptos +
-      " · No aptos: " + noAptos +
+      " · No aptos rechazados: " + noAptos +
       " · Duplicados: " + duplicados +
-      " · Inválidos: " + invalidos,
-    "success"
+      " · Inválidos: " + invalidos +
+      (motivosRechazo.size ? " · " + [...motivosRechazo].join(" · ") : ""),
+    noAptos ? "warning" : "success"
   );
 }
 

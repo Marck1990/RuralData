@@ -22,6 +22,8 @@ function inicializarSanidad() {
   mostrarOcultarBloqueCarencia();
   actualizarFechaLiberacionTexto();
   mostrarSanidadReciente();
+  document.addEventListener("ruraldata:lista", mostrarAnimalesEnCarencia);
+  document.addEventListener("ruraldata:datos", mostrarAnimalesEnCarencia);
   mostrarAnimalesEnCarencia();
 
   if (formSanidad) {
@@ -122,11 +124,11 @@ function registrarControlSanitario(event) {
   const veterinarioFirmante = document.getElementById("veterinarioFirmante").value.trim();
   const observaciones = document.getElementById("observaciones").value.trim();
 
-  const animal = buscarAnimalPorIdentificacion(identificacion);
+  const { animal, ambiguo } = identificarAnimalSanidad(identificacion);
 
   if (!animal) {
     mostrarMensajeSanidad(
-      "No se encontró un animal registrado con esa caravana o RFID.",
+      ambiguo ? MOTIVO_IDENTIDAD_SANITARIA : "No se encontró un animal registrado con esa caravana o RFID.",
       true
     );
     return;
@@ -212,25 +214,14 @@ function registrarControlSanitario(event) {
   );
 }
 
-// Busca un animal por caravana visual o RFID.
-function buscarAnimalPorIdentificacion(identificacion) {
+function identificarAnimalSanidad(identificacion) {
   const animales = obtenerAnimales();
-
-  for (let i = 0; i < animales.length; i++) {
-    const animal = animales[i];
-
-    const caravanaVisual = animal.caravanaVisual ? animal.caravanaVisual.trim() : "";
-    const codigoRFID = animal.codigoRFID ? animal.codigoRFID.trim() : "";
-
-    if (
-      caravanaVisual === identificacion ||
-      codigoRFID === identificacion
-    ) {
-      return animal;
-    }
-  }
-
-  return null;
+  const coincidencias = buscarCoincidenciasIdentificacionSanitaria(identificacion, animales);
+  const [animal] = coincidencias;
+  const ambiguo = Boolean(animal && (
+    coincidencias.length > 1 || !animal.id || animales.filter(item => item.id === animal.id).length !== 1
+  ));
+  return { animal: ambiguo ? null : animal, ambiguo };
 }
 
 // Muestra el animal encontrado mientras se escribe.
@@ -245,12 +236,12 @@ function mostrarAnimalSeleccionadoSanidad() {
     return;
   }
 
-  const animal = buscarAnimalPorIdentificacion(identificacion);
+  const { animal, ambiguo } = identificarAnimalSanidad(identificacion);
 
   if (!animal) {
     resultado.innerHTML = `
       <div class="alert alert-warning mb-0">
-        No se encontró un animal con esa identificación.
+        ${ambiguo ? MOTIVO_IDENTIDAD_SANITARIA : "No se encontró un animal con esa identificación."}
       </div>
     `;
     return;
@@ -421,7 +412,7 @@ function mostrarSanidadReciente() {
 function mostrarAnimalesEnCarencia() {
   const contenedor = document.getElementById("listaAnimalesEnCarencia");
 
-  if (!contenedor) return;
+  if (!contenedor || !window.RuralDataMvp) return;
 
   const animalesEnCarencia = obtenerAnimalesEnCarenciaActual();
 
@@ -438,7 +429,7 @@ function mostrarAnimalesEnCarencia() {
 
   for (let i = 0; i < animalesEnCarencia.length; i++) {
     const registro = animalesEnCarencia[i];
-    const diasRestantes = calcularDiasRestantes(registro.fechaLiberacion);
+    const diasRestantes = registro.motivoPreventivo ? null : calcularDiasRestantes(registro.fechaLiberacion);
 
     const item = document.createElement("article");
     item.className = "card";
@@ -446,13 +437,14 @@ function mostrarAnimalesEnCarencia() {
     item.innerHTML = `
       <div class="card-body">
         <span class="estado-pill badge-soft-red mb-3">
-          En carencia
+          ${registro.motivoPreventivo ? "Bloqueo preventivo" : "En carencia"}
         </span>
 
         <h3 class="h5 mb-2">
           ${escaparTextoMvp(registro.caravanaVisual || registro.identificacion || "Animal sin caravana")}
         </h3>
 
+        ${registro.motivoPreventivo ? `<p class="mb-0">${escaparTextoMvp(registro.motivoPreventivo)}</p>` : `
         <p class="mb-1">
           Producto: ${escaparTextoMvp(registro.producto || "Sin dato")}
         </p>
@@ -471,7 +463,7 @@ function mostrarAnimalesEnCarencia() {
 
         <p class="mb-0">
           Restan: <strong>${diasRestantes}</strong> día(s)
-        </p>
+        </p>`}
       </div>
     `;
 
@@ -481,47 +473,14 @@ function mostrarAnimalesEnCarencia() {
 
 // Obtiene animales únicos que están actualmente en carencia.
 function obtenerAnimalesEnCarenciaActual() {
-  const registros = obtenerSanidad();
-  const animalesPorClave = {};
-
-  for (let i = 0; i < registros.length; i++) {
-    const registro = registros[i];
-
-    if (!registro.fechaLiberacion) continue;
-
-    const estado = obtenerEstadoCarencia(registro.fechaLiberacion);
-
-    if (estado !== "En carencia") continue;
-
-    const claveAnimal = obtenerClaveAnimalSanidad(registro);
-
-    if (!animalesPorClave[claveAnimal]) {
-      animalesPorClave[claveAnimal] = registro;
-      continue;
-    }
-
-    const fechaActualGuardada = obtenerFechaDesdeISO(
-      animalesPorClave[claveAnimal].fechaLiberacion
-    );
-
-    const fechaNueva = obtenerFechaDesdeISO(registro.fechaLiberacion);
-
-    if (fechaNueva > fechaActualGuardada) {
-      animalesPorClave[claveAnimal] = registro;
-    }
-  }
-
-  return Object.values(animalesPorClave);
-}
-
-// Devuelve una clave única para el animal en sanidad.
-function obtenerClaveAnimalSanidad(registro) {
-  if (registro.animalId) return registro.animalId;
-  if (registro.caravanaVisual) return registro.caravanaVisual;
-  if (registro.codigoRFID) return registro.codigoRFID;
-  if (registro.identificacion) return registro.identificacion;
-
-  return registro.id;
+  const animales = obtenerAnimales();
+  const bloqueos = obtenerBloqueosSanitariosMvp(animales);
+  return animales.filter(animal => bloqueos[animal.id]).map(animal => ({
+    ...bloqueos[animal.id],
+    animalId: animal.id,
+    identificacion: animal.codigoRFID,
+    caravanaVisual: animal.caravanaVisual
+  }));
 }
 
 // Calcula días restantes hasta liberación.

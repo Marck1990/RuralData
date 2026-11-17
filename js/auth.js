@@ -143,7 +143,7 @@ function mostrarUsuarioActivo() {
   const sesion = obtenerSesion();
   const contenedor = document.getElementById("usuarioActivo");
 
-  if (!sesion || !contenedor) return;
+  if (!sesion?.autenticacionMvp || !contenedor) return;
 
   const ruta = window.location.pathname;
   const esPaginaInterna = ruta.includes("/pages/");
@@ -186,7 +186,7 @@ function mostrarUsuarioActivo() {
     <div class="app-rural-user-card">
 
       <div class="app-rural-user-card-info">
-        <strong>Productor</strong>
+        <strong>${escaparTextoMvp(sesion.nombre || "Productor")}</strong>
         <span>Cuenta del productor</span>
       </div>
 

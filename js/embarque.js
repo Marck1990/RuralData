@@ -9,7 +9,20 @@ document.addEventListener("DOMContentLoaded", function () {
   inicializarDatosCabeceraEmbarque();
 });
 
-function inicializarEmbarque() {
+async function esperarPersistenciaEmbarque() {
+  if (!window.RuralDataMvp) {
+    await new Promise(resolve => document.addEventListener('ruraldata:lista', resolve, {once:true}));
+  }
+}
+
+async function inicializarEmbarque() {
+  await esperarPersistenciaEmbarque();
+  if (!document.getElementById('totalAptosEmbarque')) return;
+  document.addEventListener('ruraldata:datos', actualizarControlEmbarque);
+  // Otra pestaña puede guardar sanidad en el mismo establecimiento.
+  window.addEventListener('storage', event => {
+    if (event.key === obtenerClavePorEstablecimiento(STORAGE_KEYS.sanidad)) actualizarControlEmbarque();
+  });
   const btnTabNoAptos = document.getElementById("btnTabNoAptos");
   const btnTabAptos = document.getElementById("btnTabAptos");
 
@@ -62,7 +75,8 @@ function inicializarBusquedaRapidaEmbarque() {
 }
 
 // Verifica si el animal leído está apto o no apto.
-function verificarAptitudPorBusqueda() {
+async function verificarAptitudPorBusqueda() {
+  await esperarPersistenciaEmbarque();
   const inputBusqueda = document.getElementById("identificacionEmbarque");
   const resultado = document.getElementById("resultadoBusquedaEmbarque");
 
@@ -78,7 +92,13 @@ function verificarAptitudPorBusqueda() {
     return;
   }
 
-  const animal = buscarAnimalPorIdentificacionEmbarque(identificacion);
+  const coincidencias = buscarCoincidenciasEmbarque(identificacion);
+  if (coincidencias.length > 1) {
+    mostrarResultadoBusquedaEmbarque(MOTIVO_IDENTIDAD_SANITARIA, "danger");
+    seleccionarInputBusquedaEmbarque();
+    return;
+  }
+  const [animal] = coincidencias;
 
   if (!animal) {
     resultado.innerHTML = `
@@ -99,8 +119,7 @@ function verificarAptitudPorBusqueda() {
   }
 
   const carenciasActivas = obtenerCarenciasActivasPorAnimal();
-  const claveAnimal = obtenerClaveAnimal(animal);
-  const carencia = carenciasActivas[claveAnimal];
+  const carencia = carenciasActivas[animal.id];
 
   if (carencia) {
     resultado.innerHTML = crearHtmlAnimalEmbarqueCompacto(
@@ -127,29 +146,12 @@ function verificarAptitudPorBusqueda() {
 }
 
 // Busca animal por caravana visual, RFID completo o últimos 8 dígitos.
-function buscarAnimalPorIdentificacionEmbarque(identificacion) {
-  const animales = obtenerAnimales();
-  const valorBuscado = normalizarTextoEmbarque(identificacion);
-
-  for (let i = 0; i < animales.length; i++) {
-    const animal = animales[i];
-
-    const caravanaVisual = normalizarTextoEmbarque(animal.caravanaVisual || "");
-    const codigoRFID = normalizarTextoEmbarque(animal.codigoRFID || "");
-    const ultimosOchoRFID = codigoRFID.length >= 8
-      ? codigoRFID.slice(-8)
-      : "";
-
-    if (
-      caravanaVisual === valorBuscado ||
-      codigoRFID === valorBuscado ||
-      ultimosOchoRFID === valorBuscado
-    ) {
-      return animal;
-    }
-  }
-
-  return null;
+function buscarCoincidenciasEmbarque(identificacion) {
+  const valor = normalizarIdentificadorSanitario(identificacion);
+  return buscarCoincidenciasIdentificacionSanitaria(identificacion, obtenerAnimales(), animal => {
+    const rfid = normalizarIdentificadorSanitario(animal.codigoRFID);
+    return valor.length === 8 && rfid.slice(-8) === valor;
+  });
 }
 
 // Deja el campo listo para la próxima lectura.
@@ -184,6 +186,11 @@ function mostrarResultadoBusquedaEmbarque(texto, tipo) {
       ${limpiarTextoEmbarque(texto)}
     </div>
   `;
+}
+
+function actualizarControlEmbarque() {
+  cargarControlEmbarque();
+  if (document.getElementById('identificacionEmbarque')?.value.trim()) verificarAptitudPorBusqueda();
 }
 
 // Carga contadores y listados.
@@ -236,8 +243,7 @@ function obtenerResultadoEmbarque() {
 
   for (let i = 0; i < animales.length; i++) {
     const animal = animales[i];
-    const claveAnimal = obtenerClaveAnimal(animal);
-    const carencia = carenciasActivas[claveAnimal];
+    const carencia = carenciasActivas[animal.id];
 
     if (carencia) {
       noAptos.push({
@@ -257,41 +263,7 @@ function obtenerResultadoEmbarque() {
 
 // Obtiene la carencia activa más larga por animal.
 function obtenerCarenciasActivasPorAnimal() {
-  const registros = obtenerSanidad();
-  const carenciasActivas = {};
-
-  for (let i = 0; i < registros.length; i++) {
-    const registro = registros[i];
-
-    if (!registro.fechaLiberacion) continue;
-
-    const tieneCarencia = registro.tieneCarencia === true || Number(registro.diasCarencia) > 0;
-
-    if (!tieneCarencia) continue;
-
-    const estado = obtenerEstadoCarenciaEmbarque(registro.fechaLiberacion);
-
-    if (estado !== "En carencia") continue;
-
-    const claveAnimal = obtenerClaveAnimalDesdeSanidad(registro);
-
-    if (!carenciasActivas[claveAnimal]) {
-      carenciasActivas[claveAnimal] = registro;
-      continue;
-    }
-
-    const fechaGuardada = obtenerFechaDesdeISOEmbarque(
-      carenciasActivas[claveAnimal].fechaLiberacion
-    );
-
-    const fechaNueva = obtenerFechaDesdeISOEmbarque(registro.fechaLiberacion);
-
-    if (fechaNueva > fechaGuardada) {
-      carenciasActivas[claveAnimal] = registro;
-    }
-  }
-
-  return carenciasActivas;
+  return obtenerBloqueosSanitariosMvp();
 }
 
 // Muestra animales no aptos.
@@ -384,6 +356,8 @@ function crearHtmlAnimalEmbarqueCompacto(animal, estado, carencia, esResultadoBu
 
   if (esApto) {
     detalleEstado = "Sin carencia sanitaria vigente registrada.";
+  } else if (carencia.motivoPreventivo) {
+    detalleEstado = limpiarTextoEmbarque(carencia.motivoPreventivo);
   } else {
     const diasRestantes = calcularDiasRestantesEmbarque(carencia.fechaLiberacion);
 
@@ -474,25 +448,6 @@ function obtenerUltimoPesoAnimalEmbarque(animalId) {
   return pesajesAnimal[0];
 }
 
-// Devuelve una clave única para un animal.
-function obtenerClaveAnimal(animal) {
-  if (animal.id) return animal.id;
-  if (animal.caravanaVisual) return animal.caravanaVisual;
-  if (animal.codigoRFID) return animal.codigoRFID;
-
-  return "animal_sin_id";
-}
-
-// Devuelve una clave única desde un registro sanitario.
-function obtenerClaveAnimalDesdeSanidad(registro) {
-  if (registro.animalId) return registro.animalId;
-  if (registro.caravanaVisual) return registro.caravanaVisual;
-  if (registro.codigoRFID) return registro.codigoRFID;
-  if (registro.identificacion) return registro.identificacion;
-
-  return registro.id;
-}
-
 // Devuelve En carencia o Liberado.
 function obtenerEstadoCarenciaEmbarque(fechaLiberacion) {
   const hoy = obtenerFechaSinHoraEmbarque(new Date());
@@ -560,14 +515,6 @@ function actualizarTextoEmbarque(idElemento, valor) {
   if (!elemento) return;
 
   elemento.textContent = valor;
-}
-
-// Normaliza texto para comparar.
-function normalizarTextoEmbarque(texto) {
-  return String(texto)
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "");
 }
 
 // Limpia texto para imprimir en HTML.

@@ -127,6 +127,7 @@ function guardarSanidad(registros) {
   const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.sanidad);
 
   guardarDatos(clave, registros);
+  if (typeof document !== "undefined" && document.dispatchEvent) document.dispatchEvent(new Event("ruraldata:datos"));
 }
 
 // Reproducción separada por establecimiento.
@@ -191,4 +192,88 @@ function obtenerUsuarios() {
 
 function guardarUsuarios(usuarios) {
   guardarDatos(STORAGE_KEYS.usuarios, usuarios);
+}
+
+const MOTIVO_IDENTIDAD_SANITARIA = "Identificación ambigua o contradictoria. Verificá el ID, RFID y la caravana.";
+const MOTIVO_CARENCIA_INCOMPLETA = "Datos sanitarios incompletos. Verificá la fecha de liberación.";
+
+function normalizarIdentificadorSanitario(valor) {
+  return String(valor ?? "").trim().toLowerCase().replace(/\s+/g, "");
+}
+
+function buscarCoincidenciasIdentificacionSanitaria(identificacion, animales, buscarPorSufijo) {
+  const clave = normalizarIdentificadorSanitario(identificacion);
+  if (!clave) return [];
+  const exactas = animales.filter(animal =>
+    [animal.codigoRFID, animal.caravanaVisual].some(valor => normalizarIdentificadorSanitario(valor) === clave)
+  );
+  if (!buscarPorSufijo || (exactas.length && clave.length !== 8)) return exactas;
+  return [...new Set([...exactas, ...animales.filter(buscarPorSufijo)])];
+}
+
+function resolverAsociacionSanitaria(registro, animales) {
+  const tieneId = registro.animalId != null && registro.animalId !== "";
+  const porId = tieneId ? animales.filter(animal => animal.id === registro.animalId) : [];
+  const rfid = normalizarIdentificadorSanitario(registro.codigoRFID);
+  const caravana = normalizarIdentificadorSanitario(registro.caravanaVisual);
+  const porRfid = rfid ? animales.filter(animal => normalizarIdentificadorSanitario(animal.codigoRFID) === rfid) : [];
+  const porCaravana = caravana ? animales.filter(animal => normalizarIdentificadorSanitario(animal.caravanaVisual) === caravana) : [];
+  const porLectura = buscarCoincidenciasIdentificacionSanitaria(registro.identificacion, animales);
+
+  const grupos = [porId, porRfid, porCaravana, porLectura];
+  const candidatos = [...new Set(grupos.flat())];
+  const lecturaRfid = porLectura.length === 1 &&
+    normalizarIdentificadorSanitario(porLectura[0].codigoRFID) === normalizarIdentificadorSanitario(registro.identificacion);
+  let principal = porLectura;
+  if (tieneId) principal = porId;
+  else if (rfid) principal = porRfid;
+  else if (caravana && !lecturaRfid) principal = porCaravana;
+  const animal = principal.length === 1 ? principal[0] : null;
+  const compatible = animal && grupos.every(grupo => !grupo.length || grupo.includes(animal)) &&
+    (tieneId || !caravana || porCaravana.includes(animal));
+  return { animal: compatible ? animal : null, candidatos };
+}
+
+// Evalúa solo los datos del productor y establecimiento activos.
+function obtenerBloqueosSanitariosMvp(animales = obtenerAnimales()) {
+  const bloqueos = Object.create(null);
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const fechaValida = valor => {
+    if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return null;
+    const [a,m,d] = valor.split('-').map(Number);
+    const fecha = new Date(a,m-1,d);
+    return fecha.getFullYear()===a && fecha.getMonth()===m-1 && fecha.getDate()===d ? fecha : null;
+  };
+  const cantidadesPorId = new Map();
+  for (const animal of animales) {
+    cantidadesPorId.set(animal.id, (cantidadesPorId.get(animal.id) || 0) + 1);
+  }
+  for (const animal of animales) {
+    if (!animal.id || cantidadesPorId.get(animal.id) !== 1) {
+      bloqueos[animal.id] = { motivoPreventivo: MOTIVO_IDENTIDAD_SANITARIA };
+    }
+  }
+
+  for (const registro of obtenerSanidad()) {
+    const tieneCarencia = registro.tieneCarencia === true || Number(registro.diasCarencia)>0;
+    const fecha = fechaValida(registro.fechaLiberacion);
+    const incompleto = (tieneCarencia && !fecha) ||
+      (registro.tieneCarencia !== false && !tieneCarencia);
+    if (!incompleto && (!tieneCarencia || fecha<=hoy)) continue;
+    const { animal, candidatos } = resolverAsociacionSanitaria(registro, animales);
+    if (!animal) {
+      // Sin candidatos no se puede acotar el bloqueo a un subconjunto del rodeo.
+      for (const candidato of candidatos.length ? candidatos : animales) {
+        bloqueos[candidato.id] = { motivoPreventivo: MOTIVO_IDENTIDAD_SANITARIA };
+      }
+      continue;
+    }
+    const anterior = bloqueos[animal.id];
+    if (!anterior || (!anterior.motivoPreventivo && (incompleto || registro.fechaLiberacion > anterior.fechaLiberacion))) {
+      bloqueos[animal.id] = incompleto
+        ? { datosIncompletos: true, motivoPreventivo: MOTIVO_CARENCIA_INCOMPLETA }
+        : registro;
+    }
+  }
+  return bloqueos;
 }

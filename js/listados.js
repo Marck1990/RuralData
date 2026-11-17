@@ -20,6 +20,13 @@ async function inicializarListadoAnimales() {
 
   if (!contenedorAnimales) return;
 
+  if (!window.RuralDataMvp) {
+    await new Promise(resolve => document.addEventListener('ruraldata:lista', resolve, { once: true }));
+  }
+  document.addEventListener('ruraldata:datos', () => {
+    actualizarResumenListadoAnimales(obtenerAnimales());
+  });
+  actualizarResumenListadoAnimales(obtenerAnimales());
   inicializarFiltrosEstadoAnimales();
 
   if (filtroListado) {
@@ -31,6 +38,7 @@ async function inicializarListadoAnimales() {
   mostrarListadoAnimales();
   // La consulta local es inmediata aunque la API tarde o no haya conexión.
   await sincronizarAnimalesDesdeApiListado();
+  actualizarResumenListadoAnimales(obtenerAnimales());
   // No destruir un formulario abierto mientras llegaba una respuesta de red.
   if (!document.querySelector('form[id^="formEditarAnimalListado_"], [id^="pesajesAnimalListado_"]:not(.d-none)')) {
     mostrarListadoAnimales();
@@ -167,11 +175,9 @@ function mostrarListadoAnimales() {
   if (!contenedor) return;
 
   const animales = obtenerAnimalesFiltradosListado();
-  const todosLosAnimales = obtenerAnimales();
 
   contenedor.innerHTML = "";
 
-  actualizarResumenListadoAnimales(todosLosAnimales);
   actualizarBotonesFiltroAnimales();
   actualizarTextoFiltroAnimales();
 

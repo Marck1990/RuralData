@@ -45,8 +45,12 @@ function inicializarTxtSnig() {
     inputIdentificacion.focus();
   }
 
-  mostrarListaTxt();
-  actualizarVistaPreviaTxt();
+  const mostrarEstadoTxt = () => {
+    mostrarListaTxt();
+    actualizarVistaPreviaTxt();
+  };
+  if (window.RuralDataMvp) mostrarEstadoTxt();
+  else document.addEventListener("ruraldata:lista", mostrarEstadoTxt, { once: true });
   mostrarHistorialTxt();
 }
 
@@ -63,7 +67,13 @@ function agregarAnimalAListaTxt(event) {
     return;
   }
 
-  const animal = buscarAnimalPorIdentificacionTxt(identificacion);
+  const coincidencias = buscarCoincidenciasTxt(identificacion);
+  if (coincidencias.length > 1) {
+    mostrarResultadoTxt(MOTIVO_IDENTIDAD_SANITARIA, "danger");
+    prepararInputTxt();
+    return;
+  }
+  const [animal] = coincidencias;
 
   if (!animal) {
     mostrarResultadoTxt(
@@ -74,28 +84,22 @@ function agregarAnimalAListaTxt(event) {
     return;
   }
 
-  const caravanaOchoDigitos = obtenerCaravanaOchoDigitosAnimal(animal, identificacion);
+  const animales = obtenerAnimales();
+  const carencia = obtenerBloqueosSanitariosMvp(animales)[animal.id];
 
-  if (!caravanaOchoDigitos) {
-    mostrarResultadoTxt(
-      "No se pudo obtener una caravana válida de 8 números para generar el TXT.",
-      "danger"
-    );
+  if (carencia) {
+    totalBloqueadosTxt++;
+    mostrarResultadoBloqueadoTxt(animal, carencia);
+    actualizarContadoresTxt();
     prepararInputTxt();
     return;
   }
 
-  const carenciasActivas = obtenerCarenciasActivasPorAnimalTxt();
-  const claveAnimal = obtenerClaveAnimalTxt(animal);
-  const carencia = carenciasActivas[claveAnimal];
-
-  if (carencia) {
-    totalBloqueadosTxt++;
-
-    mostrarResultadoBloqueadoTxt(animal, carencia);
-    actualizarContadoresTxt();
+  const caravanaOchoDigitos = obtenerCaravanaOchoDigitosAnimal(animal, identificacion);
+  const motivoCaravana = validarCaravanaTxt(caravanaOchoDigitos, animales);
+  if (motivoCaravana) {
+    mostrarResultadoTxt(motivoCaravana, "danger");
     prepararInputTxt();
-
     return;
   }
 
@@ -135,34 +139,11 @@ function agregarAnimalAListaTxt(event) {
 }
 
 // Busca animal por caravana visual o RFID.
-function buscarAnimalPorIdentificacionTxt(identificacion) {
-  const animales = obtenerAnimales();
-  const identificacionNormalizada = normalizarIdentificacionTxt(identificacion);
-  const caravanaBuscada = obtenerUltimosOchoDigitos(identificacion);
-
-  for (let i = 0; i < animales.length; i++) {
-    const animal = animales[i];
-
-    const caravanaVisual = animal.caravanaVisual ? animal.caravanaVisual.trim() : "";
-    const codigoRFID = animal.codigoRFID ? animal.codigoRFID.trim() : "";
-
-    const caravanaVisualNormalizada = normalizarIdentificacionTxt(caravanaVisual);
-    const codigoRFIDNormalizado = normalizarIdentificacionTxt(codigoRFID);
-
-    const caravanaVisualOcho = obtenerUltimosOchoDigitos(caravanaVisual);
-    const codigoRFIDOcho = obtenerUltimosOchoDigitos(codigoRFID);
-
-    if (
-      caravanaVisualNormalizada === identificacionNormalizada ||
-      codigoRFIDNormalizado === identificacionNormalizada ||
-      caravanaVisualOcho === caravanaBuscada ||
-      codigoRFIDOcho === caravanaBuscada
-    ) {
-      return animal;
-    }
-  }
-
-  return null;
+function buscarCoincidenciasTxt(identificacion) {
+  const sufijo = obtenerUltimosOchoDigitos(identificacion);
+  return buscarCoincidenciasIdentificacionSanitaria(identificacion, obtenerAnimales(), animal =>
+    sufijo && [animal.codigoRFID, animal.caravanaVisual].some(valor => obtenerUltimosOchoDigitos(valor) === sufijo)
+  );
 }
 
 // Verifica si el animal ya está en la lista.
@@ -228,6 +209,10 @@ function mostrarResultadoBloqueadoTxt(animal, carencia) {
 
   if (!resultado) return;
 
+  if (carencia.motivoPreventivo) {
+    mostrarResultadoTxt("Animal bloqueado. " + carencia.motivoPreventivo, "danger");
+    return;
+  }
   const diasRestantes = calcularDiasRestantesTxt(carencia.fechaLiberacion);
 
   resultado.innerHTML = `
@@ -305,9 +290,11 @@ function mostrarListaTxt() {
     return;
   }
 
-  for (let i = 0; i < lista.length; i++) {
-    const itemLista = lista[i];
-    const apto = obtenerListaTxtAptaActual([itemLista]).length === 1;
+  const animales = obtenerAnimales();
+  const bloqueos = obtenerBloqueosSanitariosMvp(animales);
+  for (const itemLista of lista) {
+    const { motivo } = revisarItemTxt(itemLista, animales, bloqueos);
+    const apto = !motivo;
 
     const item = document.createElement("article");
     item.className = "card";
@@ -319,6 +306,7 @@ function mostrarListaTxt() {
             <span class="estado-pill ${apto ? 'badge-soft-green' : 'badge-soft-yellow'} mb-3">
               ${apto ? 'Agregado' : 'Bloqueado al exportar'}
             </span>
+            ${motivo ? `<p class="text-danger">${escaparTextoMvp(motivo)}</p>` : ""}
 
             <h3 class="h5 mb-2">
               ${escaparTextoMvp(itemLista.caravanaVisual || itemLista.caravanaOchoDigitos || "Animal sin caravana")}
@@ -409,17 +397,32 @@ function actualizarVistaPreviaTxt() {
 // Genera contenido TXT según el formato del ejemplo recibido.
 function obtenerListaTxtAptaActual(lista = obtenerListaTxt()) {
   const animales = obtenerAnimales();
-  const carencias = obtenerCarenciasActivasPorAnimalTxt();
-  const aptos = [];
-  for (const item of lista) {
-    const animal = item.animalId ? animales.find(a => a.id === item.animalId)
-      : buscarAnimalPorIdentificacionTxt(item.codigoRFID || item.caravanaVisual || "");
-    if (!animal || carencias[obtenerClaveAnimalTxt(animal)]) continue;
-    const caravana = obtenerCaravanaOchoDigitosAnimal(animal, animal.caravanaVisual || animal.codigoRFID);
-    if (!caravana) continue;
-    aptos.push({...item, caravanaVisual: animal.caravanaVisual || "", codigoRFID: animal.codigoRFID || "", caravanaOchoDigitos: caravana});
+  const bloqueos = obtenerBloqueosSanitariosMvp(animales);
+  return lista.map(item => revisarItemTxt(item, animales, bloqueos).itemApto).filter(Boolean);
+}
+
+function revisarItemTxt(item, animales, bloqueos) {
+  const referencia = item.animalId ? { animalId: item.animalId } : item;
+  const { animal, candidatos } = resolverAsociacionSanitaria(referencia, animales);
+  if (!animal) {
+    return { motivo: candidatos.length ? MOTIVO_IDENTIDAD_SANITARIA : "Animal no registrado en RuralData." };
   }
-  return aptos;
+  const carencia = bloqueos[animal.id];
+  if (carencia) {
+    return { motivo: carencia.motivoPreventivo || "Carencia sanitaria vigente hasta " + formatearFechaTxt(carencia.fechaLiberacion) };
+  }
+  const caravana = obtenerCaravanaOchoDigitosAnimal(animal, animal.caravanaVisual || animal.codigoRFID);
+  const motivo = validarCaravanaTxt(caravana, animales);
+  return motivo ? { motivo } : {
+    itemApto: {...item, caravanaVisual: animal.caravanaVisual || "", codigoRFID: animal.codigoRFID || "", caravanaOchoDigitos: caravana}
+  };
+}
+
+function validarCaravanaTxt(caravana, animales) {
+  if (!caravana) return "No se pudo obtener una caravana válida de 8 números para generar el TXT.";
+  const coincidencias = animales.filter(animal => obtenerCaravanaOchoDigitosAnimal(animal, "") === caravana);
+  if (coincidencias.length > 1) return "La caravana de 8 dígitos identifica a más de un animal. Verificá los datos antes de generar el TXT.";
+  return "";
 }
 
 function generarContenidoTxtPreventivo() {
@@ -719,13 +722,6 @@ function obtenerUltimosOchoDigitos(valor) {
   return soloNumeros.slice(-8);
 }
 
-// Normaliza identificación para comparar.
-function normalizarIdentificacionTxt(valor) {
-  if (!valor) return "";
-
-  return String(valor).trim().toUpperCase();
-}
-
 // Obtiene prefijo Uruguay.
 function obtenerPrefijoUruguayTxt() {
   const prefijoUruguayTxt = document.getElementById("prefijoUruguayTxt");
@@ -768,41 +764,7 @@ function obtenerClaveListaTxt() {
 
 // Obtiene carencias activas agrupadas por animal.
 function obtenerCarenciasActivasPorAnimalTxt() {
-  const registros = obtenerSanidad();
-  const carenciasActivas = {};
-
-  for (let i = 0; i < registros.length; i++) {
-    const registro = registros[i];
-
-    if (!registro.fechaLiberacion) continue;
-
-    const tieneCarencia = registro.tieneCarencia === true || Number(registro.diasCarencia) > 0;
-
-    if (!tieneCarencia) continue;
-
-    const estado = obtenerEstadoCarenciaTxt(registro.fechaLiberacion);
-
-    if (estado !== "En carencia") continue;
-
-    const claveAnimal = obtenerClaveAnimalDesdeSanidadTxt(registro);
-
-    if (!carenciasActivas[claveAnimal]) {
-      carenciasActivas[claveAnimal] = registro;
-      continue;
-    }
-
-    const fechaGuardada = obtenerFechaDesdeISOTxt(
-      carenciasActivas[claveAnimal].fechaLiberacion
-    );
-
-    const fechaNueva = obtenerFechaDesdeISOTxt(registro.fechaLiberacion);
-
-    if (fechaNueva > fechaGuardada) {
-      carenciasActivas[claveAnimal] = registro;
-    }
-  }
-
-  return carenciasActivas;
+  return obtenerBloqueosSanitariosMvp();
 }
 
 // Devuelve clave única de animal.
@@ -812,16 +774,6 @@ function obtenerClaveAnimalTxt(animal) {
   if (animal.codigoRFID) return animal.codigoRFID;
 
   return "animal_sin_id";
-}
-
-// Devuelve clave única desde sanidad.
-function obtenerClaveAnimalDesdeSanidadTxt(registro) {
-  if (registro.animalId) return registro.animalId;
-  if (registro.caravanaVisual) return registro.caravanaVisual;
-  if (registro.codigoRFID) return registro.codigoRFID;
-  if (registro.identificacion) return registro.identificacion;
-
-  return registro.id;
 }
 
 // Devuelve En carencia o Liberado.

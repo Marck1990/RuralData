@@ -4,19 +4,23 @@ import { espacioProductor } from './identidad-mvp.js';
 window.espacioProductorMvp=espacioProductor;
 
 let persistencia,espacio,escritor=false,sincronizador,estadoActual='pendiente';
-let cerrarLock, resolverInicio;
+let cerrarLock, resolverInicio, paginaActiva=true;
 const inicio = new Promise(resolve=>{resolverInicio=resolve;});
-// Un escritor por cuenta/establecimiento; otra cuenta tiene un lock distinto.
+// La lectura local está disponible al cargar el módulo. El lock solo habilita escrituras.
 const perfilInicial=obtenerSesion();
-const nombreLock=perfilInicial?.autenticacionMvp ? 'ruraldata-mvp-'+espacioProductor(perfilInicial) : null;
+const paginaPublica=document.getElementById('formLogin') || document.getElementById('formRegistroUsuario');
+const nombreLock=!paginaPublica && perfilInicial?.autenticacionMvp ? 'ruraldata-mvp-'+espacioProductor(perfilInicial) : null;
 const lockListo = navigator.locks && nombreLock ? navigator.locks.request(nombreLock,{ifAvailable:true},async lock=>{
-  escritor=!!lock;
+  escritor=!!lock && paginaActiva;
   resolverInicio();
-  if(lock)await new Promise(resolve=>{cerrarLock=resolve;});
+  if(escritor)await new Promise(resolve=>{cerrarLock=resolve;});
 }).catch(()=>resolverInicio()) : Promise.resolve().then(()=>resolverInicio());
 void lockListo;
-await inicio;
-window.addEventListener('pagehide',()=>cerrarLock?.());
+window.addEventListener('pagehide',()=>{
+  paginaActiva=false;
+  escritor=false;
+  cerrarLock?.();
+});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 window.addEventListener('storage',event=>{
   if(event.key!=='ruraldata_cierre_sesion_v2' || !event.newValue)return;
@@ -35,7 +39,7 @@ function abrir() {
     espacio=id;persistencia=crearPersistencia({storage:localStorage,establecimientoId:id});
     // Nunca adoptar automáticamente datos antiguos o de otra cuenta.
     sincronizador=crearSincronizador({persistencia,identidad:{id:perfil.id,establecimientoId:perfil.establecimientoId},
-      identidadActual:obtenerSesion,notificar:mostrarEstado});
+      identidadActual:()=>paginaActiva && escritor ? obtenerSesion() : null,notificar:mostrarEstado});
   }
   return persistencia;
 }
@@ -56,26 +60,33 @@ function mostrarEstado(estado) {
     const pre=document.createElement('pre');pre.textContent=JSON.stringify({local:e.registros[k],remoto:r},null,2);detalle.append(pre);
     if(!r.sinVersion)for(const [label,local]of [['Conservar mis cambios',true],['Aceptar remoto',false]]) {
       const btn=document.createElement('button');btn.type='button';btn.className='btn btn-sm btn-outline-secondary';btn.textContent=label;
-      btn.onclick=()=>{if(escritor && confirm('¿'+label+' para este registro?')){persistencia.resolver(k,local);mostrarEstado('pendiente');}};
+      btn.onclick=()=>{if(escritor && confirm('¿'+label+' para este registro?')){persistencia.resolver(k,local);notificarDatos();mostrarEstado('pendiente');}};
       detalle.append(btn);
     }
     lista.append(detalle);
   }
 }
+function notificarDatos() {
+  document.dispatchEvent(new Event('ruraldata:datos'));
+}
 window.RuralDataMvp={
+  listo:inicio,
   get escritor(){return escritor;},
   listar(entidad){return abrir().listar(entidad);},
   guardar(entidad,registros){
     if(!escritor)throw new Error('Edición bloqueada: usá una sola pestaña con Web Locks disponible');
-    abrir().guardarColeccion(entidad,registros);mostrarEstado('pendiente');
+    abrir().guardarColeccion(entidad,registros);notificarDatos();mostrarEstado('pendiente');
   },
   async sincronizar(){
+    await inicio;
     if(!escritor)return;
     try{abrir();await sincronizador.sincronizar();}catch{mostrarEstado('deshabilitado');}
+    finally{notificarDatos();}
   }
 };
+document.dispatchEvent(new Event('ruraldata:lista'));
 document.addEventListener('DOMContentLoaded',()=>{
-  if(document.getElementById('formLogin') || document.getElementById('formRegistroUsuario') || !obtenerSesion()?.autenticacionMvp)return;
+  if(paginaPublica || !obtenerSesion()?.autenticacionMvp)return;
   const panel=document.createElement('aside');panel.id='estadoSincronizacionMvp';panel.className='alert alert-light m-2';
   const estado=document.createElement('span');estado.dataset.estado='';panel.append(estado);
   const boton=document.createElement('button');boton.type='button';boton.className='btn btn-sm btn-outline-success ms-2';boton.textContent='Sincronizar';
@@ -83,7 +94,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   const login=document.createElement('a');login.href=location.pathname.includes('/pages/')?'../login.html':'login.html';login.textContent=' Iniciar sesión';panel.append(login);
   const conflictos=document.createElement('div');conflictos.dataset.conflictos='';panel.append(conflictos);
   document.body.append(panel);mostrarEstado(estadoActual);
-  window.RuralDataMvp.sincronizar();
+  void inicio.then(()=>{
+    if(!paginaActiva)return;
+    mostrarEstado(estadoActual);
+    return window.RuralDataMvp.sincronizar();
+  });
   // Solo pide API autenticada; todos los fallos conservan la cola.
   setInterval(()=>window.RuralDataMvp.sincronizar(),60000);
 });
