@@ -26,7 +26,7 @@ const execute=async c=>{
 };
 const adapter={execute,close(){},async transaction(){db.exec('BEGIN IMMEDIATE');return {execute,async commit(){db.exec('COMMIT');},async rollback(){db.exec('ROLLBACK');},close(){}};}};
 const deps={env,dbFactory:()=>adapter};
-const handlers={registro:crearRegistroHandler(deps),sesion:crearSesionHandler(deps),animales:crearRegistrosHandler('animales',deps),pesajes:crearRegistrosHandler('pesajes',deps),'test-db':crearDiagnosticoHandler(deps)};
+const handlers={registro:crearRegistroHandler(deps),sesion:crearSesionHandler(deps),animales:crearRegistrosHandler('animales',deps),pesajes:crearRegistrosHandler('pesajes',deps),sanidad:crearRegistrosHandler('sanidad',deps),'test-db':crearDiagnosticoHandler(deps)};
 let apiDisponible=true,sesionVencida=false,cola=Promise.resolve(),ultimoResultado=[];
 const tipos={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.webm':'video/webm','.mp4':'video/mp4'};
 const json=(res,status,body)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(body));};

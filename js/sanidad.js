@@ -23,7 +23,10 @@ function inicializarSanidad() {
   actualizarFechaLiberacionTexto();
   mostrarSanidadReciente();
   document.addEventListener("ruraldata:lista", mostrarAnimalesEnCarencia);
-  document.addEventListener("ruraldata:datos", mostrarAnimalesEnCarencia);
+  document.addEventListener("ruraldata:datos", () => {
+    mostrarSanidadReciente();
+    mostrarAnimalesEnCarencia();
+  });
   mostrarAnimalesEnCarencia();
 
   if (formSanidad) {
@@ -474,7 +477,7 @@ function mostrarAnimalesEnCarencia() {
 // Obtiene animales únicos que están actualmente en carencia.
 function obtenerAnimalesEnCarenciaActual() {
   const animales = obtenerAnimales();
-  const bloqueos = obtenerBloqueosSanitariosMvp(animales);
+  const bloqueos = obtenerBloqueosSanitariosMvp(animales, false);
   return animales.filter(animal => bloqueos[animal.id]).map(animal => ({
     ...bloqueos[animal.id],
     animalId: animal.id,

@@ -25,6 +25,28 @@ function entorno(localStorage=memoria(),perfil=ana) {
 }
 const total=e=>Number(e.elementos.get('totalAnimalesListado').textContent);
 
+test('Sanidad adopta solo el histórico de la cuenta activa y respeta las bajas sin reescribir el original', async()=>{
+  const e=entorno();
+  const claveHistorica=e.c.obtenerClavePorEstablecimiento('ruraldata_sanidad');
+  const historico=JSON.stringify([{id:'sanidad-historica',animalId:'uno',tieneCarencia:false,diasCarencia:0}]);
+  e.localStorage.setItem(claveHistorica,historico);
+  const otro=entorno(e.localStorage,{...ana,id:'otro-productor'});
+  await e.iniciar();
+  await otro.iniciar();
+  assert.equal(e.c.obtenerSanidad()[0].id,'sanidad-historica');
+  assert.equal(otro.c.obtenerSanidad().length,0);
+  await e.c.window.RuralDataMvp.sincronizar();
+  await e.c.window.RuralDataMvp.sincronizar();
+  assert.equal(e.cache.estado().pendientes.length,1);
+  assert.equal(e.cache.estado().pendientes[0].registroId,'sanidad-historica');
+  e.c.guardarSanidad([]);
+  assert.equal(e.c.obtenerSanidad().length,0);
+  assert.equal(e.localStorage.getItem(claveHistorica),historico);
+  const recarga=entorno(e.localStorage);
+  await recarga.iniciar();
+  assert.equal(recarga.c.obtenerSanidad().length,0);
+});
+
 test('se puede leer offline mientras Web Locks resuelve y el alta espera el permiso de escritura', async()=>{
   const e=entorno();
   e.cache.guardarColeccion('animales',[animal]);

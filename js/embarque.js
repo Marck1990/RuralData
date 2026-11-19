@@ -337,7 +337,7 @@ function crearHtmlAnimalEmbarqueCompacto(animal, estado, carencia, esResultadoBu
   const esApto = estado === "apto";
 
   const claseEstado = esApto ? "apto" : "no-apto";
-  const textoEstado = esApto ? "APTO" : "NO APTO";
+  const textoEstado = esApto ? "APTO" : carencia.aptitudNoVerificable ? "APTITUD NO VERIFICABLE" : "NO APTO";
   const iconoEstado = esApto ? "bi-check-circle" : "bi-x-octagon";
 
   const caravana = animal.caravanaVisual || "Sin caravana";

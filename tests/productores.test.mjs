@@ -129,7 +129,7 @@ test('cookie de otro productor nunca envía pendientes ni descarga datos; vuelve
   const pa=crearPersistencia({storage:localStorage,establecimientoId:espacioProductor(a.perfil)});
   const pb=crearPersistencia({storage:localStorage,establecimientoId:espacioProductor(b.perfil)});
   pa.cambiar('animales',{id:'offline-a',caravanaVisual:'OFF-A'});pb.cambiar('animales',{id:'offline-b',caravanaVisual:'OFF-B'});
-  const handlers={sesion:login,animales:crearRegistrosHandler('animales',{env,dbFactory}),pesajes:crearRegistrosHandler('pesajes',{env,dbFactory})};
+  const handlers={sesion:login,animales:crearRegistrosHandler('animales',{env,dbFactory}),pesajes:crearRegistrosHandler('pesajes',{env,dbFactory}),sanidad:crearRegistrosHandler('sanidad',{env,dbFactory})};
   let cookie=b.cookie;let post=0;const estados=[];
   const fetcher=async(url,op={})=>{
     if(op.method==='POST')post++;

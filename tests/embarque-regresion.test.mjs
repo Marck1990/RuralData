@@ -14,7 +14,7 @@ function entorno(storage=memoria(),perfil={id:'ana',establecimientoId:'campo-a',
  const c=vm.createContext({localStorage:storage,sessionStorage,document,window:{addEventListener(){}},Event,crypto:webcrypto,console,setTimeout(){},clearTimeout(){},setInterval(){},Date:class extends Date{constructor(...args){super(...(args.length?args:['2026-11-14T12:00:00']));}}});
  for(const n of ['storage','animales','sanidad','embarque','lotes-embarque','txt-snig'])vm.runInContext(fuente(n),c);
  const p=crearPersistencia({storage,establecimientoId:c.obtenerEstablecimientoActivo()});
- const iniciar=()=>{c.window.RuralDataMvp={listar:e=>p.listar(e),guardar(e,r){p.guardarColeccion(e,r);document.dispatchEvent(new Event('ruraldata:datos'));}};document.dispatchEvent(new Event('ruraldata:lista'));};
+ const iniciar=()=>{c.window.RuralDataMvp={sanidadVerificada:true,listar:e=>p.listar(e),guardar(e,r){p.guardarColeccion(e,r);document.dispatchEvent(new Event('ruraldata:datos'));}};document.dispatchEvent(new Event('ruraldata:lista'));};
  for(const id of ['totalAptosEmbarque','totalNoAptosEmbarque','listaNoAptosEmbarque','listaAptosEmbarque','identificacionEmbarque','resultadoBusquedaEmbarque'])elemento(id);
  return {c,storage,elemento,elementos,iniciar,persistencia:p};
 }
@@ -159,4 +159,22 @@ test('una lectura abreviada y un código de exportación compartidos no identifi
  e.c.exportarTxtLoteEmbarque();
  assert.equal(descargas, 0);
  assert.match(resultado.innerHTML, /ocho dígitos ambiguas/);
+});
+
+test('sin verificación remota, Embarque, Lotes y TXT bloquean aun con historial vacío', () => {
+ const e=historialConCaravanasDuplicadas();
+ const animal=e.animales[2];
+ e.c.window.RuralDataMvp.sanidadVerificada=false;
+ assert.equal(e.c.obtenerResultadoEmbarque().aptos.length,0);
+ assert.equal(e.c.obtenerCarenciaActivaLoteEmbarque(animal).aptitudNoVerificable,true);
+ assert.equal(e.c.obtenerListaTxtAptaActual([{animalId:animal.id}]).length,0);
+ e.c.guardarLotesEmbarque([{id:'lote',estado:'abierto'}]);
+ vm.runInContext("loteEmbarqueActivoId='lote'",e.c);
+ const aviso=e.elemento('resultadoLecturaLoteEmbarque');
+ e.elemento('identificadorAnimalLoteEmbarque',animal.codigoRFID);
+ e.c.agregarAnimalAlLoteEmbarque();
+ assert.equal(e.c.obtenerAnimalesLotesEmbarque().length,0);
+ assert.match(aviso.innerHTML,/Aptitud no verificable/);
+ e.c.window.RuralDataMvp.sanidadVerificada=true;
+ assert.equal(e.c.obtenerCarenciaActivaLoteEmbarque(animal),null);
 });

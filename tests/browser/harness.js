@@ -123,10 +123,17 @@ document.getElementById('iniciar').onclick=async()=>{
     comprobar(w().obtenerReproduccion()[0].animalId===animalId,'Reproducción perdió relación');comprobar(w().document.getElementById('listaReproduccion').textContent.includes('91000001'),'No se muestra reproducción');
   }, [3]);
   await paso('Embarque: un animal bloqueado y uno apto',async()=>{
-    await navegar('/pages/embarque.html');const r=w().obtenerResultadoEmbarque();comprobar(r.aptos.length===1 && r.noAptos.length===1,'Aptitud incorrecta');
+    await navegar('/pages/embarque.html');
+    await w().RuralDataMvp.sincronizar();
+    const sinRed=w().obtenerResultadoEmbarque();
+    comprobar(sinRed.aptos.length===0 && sinRed.noAptos.some(item=>item.carencia.aptitudNoVerificable),'La falta de verificación debe bloquear la aptitud');
+    await control({apiDisponible:true});
+    await w().RuralDataMvp.sincronizar();
+    const r=w().obtenerResultadoEmbarque();comprobar(r.aptos.length===1 && r.noAptos.length===1,'Aptitud incorrecta');
   }, [3,7]);
   await paso('Lote: alta, lectura, duplicados, cierre y contenido TXT',async()=>{
     await navegar('/pages/lotes-embarque.html');llenar('nombreLoteEmbarque','Lote QA');llenar('fechaLoteEmbarque',hoy);llenar('guiaLoteEmbarque','123');w().crearLoteEmbarque();loteId=w().obtenerLotesEmbarque()[0].id;
+    await w().RuralDataMvp.sincronizar();
     for(const car of ['91000001','91000002','91000002']){llenar('identificadorAnimalLoteEmbarque',car);w().agregarAnimalAlLoteEmbarque();}
     const r=w().obtenerResumenLoteEmbarque(loteId);comprobar(r.total===1 && r.aptos===1 && r.noAptos===0,'Lote aceptó un no apto o un duplicado');
     const linea=w().crearLineaTxtLoteEmbarque(w().obtenerAnimalesDelLoteActivo().find(a=>a.estado==='apto'),'123');comprobar(linea.includes('91000002'),'Contenido TXT incorrecto');
@@ -134,12 +141,14 @@ document.getElementById('iniciar').onclick=async()=>{
   }, [3,7]);
   await paso('TXT preventivo: bloqueo sanitario, duplicado y generación/historial',async()=>{
     await navegar('/pages/txt-snig.html');
+    await w().RuralDataMvp.sincronizar();
     for(const car of ['91000001','91000002','91000002']){llenar('identificacionTxt',car);w().agregarAnimalAListaTxt({preventDefault(){}});}
     comprobar(w().obtenerListaTxt().length===1,'Lista TXT acepta carencia o duplicado');
     const contenido=w().generarContenidoTxtPreventivo();comprobar(contenido.includes('91000002') && !contenido.includes('91000001'),'Contenido TXT incluye carencia');
     w().guardarHistorialTxtGenerado(contenido,'sintetico.txt',1);comprobar(w().obtenerHistorialTxt()[0].contenido===contenido,'Historial TXT no conserva contenido');
   }, [3,7]);
   await paso('Importación TXT mediante FileReader, duplicados y alta de animal nuevo',async()=>{
+    await control({apiDisponible:false});
     await navegar('/pages/importar-txt.html');const texto='[|858000091000002|27102026|120000|123|.|.|.|.|.|.|.|.|.|.|]\n[|858000091000003|27102026|120001|123|.|.|.|.|.|.|.|.|.|.|]\n[|858000091000003|27102026|120001|123|.|.|.|.|.|.|.|.|.|.|]';
     const {DataTransfer,File}=w();
     const datos=new DataTransfer();datos.items.add(new File([texto],'sintetico.txt',{type:'text/plain'}));w().document.getElementById('archivoTxtImportado').files=datos.files;

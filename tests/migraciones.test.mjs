@@ -33,7 +33,7 @@ test('migraciones conservan todos los campos, IDs y relaciones originales', t =>
   const db = preparar(t);
   const tablas = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(t => t.name);
   const originales = Object.fromEntries(tablas.map(n => [n, db.prepare(`SELECT * FROM ${n}`).all()]));
-  assert.equal(aplicarMigraciones(db).length, 6);
+  assert.equal(aplicarMigraciones(db).length, 7);
   for (const n of tablas) {
     const actuales = db.prepare(`SELECT * FROM ${n}`).all();
     assert.equal(actuales.length, originales[n].length);

@@ -15,7 +15,7 @@ function entorno(modulos) {
     const el={value,innerHTML:'',textContent:'',classList:{add(){},remove(){},toggle(){}},reset(){},focus(){},select(){},addEventListener(){},appendChild(){}};
     elementos.set(id,el);return el;
   };
-  const c=vm.createContext({window:{RuralDataMvp:{listar:e=>p.listar(e),guardar:(e,r)=>p.guardarColeccion(e,r),sincronizar:async()=>{}}},
+  const c=vm.createContext({window:{RuralDataMvp:{sanidadVerificada:true,listar:e=>p.listar(e),guardar:(e,r)=>{if(c.window.RuralDataMvp.escritor===false)throw Error('Edición bloqueada');p.guardarColeccion(e,r);},sincronizar:async()=>{}}},
     localStorage:storage,sessionStorage,crypto:webcrypto,console,document:{addEventListener(){},getElementById:id=>elementos.get(id)||null,querySelector:()=>null,createElement:()=>({classList:{add(){},remove(){}},appendChild(){}})},
     confirm:()=>true,alert:s=>avisos.push(s),setTimeout(){},setInterval(){}});
   for(const mod of ['storage',...modulos])vm.runInContext(readFileSync(new URL('../js/'+mod+'.js',import.meta.url),'utf8'),c);

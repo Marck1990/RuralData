@@ -51,6 +51,7 @@ function inicializarTxtSnig() {
   };
   if (window.RuralDataMvp) mostrarEstadoTxt();
   else document.addEventListener("ruraldata:lista", mostrarEstadoTxt, { once: true });
+  document.addEventListener("ruraldata:datos", mostrarEstadoTxt);
   mostrarHistorialTxt();
 }
 

@@ -43,6 +43,15 @@ function abrir() {
   }
   return persistencia;
 }
+function adoptarSanidadHistorica(cache) {
+  const guardados=cache.estado().registros;
+  const historicos=obtenerSanidadHistorica().filter(registro=>!guardados[JSON.stringify(['sanidad',registro.id])]);
+  const ids=new Set(historicos.map(registro=>registro.id));
+  if(ids.size!==historicos.length || historicos.some(registro=>!registro.id)) {
+    throw new Error('Datos inválidos: hay registros sanitarios históricos sin ID inequívoco');
+  }
+  if(historicos.length)cache.adoptar('sanidad',historicos);
+}
 function mostrarEstado(estado) {
   estadoActual=estado;
   const panel=document.getElementById('estadoSincronizacionMvp');if(!panel)return;
@@ -60,7 +69,7 @@ function mostrarEstado(estado) {
     const pre=document.createElement('pre');pre.textContent=JSON.stringify({local:e.registros[k],remoto:r},null,2);detalle.append(pre);
     if(!r.sinVersion)for(const [label,local]of [['Conservar mis cambios',true],['Aceptar remoto',false]]) {
       const btn=document.createElement('button');btn.type='button';btn.className='btn btn-sm btn-outline-secondary';btn.textContent=label;
-      btn.onclick=()=>{if(escritor && confirm('¿'+label+' para este registro?')){persistencia.resolver(k,local);notificarDatos();mostrarEstado('pendiente');}};
+      btn.onclick=()=>{if(escritor && confirm('¿'+label+' para este registro?')){persistencia.resolver(k,local);if(JSON.parse(k)[0]==='sanidad')sincronizador.invalidarSanidad();notificarDatos();mostrarEstado('pendiente');}};
       detalle.append(btn);
     }
     lista.append(detalle);
@@ -72,15 +81,34 @@ function notificarDatos() {
 window.RuralDataMvp={
   listo:inicio,
   get escritor(){return escritor;},
-  listar(entidad){return abrir().listar(entidad);},
+  get sanidadVerificada(){
+    return paginaActiva && navigator.onLine!==false && obtenerSesion()?.autenticacionMvp &&
+      sincronizador?.sanidadVerificada?.()===true;
+  },
+  listar(entidad){
+    const cache=abrir();
+    const registros=cache.listar(entidad);
+    if(entidad!=='sanidad')return registros;
+    const guardados=cache.estado().registros;
+    return [...registros,...obtenerSanidadHistorica().filter(registro=>!guardados[JSON.stringify(['sanidad',registro.id])])];
+  },
   guardar(entidad,registros){
     if(!escritor)throw new Error('Edición bloqueada: usá una sola pestaña con Web Locks disponible');
-    abrir().guardarColeccion(entidad,registros);notificarDatos();mostrarEstado('pendiente');
+    const cache=abrir();
+    if(entidad==='sanidad')adoptarSanidadHistorica(cache);
+    cache.guardarColeccion(entidad,registros);notificarDatos();mostrarEstado('pendiente');
   },
   async sincronizar(){
     await inicio;
     if(!escritor)return;
-    try{abrir();await sincronizador.sincronizar();}catch{mostrarEstado('deshabilitado');}
+    try{
+      const cache=abrir();
+      adoptarSanidadHistorica(cache);
+      const actual=sincronizador;
+      const proceso=actual.sincronizar();
+      notificarDatos();
+      await proceso;
+    }catch{sincronizador?.invalidarSanidad?.();mostrarEstado('deshabilitado');}
     finally{notificarDatos();}
   }
 };
@@ -101,8 +129,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   // Solo pide API autenticada; todos los fallos conservan la cola.
   setInterval(()=>window.RuralDataMvp.sincronizar(),60000);
+  let sanidadVerificada=window.RuralDataMvp.sanidadVerificada;
+  setInterval(()=>{
+    const vigente=window.RuralDataMvp.sanidadVerificada;
+    if(vigente!==sanidadVerificada){sanidadVerificada=vigente;notificarDatos();}
+  },5000);
 });
 window.addEventListener('online',()=>window.RuralDataMvp.sincronizar());
+window.addEventListener('offline',()=>{sincronizador?.invalidarSanidad?.();notificarDatos();});
 // Errores de cuota/JSON/edición se informan sin afirmar que hubo guardado.
 window.addEventListener('error',event=>{
   if(/Quota|JSON|Edición bloqueada|Datos inválidos|almacenamiento offline/.test(event.message))alert('No se pudo guardar: '+event.message);

@@ -18,7 +18,7 @@ test('offline, recarga, dos ediciones, sesión vencida y reautenticación sincro
   local.cambiar('animales',{id:'animal-offline',caravanaVisual:'OFF-001',observaciones:'segunda edición'});
   local.cambiar('pesajes',{id:'peso-offline',animalId:'animal-offline',fecha:'2026-01-02',pesoKg:355});
   assert.equal(abrir().estado().pendientes.length,4);
-  const handlers={sesion:crearSesionHandler({env,dbFactory}),animales:crearRegistrosHandler('animales',{env,dbFactory}),pesajes:crearRegistrosHandler('pesajes',{env,dbFactory})};
+  const handlers={sesion:crearSesionHandler({env,dbFactory}),animales:crearRegistrosHandler('animales',{env,dbFactory}),pesajes:crearRegistrosHandler('pesajes',{env,dbFactory}),sanidad:crearRegistrosHandler('sanidad',{env,dbFactory})};
   let cookie=cookieSesion(crearSesion(config,Date.now()-13*3600000)).split(';')[0];
   let conectado=false,perderAck=false;const estados=[];
   const fetcher=async(url,opciones={})=>{

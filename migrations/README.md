@@ -5,9 +5,9 @@ pruebas con `node:sqlite`; la aplicación conserva su tecnología original.
 
 Orden: `001_campos_funcionales.sql`, `002_sincronizacion.sql`, `003_txt.sql`,
 `004_indices.sql`, `005_autenticacion_idempotencia.sql`,
-`006_productores_independientes.sql`. Las ocho tablas
+`006_productores_independientes.sql`, `007_operaciones_sanidad.sql`. Las ocho tablas
 existentes se conservan. Se crean `txt_lista`, `txt_archivos`, `auth_intentos`
-y el registro técnico `ruraldata_migraciones`.
+y `sanidad_operaciones`, además del registro técnico `ruraldata_migraciones`.
 
 La quinta migración agrega un contador durable de intentos de autenticación
 y `ultima_operacion_id` en animales y pesajes. Permite reintentar una
@@ -22,6 +22,12 @@ dos cuentas históricas con el mismo email normalizado, el login falla cerrado;
 deben revisarse con autorización antes de cualquier conciliación. `rol` permanece
 intacto; nuevas cuentas escriben solo el literal `productor` para cumplir el
 NOT NULL original, sin decisiones de permisos basadas en ese campo.
+
+La séptima crea un recibo por establecimiento y operación de Sanidad. El recibo
+se guarda en la misma transacción que el tratamiento y conserva su respuesta
+original para los reintentos, incluso si otro dispositivo ya actualizó el
+registro. Incluye una instantánea sanitaria y debe quedar bajo los mismos
+controles de acceso y respaldo que la tabla principal.
 
 `scripts/migraciones-locales.mjs` recibe una conexión local y aplica cada archivo
 en una transacción, con checksum y registro de aplicación. Reejecutarlo omite
@@ -60,3 +66,11 @@ cambian IDs ni se eliminan tablas o columnas. Las relaciones se conservan con
 Las versiones deben incrementarse en servidor con actualización condicional.
 `eliminado_en` representa una baja sincronizable: la API no hará DELETE físico.
 El estado de carencia y aptitud se recalcula; no se confía en una copia antigua.
+
+Para habilitar un embarque, el responsable debe confirmar que los dispositivos
+que registran tratamientos terminaron de sincronizar y que sus colas están sin
+pendientes ni conflictos. Suspender nuevas anotaciones durante la verificación
+del embarque, sincronizar el dispositivo de control y volver a comprobar antes
+de cargar o exportar. Si hay un dispositivo sin conexión o un tratamiento en
+papel sin registrar, postergar la liberación. La verificación en el navegador
+vence a los 60 segundos y solo confirma lo que llegó al servidor.

@@ -118,16 +118,19 @@ function guardarAnimales(animales) {
 
 // Sanidad separada por establecimiento.
 function obtenerSanidad() {
+  if (!obtenerSesion()?.autenticacionMvp) throw new Error('Iniciá sesión para acceder a Sanidad');
+  if (window.RuralDataMvp) return window.RuralDataMvp.listar('sanidad');
+  return obtenerSanidadHistorica();
+}
+
+function obtenerSanidadHistorica() {
   const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.sanidad);
 
   return obtenerDatos(clave);
 }
 
 function guardarSanidad(registros) {
-  const clave = obtenerClavePorEstablecimiento(STORAGE_KEYS.sanidad);
-
-  guardarDatos(clave, registros);
-  if (typeof document !== "undefined" && document.dispatchEvent) document.dispatchEvent(new Event("ruraldata:datos"));
+  window.RuralDataMvp.guardar('sanidad', registros);
 }
 
 // Reproducción separada por establecimiento.
@@ -196,6 +199,7 @@ function guardarUsuarios(usuarios) {
 
 const MOTIVO_IDENTIDAD_SANITARIA = "Identificación ambigua o contradictoria. Verificá el ID, RFID y la caravana.";
 const MOTIVO_CARENCIA_INCOMPLETA = "Datos sanitarios incompletos. Verificá la fecha de liberación.";
+const MOTIVO_SANIDAD_NO_VERIFICADA = "Aptitud no verificable. Sincronizá Sanidad y revisá los cambios o conflictos pendientes.";
 
 function normalizarIdentificadorSanitario(valor) {
   return String(valor ?? "").trim().toLowerCase().replace(/\s+/g, "");
@@ -235,7 +239,7 @@ function resolverAsociacionSanitaria(registro, animales) {
 }
 
 // Evalúa solo los datos del productor y establecimiento activos.
-function obtenerBloqueosSanitariosMvp(animales = obtenerAnimales()) {
+function obtenerBloqueosSanitariosMvp(animales = obtenerAnimales(), verificarRemoto = true) {
   const bloqueos = Object.create(null);
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   const fechaValida = valor => {
@@ -255,7 +259,7 @@ function obtenerBloqueosSanitariosMvp(animales = obtenerAnimales()) {
   }
 
   for (const registro of obtenerSanidad()) {
-    const tieneCarencia = registro.tieneCarencia === true || Number(registro.diasCarencia)>0;
+    const tieneCarencia = registro.tieneCarencia === true || Number(registro.diasCarencia)>0 || Boolean(registro.fechaLiberacion);
     const fecha = fechaValida(registro.fechaLiberacion);
     const incompleto = (tieneCarencia && !fecha) ||
       (registro.tieneCarencia !== false && !tieneCarencia);
@@ -273,6 +277,11 @@ function obtenerBloqueosSanitariosMvp(animales = obtenerAnimales()) {
       bloqueos[animal.id] = incompleto
         ? { datosIncompletos: true, motivoPreventivo: MOTIVO_CARENCIA_INCOMPLETA }
         : registro;
+    }
+  }
+  if (verificarRemoto && window.RuralDataMvp?.sanidadVerificada !== true) {
+    for (const animal of animales) {
+      bloqueos[animal.id] ??= { motivoPreventivo: MOTIVO_SANIDAD_NO_VERIFICADA, aptitudNoVerificable: true };
     }
   }
   return bloqueos;

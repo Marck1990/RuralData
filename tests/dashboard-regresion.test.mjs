@@ -24,7 +24,7 @@ function entorno(localStorage=memoria(),perfil=ana) {
 }
 function sembrar(e){
  e.cache.guardarColeccion('animales',Array.from({length:12},(_,i)=>({id:'animal-'+i,caravanaVisual:i===0?'1111':String(2000+i),categoria:'Ternero',metodoIngreso:i?'txt':'manual'})));
- e.c.guardarSanidad([{id:'tratamiento',animalId:'animal-0',tipoControl:'Clínico',tieneCarencia:true,fechaLiberacion:'2026-11-23'}]);
+ e.cache.guardarColeccion('sanidad',[{id:'tratamiento',animalId:'animal-0',tipoControl:'Clínico',tieneCarencia:true,fechaLiberacion:'2026-11-23'}]);
 }
 test('menú se conecta antes de persistencia: abrir, cerrar, overlay y Escape sin alterar sesión',()=>{
  const e=entorno();const sesion=e.sessionStorage.getItem('ruraldata_sesion_productor_v2');e.cargar();

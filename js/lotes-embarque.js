@@ -61,6 +61,10 @@ function inicializarLotesEmbarque() {
     }
 
     document.addEventListener("ruraldata:lista", mostrarLotesEmbarque, { once: true });
+    document.addEventListener("ruraldata:datos", () => {
+        mostrarLotesEmbarque();
+        if (loteEmbarqueActivoId) mostrarAnimalesLoteEmbarque();
+    });
     if (window.RuralDataMvp) mostrarLotesEmbarque();
 }
 

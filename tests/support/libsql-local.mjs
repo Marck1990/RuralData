@@ -26,3 +26,14 @@ const archivo=process.argv[2];
   const pesajes=crearRegistrosHandler('pesajes',{env,dbFactory});
   const peso=await llamar(pesajes,{method:'POST',headers,body:{operacionId:'op-peso-real',versionBase:null,registro:{id:'peso-real',animalId:'animal-real',fecha:'2026-01-02',pesoKg:360}}});
   assert.equal(peso.statusCode,201);assert.equal(peso.body.registro.animalId,'animal-real');
+  const sanidad=crearRegistrosHandler('sanidad',{env,dbFactory});
+  const control={method:'POST',headers,body:{operacionId:'op-control-real',versionBase:null,registro:{
+    id:'control-real',animalId:'animal-real',tieneCarencia:true,diasCarencia:10,
+    fechaAplicacion:'2026-01-02',fechaLiberacion:'2026-01-12',numeroHabilitacion:'QA-01'
+  }}};
+  const guardado=await llamar(sanidad,control);
+  assert.equal(guardado.statusCode,201);
+  assert.equal(guardado.body.registro.numeroHabilitacion,'QA-01');
+  const reintento=await llamar(sanidad,control);
+  assert.equal(reintento.statusCode,200);
+  assert.deepEqual(reintento.body.registro,guardado.body.registro);
